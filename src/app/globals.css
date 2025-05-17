@@ -1,0 +1,38 @@
+@import url('https://fonts.cdnfonts.com/css/megabot-five');
+@import url('https://fonts.cdnfonts.com/css/eurostile-2');
+
+
+body{
+  margin: 0;
+  padding: 0;
+ 
+  
+}
+
+
+/* For Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #15191B; /* background color */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3B3B3B; /* thumb color */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2196f3; /* thumb color on hover */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3B3B3B #15191B;
+}
+
+/* Add to your global CSS file */
+html {
+  scroll-behavior: smooth;
+  
+}
