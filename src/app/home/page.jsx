@@ -1,4 +1,4 @@
-import Hero from '@/layout/Hero-Section/hero';
+import Hero from '@/layout/Hero-Section/Hero';
 import HeroBody1 from '@/layout/Hero-Section/Hero-Body1';
 import HeroBody2 from '@/layout/Hero-Section/Hero-body2';
 import HeroBody3 from '@/layout/Hero-Section/Hero-body3';
@@ -15,4 +15,4 @@ const HomeComponent = () => (
   </Box>
 );
 
-export default HomeComponent;
+export default HomeComponent;g
