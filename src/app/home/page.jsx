@@ -15,4 +15,4 @@ const HomeComponent = () => (
   </Box>
 );
 
-export default HomeComponent;g
+export default HomeComponent;
