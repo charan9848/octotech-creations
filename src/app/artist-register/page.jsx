@@ -10,6 +10,7 @@ import * as yup from "yup";
 import { toast, Toaster } from "react-hot-toast";
 import React from 'react';
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 const ArtistRegister = () => {
     const [loading, setLoading] = useState(false);
@@ -173,6 +174,15 @@ const ArtistRegister = () => {
                         >
                             {loading ? "Registering..." : "Register"}
                         </Button>
+                        <Typography
+                        variant="body1"
+                        sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}
+                        color="#78838D"
+                    >
+                        <small>
+                            Already have an account? <Link href="/artist-login">Login</Link>
+                        </small>
+                    </Typography>
                     </form>
                 </motion.div>
             </Box>

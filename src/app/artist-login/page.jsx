@@ -129,7 +129,7 @@ const Artistlogin = () => {
                     </Button>
 
                     <Typography
-                        variant="paragraph"
+                        variant="body1"
                         sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}
                         color="#78838D"
                     >
