@@ -9,6 +9,8 @@ import Footer from '@/components/footer/footer';
 import "./globals.css";
 
 import { Toolbar } from "@mui/material";
+import { SessionProvider } from "next-auth/react";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,18 +39,28 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ThemeProvider theme={theme}>
-          <Navbar />
-          <Toolbar /> 
-          <main>
-            {children}
-            <Analytics />
-            <SpeedInsights />
-          </main>
-          <footer>
-            <Footer />
-          </footer>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider theme={theme}>
+            <Navbar />
+            <Toolbar />
+            <main>
+              {children}
+              <Analytics />
+              <SpeedInsights />
+              <Toaster
+                toastOptions={{
+                  style: {
+                    fontFamily: theme.typography.body1.fontFamily,
+                    fontSize: theme.typography.body1.fontSize,
+                  },
+                }}
+              />
+            </main>
+            <footer>
+              <Footer />
+            </footer>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

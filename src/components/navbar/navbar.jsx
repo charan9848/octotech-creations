@@ -1,5 +1,5 @@
-
-import { AppBar, Box, Button, ListItem, ListItemButton, ListItemIcon, ListItemText, List, Toolbar, Typography, useTheme, Divider, Drawer } from "@mui/material";
+import { AppBar, Box, Button, ListItem, ListItemButton, ListItemIcon, ListItemText, List, Toolbar, Typography, useTheme, Divider, Drawer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import Image from 'next/image';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import Link from "next/link"; // Next.js Link component (not react-router-dom)
@@ -12,23 +12,45 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+
+const LogoutButton = styled(Button)({
+  backgroundColor: "#e53935",
+  color: "#fff",
+  fontWeight: 700,
+  width: "100%",
+  '&:hover': {
+    backgroundColor: "#b71c1c",
+  },
+});
 
 export default function Navbar() {
   const theme = useTheme();
-  const pathname = usePathname(); // Get current path
+  const pathname = usePathname();
+  const { data: session } = useSession();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const MenuContent = [
     { id: 1, name: "home", icon: <HomeOutlinedIcon />, path: "/" },
-    
     { id: 2, name: "services", icon: <BuildOutlinedIcon />, path: "/#services" },
     { id: 3, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
     { id: 4, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
+  ];
+
+  const ArtistMenu = [
+    { id: 1, name: "dashboard", icon: <HomeOutlinedIcon />, path: "/artist-dashboard" },
+    { id: 2, name: "portfolio", icon: <FolderOutlinedIcon />, path: "/artist-portfolio" },
   ];
 
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
+  };
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/artist-login" });
+    setLogoutDialogOpen(false);
   };
 
   const DrawerList = (
@@ -43,27 +65,47 @@ export default function Navbar() {
       onClick={toggleDrawer(false)} // Close drawer when clicking inside
     >
       <Box sx={{ padding: "20px" }} >
-        <Button
-          variant="text"
-          disableRipple
-          sx={{
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          <PersonOutlineOutlinedIcon sx={{ marginRight: "5px", fontSize: "25px" }} />
-          Sign In
-        </Button>
+        {session ? (
+          <LogoutButton
+            variant="contained"
+            disableRipple
+            size="small"
+            sx={{
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+            }}
+            onClick={() => setLogoutDialogOpen(true)}
+          >
+            Logout
+          </LogoutButton>
+        ) : (
+          <Link href="/artist-login" passHref style={{ width: "100%" }}>
+            <Button
+              variant="text"
+              disableRipple
+              sx={{
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <PersonOutlineOutlinedIcon sx={{ marginRight: "5px", fontSize: "25px" }} />
+              Sign In
+            </Button>
+          </Link>
+        )}
       </Box>
 
       <Divider sx={{ backgroundColor: "#fff" }} />
 
       <Box sx={{ padding: "20px" }}>
         <List>
-          {MenuContent.map((menu) => (
+          {(session ? ArtistMenu : MenuContent).map((menu) => (
             <ListItem key={menu.id} disablePadding>
               <Link href={menu.path} passHref style={{ textDecoration: 'none', width: '100%' }}>
                 <ListItemButton
@@ -71,7 +113,7 @@ export default function Navbar() {
                     display: "flex",
                     alignItems: "center",
                     "&:hover .menu-text": {
-                      color: "rgb(0, 161, 224)", // Change Typography color on hover
+                      color: "rgb(0, 161, 224)",
                     },
                   }}
                 >
@@ -81,7 +123,7 @@ export default function Navbar() {
                       <Typography
                         variant="body1"
                         className="menu-text"
-                        sx={{ marginLeft: "5px", color: "#ffffff" }} // Default color
+                        sx={{ marginLeft: "5px", color: "#ffffff" }}
                       >
                         {menu.name.toUpperCase()}
                       </Typography>
@@ -157,7 +199,7 @@ export default function Navbar() {
               padding: 0,
             }}
           >
-            {MenuContent.map((menu) => (
+            {(session ? ArtistMenu : MenuContent).map((menu) => (
               <Link href={menu.path} key={menu.id} passHref style={{ textDecoration: 'none' }}>
                 <Button
                   sx={{
@@ -201,20 +243,37 @@ export default function Navbar() {
               },
             }}
           >
-            <Button variant="contained" >Start free now</Button>
-            <Button
-              variant="text"
-              disableRipple
-              sx={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <PersonOutlineOutlinedIcon
-                sx={{ marginRight: "5px", fontSize: "25px", color: "white" }}
-              />
-              Sign In
-            </Button>
+            {session ? (
+              <LogoutButton
+                variant="contained"
+                
+                disableRipple
+                onClick={() => setLogoutDialogOpen(true)}
+              >
+                Logout
+              </LogoutButton>
+            ) : (
+
+              <>
+                <Button variant="contained" >Start free now</Button>
+
+                <Button
+                  variant="text"
+                  disableRipple
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: "white",
+                    ml: 1
+                  }}
+                >
+                  <PersonOutlineOutlinedIcon
+                    sx={{ marginRight: "5px", fontSize: "25px", color: "white" }}
+                  />
+                  Sign In
+                </Button>
+              </>
+            )}
           </Box>
 
           {/* Hamburger Menu */}
@@ -238,6 +297,37 @@ export default function Navbar() {
           </Box>
         </Toolbar>
       </AppBar>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+  open={logoutDialogOpen}
+  onClose={() => setLogoutDialogOpen(false)}
+  PaperProps={{
+    sx: {
+      backgroundColor: "#15191c",
+      color: "#fff",
+      borderRadius: 2,
+    },
+  }}
+>
+  <DialogContent>
+    <DialogContentText
+      variant="h4" fontSize={20}
+      sx={{ color: "#fff" }}
+    >
+      Are you sure you want to logout?
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    
+    <Button onClick={() => setLogoutDialogOpen(false)} variant="outlined">
+      Cancel
+    </Button>
+    <Button onClick={handleLogout} color="error" variant="contained">
+      Yes, Logout
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 }
