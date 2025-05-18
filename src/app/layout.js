@@ -1,7 +1,8 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from '@mui/material/styles';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import theme from './theme';
 import Navbar from '@/components/navbar/navbar';
 import Footer from '@/components/footer/footer';
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
           <main>
             {children}
             <Analytics />
+            <SpeedInsights />
           </main>
           <footer>
             <Footer />
