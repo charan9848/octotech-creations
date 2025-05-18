@@ -9,9 +9,11 @@ import { useState } from "react";
 import * as yup from "yup";
 import { toast, Toaster } from "react-hot-toast";
 import React from 'react';
+import { useRouter } from "next/navigation";
 
 const ArtistRegister = () => {
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const validationSchema = yup.object({
         artistid: yup.string().required('Artist ID is required').min(4, 'User ID too short'),
@@ -38,7 +40,9 @@ const ArtistRegister = () => {
             try {
                 await axios.post(`/api/register-user`, values);
                 toast.success("User Registered Successfully!");
-               
+                setTimeout(() => {
+                    router.push("/artist-login");
+                }, 3000);
             } catch (error) {
                 toast.error(error.response?.data?.message || "Registration failed. Please try again.");
             } finally {
