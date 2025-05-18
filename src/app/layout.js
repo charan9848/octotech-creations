@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
         <meta property="og:title" content="Octotech Creations | VFX, Animation & Compositing Studio" />
         <meta property="og:description" content="Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://your-domain.com/" />
+        <meta property="og:url" content="https://octotech-creations.vercel.app" />
         <meta property="og:image" content="/OCTOTECH.svg" />
         <meta property="og:see_also" content="https://www.youtube.com/@OCTOTECHCREATIONS" />
         <meta property="og:see_also" content="https://www.instagram.com/octotech_creations/?hl=en" />
