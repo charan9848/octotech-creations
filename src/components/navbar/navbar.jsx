@@ -42,7 +42,7 @@ export default function Navbar() {
       role="presentation"
       onClick={toggleDrawer(false)} // Close drawer when clicking inside
     >
-      <Box sx={{ padding: "30px" }}>
+      <Box sx={{ padding: "20px" }} >
         <Button
           variant="text"
           disableRipple
@@ -105,7 +105,7 @@ export default function Navbar() {
           backgroundColor: theme.palette.appBar?.main || "#000000", // Added fallback
           paddingTop: "3px",
           paddingBottom: "3px",
-          zIndex: theme.zIndex.drawer + 1,
+          zIndex: theme.zIndex.drawer - 1,
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -201,7 +201,7 @@ export default function Navbar() {
               },
             }}
           >
-            <Button variant="contained">Start free now</Button>
+            <Button variant="contained" >Start free now</Button>
             <Button
               variant="text"
               disableRipple
@@ -228,7 +228,7 @@ export default function Navbar() {
               },
             }}
           >
-            <Button variant="contained">Start free now</Button>
+            <Button variant="contained" size="small" >Start free now</Button>
             <Button onClick={toggleDrawer(true)}>
               <MenuIcon />
             </Button>

@@ -78,7 +78,7 @@ const Hero = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.7 }}>
-          <Typography variant="h3" sx={{ WebkitTextStroke: '0.5px white' }}>
+          <Typography variant="h3" sx={{ WebkitTextStroke: '0.5px white' , fontSize: { xs: "30px", sm: "40px", md: "50px" } }}>
             Production-quality
             <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> VFX </span>
             and
