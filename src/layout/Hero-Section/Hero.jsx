@@ -18,27 +18,58 @@ const Hero = () => {
         overflow: "hidden",
       }}
     >
-      {/* Video Background */}
-      <video
-        className="video-background"
-        style={{
+      {/* Video Background (hidden on xs) */}
+      <Box
+        sx={{
+          display: { xs: "none", sm: "block" },
           position: "absolute",
-          zIndex: 0,
           width: "100%",
           height: "100%",
-          objectFit: "cover",
-          objectPosition: "center",
+          zIndex: 0,
         }}
-        preload="auto"
-        autoPlay
-        loop
-        muted
-        disablePictureInPicture
-        controlsList="nodownload nofullscreen noremoteplayback"
-        poster="https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg"
       >
-        <source src="https://a-us.storyblok.com/f/1002378/x/1f6178b540/actionvfxfrontpage15.mp4" type="video/mp4" />
-      </video>
+        <video
+          className="video-background"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+          }}
+          preload="auto"
+          autoPlay
+          loop
+          muted
+          disablePictureInPicture
+          controlsList="nodownload nofullscreen noremoteplayback"
+          poster="https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg"
+        >
+          <source src="https://a-us.storyblok.com/f/1002378/x/1f6178b540/actionvfxfrontpage15.mp4" type="video/mp4" />
+        </video>
+      </Box>
+
+      {/* Image Background (only on xs) */}
+      <Box
+        sx={{
+          display: { xs: "block", sm: "none" },
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
+        }}
+      >
+        <Box
+          component="img"
+          src="https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg"
+          alt="Hero background"
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+          }}
+        />
+      </Box>
 
       {/* Shading Overlay */}
       <Box
@@ -78,35 +109,35 @@ const Hero = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.7 }}>
-          <Typography variant="h3" sx={{ WebkitTextStroke: '0.5px white' , fontSize: { xs: "30px", sm: "40px", md: "50px" } }}>
-            Production-quality
-            <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> VFX </span>
-            and
-            <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> 3D </span>
-            for movies
-          </Typography>
+            <Typography variant="h3" sx={{ WebkitTextStroke: '0.5px white', fontSize: { xs: "30px", sm: "40px", md: "50px" } }}>
+              Production-quality
+              <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> VFX </span>
+              and
+              <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> 3D </span>
+              for movies
+            </Typography>
           </motion.div>
           <motion.div
             variants={fadeIn('left', 0.4)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.7 }}>
-          <Typography variant="body1" mt={2} color="#aeb4b4">
-            Welcome to Octotech Creations, where imagination meets reality.
-          </Typography>
+            <Typography variant="body1" mt={2} color="#aeb4b4">
+              Welcome to Octotech Creations, where imagination meets reality.
+            </Typography>
           </motion.div>
           <motion.div
             variants={fadeIn('up', 0.6)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.7 }}>
-          <Button
-            variant="outlined"
-            sx={{ marginTop: "30px", width: "150px" }}
-            endIcon={<ExploreIcon />}
-          >
-            Explore
-          </Button>
+            <Button
+              variant="outlined"
+              sx={{ marginTop: "30px", width: "150px" }}
+              endIcon={<ExploreIcon />}
+            >
+              Explore
+            </Button>
           </motion.div>
         </Box>
       </Box>
