@@ -28,7 +28,7 @@ const About = () => {
             viewport={{ once: true, amount: 0.7 }}
           >
             <Box m={1}>
-              <Typography variant="h4" color="white">
+              <Typography variant="h1" color="white">
                 About Us
               </Typography>
             </Box>
@@ -40,7 +40,7 @@ const About = () => {
             viewport={{ once: true, amount: 0.7 }}
           >
             <Box m={1} mb={3}>
-              <Typography variant="h6" color="#aeb4b4">
+              <Typography variant="h2" color="#aeb4b4">
                 Octotech Creations is a VFX, Animation, and Compositing studio dedicated to bringing imagination to life. 
                 Our team of passionate artists and technologists delivers pixel-perfect compositing, stunning 3D animation, 
                 and cutting-edge motion graphics for films, advertisements, and brands. We blend creativity with technology 

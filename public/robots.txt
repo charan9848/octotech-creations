@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://octotech-creations.vercel.app
+
+# Sitemaps
+Sitemap: https://octotech-creations.vercel.app/sitemap.xml

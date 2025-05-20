@@ -72,6 +72,21 @@ const theme = createTheme({
                     fontWeight: 600,
                     color: '#ffffff',
                 },
+                 h1: {
+                    fontFamily: '"Eurostile", sans-serif',
+                    fontWeight: 1000,
+                    fontSize: '44px',
+                    textTransform: 'uppercase',
+                    letterSpacing:'2.5px',
+                    lineHeight:'44px',    
+                },
+                h2: {
+                    fontFamily: '"Inter", sans-serif',
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    color: '#aeb4b4',
+                    textTransform: 'none',  
+                },
                 h3: {
                     fontFamily: '"Eurostile", sans-serif',
                     fontWeight: 1000,

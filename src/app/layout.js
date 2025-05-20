@@ -28,6 +28,8 @@ export default function RootLayout({ children }) {
       <head>
         <title>Octotech Creations | VFX, Animation & Compositing Studio</title>
         <meta name="description" content="Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations." />
+        <meta name="keywords" content="VFX, Animation, 3D, Motion Graphics, Octotech, Video Editing, Compositing, Visual Effects, Studio" />
+        <meta name="author" content="Octotech Creations" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta property="og:title" content="Octotech Creations | VFX, Animation & Compositing Studio" />
         <meta property="og:description" content="Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations." />
@@ -37,6 +39,21 @@ export default function RootLayout({ children }) {
         <meta property="og:see_also" content="https://www.youtube.com/@OCTOTECHCREATIONS" />
         <meta property="og:see_also" content="https://www.instagram.com/octotech_creations/?hl=en" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="canonical" href="https://octotech-creations.vercel.app/" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Octotech Creations",
+            "url": "https://octotech-creations.vercel.app",
+            "logo": "https://octotech-creations.vercel.app/OCTOTECH.svg",
+            "sameAs": [
+              "https://www.facebook.com/octotechcreations",
+              "https://www.instagram.com/octotech_creations",
+              "https://www.youtube.com/@OCTOTECHCREATIONS"
+            ]
+          })
+        }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider>

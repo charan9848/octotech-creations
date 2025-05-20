@@ -218,22 +218,21 @@ const footer = () => {
                         {/* Socials icons */}
 
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, py: 4, }}>
-                            <IconButton href="https://www.facebook.com/actionvfx" target="_blank"  >
+                            <IconButton href="https://www.facebook.com/octotechcreations" target="_blank">
                                 <FacebookIcon color='#aeb4b4' />
                             </IconButton>
-                            <IconButton href="https://twitter.com/actionVFX" target="_blank" color="inherit">
+                            <IconButton href="https://twitter.com/octotechcreation" target="_blank" color="inherit">
                                 <TwitterIcon />
                             </IconButton>
-                            <IconButton href="https://www.youtube.com/channel/UCqygDczqPpXGYqHXtcsmyFg" target="_blank" >
+                            <IconButton href="https://www.youtube.com/@OCTOTECHCREATIONS" target="_blank">
                                 <YouTubeIcon />
                             </IconButton>
-                            <IconButton href="https://www.instagram.com/actionvfxofficial" target="_blank" >
+                            <IconButton href="https://www.instagram.com/octotech_creations" target="_blank">
                                 <InstagramIcon />
                             </IconButton>
-                            <IconButton href="https://www.linkedin.com/company/10800607" target="_blank" >
+                            <IconButton href="https://www.linkedin.com/company/octotech-creation" target="_blank">
                                 <LinkedInIcon />
                             </IconButton>
-
                         </Box>
 
 
@@ -242,14 +241,28 @@ const footer = () => {
                 </Box>
             </Box>
 
-            <Box sx={{ width: { md: "100%", sm: "100%", xs: '100%' }, display: "flex", justifyContent: 'space-between', alignItems: 'center', }} p={1}>
-                <Typography variant="h6" color='rgba(77, 84, 87,1)' fontSize="12px">&copy; {new Date().getFullYear()} Octotech Creation. All rights reserved.</Typography>
+            <Box sx={{ width: { md: "100%", sm: "100%", xs: '100%' }, display: "flex", justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }} p={1}>
+                {/* Internal navigation links */}
+                <Box sx={{ display: 'flex', gap: 2, mb: { xs: 2, md: 0 } }}>
+                    <Link href="/" style={{ color: '#78838D', textDecoration: 'none' }}>
+                        <Typography variant="h6" fontSize="12px">Home</Typography>
+                    </Link>
+                    <Link href="/about" style={{ color: '#78838D', textDecoration: 'none' }}>
+                        <Typography variant="h6" fontSize="12px">About</Typography>
+                    </Link>
+                    <Link href="/contact" style={{ color: '#78838D', textDecoration: 'none' }}>
+                        <Typography variant="h6" fontSize="12px">Contact</Typography>
+                    </Link>
+                    {/* Add more links as needed */}
+                </Box>
+                <Typography variant="h6" color='rgba(77, 84, 87,1)' fontSize="12px">
+                    &copy; {new Date().getFullYear()} Octotech Creation. All rights reserved.
+                </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Typography variant="h6" fontSize="12px" color='rgba(77, 84, 87,1)'>Terms</Typography>
-                    <Typography variant="h6" fontSize="12px" color='rgba(77, 84, 87,1)' >Privacy Policy</Typography>
-                    <Typography variant="h6" fontSize="12px" color='rgba(77, 84, 87,1)' >License Agreement</Typography>
+                    <Typography variant="h6" fontSize="12px" color='rgba(77, 84, 87,1)'>Privacy Policy</Typography>
+                    <Typography variant="h6" fontSize="12px" color='rgba(77, 84, 87,1)'>License Agreement</Typography>
                 </Box>
-
             </Box>
 
         </Box>
