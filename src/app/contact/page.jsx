@@ -38,7 +38,7 @@ const Contact = () => {
     onSubmit: async (values, { resetForm }) => {
       setLoading(true);
       try {
-        // Replace '/api/contact' with your actual API endpoint
+       
         await axios.post('/api/contact', values);
         toast.success("Message sent successfully!");
         resetForm();

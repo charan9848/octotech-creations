@@ -3,6 +3,8 @@ import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import * as yup from "yup";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
@@ -12,6 +14,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 
 const footer = () => {
+    const [loading, setLoading] = useState(false);
 
     const octotechInfo = [
         {
@@ -55,21 +58,28 @@ const footer = () => {
         initialValues: {
             firstname: '',
             lastname: '',
-            email: ''
+            email: '',
+            message: '',
 
         },
         validationSchema: yup.object({
             firstname: yup.string().required('Firstname is Required').min(4, 'Name too short'),
-            lastname: yup.string().required('Lastname is Required').min(4, 'Name too short'),
-            email: yup.string().email('Invalid email address').required('Email is Required')
+            lastname: yup.string(),
+            email: yup.string().email('Invalid email address').required('Email is Required'),
+            message: yup.string().required('Message is Required').min(10, 'Message too short'),
         }),
-        onSubmit: (user) => {
-            axios.post(`http://127.0.0.1:4040/register-user`, user)
-                .then(() => {
-                    console.log('...posted');
-                });
-            alert("User Registered Successfully");
-            navigate("/user-login");
+        onSubmit: async (values, { resetForm }) => {
+            setLoading(true);
+            try {
+
+                await axios.post('/api/contact', values);
+                toast.success("Message sent successfully!");
+                resetForm();
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
+            } finally {
+                setLoading(false);
+            }
         }
     });
 
@@ -170,13 +180,14 @@ const footer = () => {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     fullWidth
+                                    value={formik.values.firstname}
                                     error={formik.touched.firstname && Boolean(formik.errors.firstname)}
                                 />
                                 <FormHelperText sx={{ minHeight: "10px" }} error>
                                     {formik.touched.firstname && formik.errors.firstname}
                                 </FormHelperText>
 
-                                <FormLabel>Last Name *</FormLabel>
+                                <FormLabel>Last Name </FormLabel>
                                 <TextField
                                     id="outlined-size-small"
                                     type="text"
@@ -186,6 +197,7 @@ const footer = () => {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     fullWidth
+                                    value={formik.values.lastname}
                                     error={formik.touched.lastname && Boolean(formik.errors.lastname)}
                                 />
                                 <FormHelperText sx={{ minHeight: "10px" }} error>
@@ -203,14 +215,39 @@ const footer = () => {
                                     size="small"
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
+                                    value={formik.values.email}
                                     error={formik.touched.email && Boolean(formik.errors.email)}
                                 />
                                 <FormHelperText sx={{ minHeight: "10px" }} error>
                                     {formik.touched.email && formik.errors.email}
                                 </FormHelperText>
 
+                                <FormLabel>Message *</FormLabel>
+                                <TextField
+                                    name="message"
+                                    type="text"
+                                    placeholder="Enter your message"
+                                    fullWidth
+                                    size="small"
+                                    multiline
+                                    minRows={2}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.message}
+                                    error={formik.touched.message && Boolean(formik.errors.message)}
+                                />
+                                <FormHelperText sx={{ minHeight: "10px" }} error>
+                                    {formik.touched.message && formik.errors.message}
+                                </FormHelperText>
                             </dl>
-                            <Button type="submit" variant="contained" fullWidth disabled={!formik.isValid} >Subscribe</Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                fullWidth
+                                disabled={!formik.isValid || loading}
+                            >
+                                {loading ? "Sending..." : "Subscribe"}
+                            </Button>
 
 
                         </form>
