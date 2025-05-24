@@ -255,7 +255,7 @@ export default function Navbar() {
             ) : (
 
               <>
-                <Button variant="contained" >Start free now</Button>
+                <Button variant="contained" size="small" >Start free now</Button>
 
                 <Button
                   variant="text"
