@@ -1,7 +1,8 @@
 'use client';
-import { Box, Button, CircularProgress, FormHelperText, FormLabel, Snackbar, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, FormHelperText, FormLabel, Snackbar, TextField, Typography, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 import { useFormik } from "formik";
 import { useState } from "react";
@@ -14,6 +15,7 @@ import Link from "next/link";
 
 const Artistlogin = () => {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Add this state
  
   const router = useRouter();
 
@@ -45,6 +47,9 @@ const Artistlogin = () => {
         validationSchema: validationSchema,
         onSubmit: handleLogin
     });
+
+    // Add this handler
+    const handleClickShowPassword = () => setShowPassword((show) => !show);
 
     return (
         <Box
@@ -105,13 +110,26 @@ const Artistlogin = () => {
                     <FormLabel>Password</FormLabel>
                     <TextField
                         name="password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         fullWidth
                         size="small"
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         error={formik.touched.password && Boolean(formik.errors.password)}
+                        InputProps={{
+                          endAdornment: (
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              edge="end"
+                              size="small"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          ),
+                        }}
                     />
                     <FormHelperText sx={{ minHeight: "10px" }} error>
                         {formik.touched.password && formik.errors.password}

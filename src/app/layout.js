@@ -11,6 +11,7 @@ import "./globals.css";
 import { Toolbar } from "@mui/material";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
+import { usePathname } from 'next/navigation';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,6 +24,9 @@ const geistMono = Geist_Mono({
 });
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  const hideNavAndFooter = pathname.startsWith('/artist-dashboard');
+
   return (
     <html lang="en">
       <head>
@@ -58,8 +62,13 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider>
           <ThemeProvider theme={theme}>
-            <Navbar />
-            <Toolbar />
+            {!hideNavAndFooter && (
+              <>
+                <Navbar />
+                <Toolbar />
+              </>
+            )}
+            
             <main>
               {children}
               <Analytics />
@@ -73,9 +82,7 @@ export default function RootLayout({ children }) {
                 }}
               />
             </main>
-            <footer>
-              <Footer />
-            </footer>
+            {!hideNavAndFooter && <Footer />}
           </ThemeProvider>
         </SessionProvider>
       </body>
