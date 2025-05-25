@@ -44,6 +44,8 @@ export default function RootLayout({ children }) {
         <meta property="og:see_also" content="https://www.instagram.com/octotech_creations/?hl=en" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="canonical" href="https://octotech-creations.vercel.app/" />
+        {/* Add your Google site verification meta tag below */}
+        <meta name="google-site-verification" content="u8wjNF9K9V2zHuWohf1n3iK4AapXkxqOR4sL0FzUgkA" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
