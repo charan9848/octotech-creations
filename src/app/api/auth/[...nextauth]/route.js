@@ -23,7 +23,19 @@ export const authOptions = {
     })
   ],
   session: { strategy: "jwt" },
-  pages: { signIn: "/artist-login" }
+  pages: { signIn: "/artist-login" },
+  callbacks: {
+    async session({ session, token }) {
+      session.user.artistid = token.artistid;
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.artistid = user.artistid || user._id?.toString();
+      }
+      return token;
+    }
+  }
 };
 
 const handler = NextAuth(authOptions);

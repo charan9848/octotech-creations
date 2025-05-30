@@ -2,7 +2,7 @@
 @import url('https://fonts.cdnfonts.com/css/eurostile-2');
 
 
-body{
+html,body{
   margin: 0;
   padding: 0;
  background-color: #0B1113;

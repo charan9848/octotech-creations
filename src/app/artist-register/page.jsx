@@ -43,7 +43,7 @@ const ArtistRegister = () => {
         onSubmit: async (values) => {
             setLoading(true);
             try {
-                await axios.post(`/api/register-user`, values);
+                await axios.post(`/api/register-artist`, values);
                 toast.success("User Registered Successfully!");
                 setTimeout(() => {
                     router.push("/artist-login");
