@@ -1,5 +1,5 @@
 "use client";
-import { Box, Typography, Paper, TextField, Button, Grid, IconButton, Card, CardContent, CircularProgress, FormHelperText, FormLabel } from "@mui/material";
+import { Box, Typography, TextField, Button, IconButton, CircularProgress, FormHelperText, FormLabel } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -104,16 +104,25 @@ export default function ExperiencePage() {
       </Box>
     );
   }
-
   return (
     <Box
       sx={{
         backgroundColor: '#15191c',
         minHeight: '100vh',
-        p: 3
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        p: { xs: 2, sm: 3, md: 5 }
       }}
-    >
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+    >      <Box 
+        sx={{ 
+          width: '100%',
+          
+          backgroundColor: '#1a1e23',
+          borderRadius: 2,
+          p: { xs: 3, sm: 4 }
+        }}
+      >
         <Typography variant="h4" sx={{ color: "#fff", mb: 1 }}>
           Experience
         </Typography>
@@ -122,117 +131,122 @@ export default function ExperiencePage() {
           sx={{ color: "#78838D", mb: 4, fontSize: "14px" }}
         >
           Add your professional experience and artistic journey.
-          Artist ID: <strong>{session?.user?.artistid}</strong>
-        </Typography>
+          Artist ID: <strong>{session?.user?.artistid}</strong>        </Typography>
         
-        <Paper sx={{ p: 4, backgroundColor: "#23272b", borderRadius: 2 }}>
-          <form onSubmit={formik.handleSubmit}>
-            {formik.values.experience.map((experience, index) => (
-              <Card key={index} sx={{ mb: 3, backgroundColor: "#2a2e33", color: "#fff" }}>
-                <CardContent>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="h6" sx={{ color: "#00a1e0" }}>
-                      Experience {index + 1}
-                    </Typography>
-                    {formik.values.experience.length > 1 && (
-                      <IconButton
-                        onClick={() => removeExperience(index)}
-                        sx={{ color: "#ff4444" }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    )}
-                  </Box>
+        <Box sx={{ backgroundColor: "#23272b", borderRadius: 2, p: { xs: 3, sm: 4 } }}>
+          <form onSubmit={formik.handleSubmit}>            {formik.values.experience.map((experience, index) => (
+              <Box 
+                key={index} 
+                sx={{ 
+                  mb: 3, 
+                  backgroundColor: "#2a2e33", 
+                  borderRadius: 2,
+                  p: 3,
+                  border: '1px solid #333'
+                }}
+              >
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                  <Typography variant="h6" sx={{ color: "#00a1e0" }}>
+                    Experience {index + 1}
+                  </Typography>
+                  {formik.values.experience.length > 1 && (
+                    <IconButton
+                      onClick={() => removeExperience(index)}
+                      sx={{ color: "#ff4444" }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
+                </Box>
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Company *</FormLabel>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Company/Organization Name"
-                        value={experience.company}
-                        onChange={(e) => handleExperienceChange(index, "company", e.target.value)}
-                        sx={{
-                          mb: 1,
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#1a1e23",
-                            color: "#fff",
-                            "& fieldset": { borderColor: "#333" },
-                            "&:hover fieldset": { borderColor: "#00a1e0" },
-                            "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
-                          }
-                        }}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Role *</FormLabel>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Job Title/Position"
-                        value={experience.role}
-                        onChange={(e) => handleExperienceChange(index, "role", e.target.value)}
-                        sx={{
-                          mb: 1,
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#1a1e23",
-                            color: "#fff",
-                            "& fieldset": { borderColor: "#333" },
-                            "&:hover fieldset": { borderColor: "#00a1e0" },
-                            "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
-                          }
-                        }}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Duration *</FormLabel>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="e.g., Jan 2020 - Dec 2022"
-                        value={experience.duration}
-                        onChange={(e) => handleExperienceChange(index, "duration", e.target.value)}
-                        sx={{
-                          mb: 1,
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#1a1e23",
-                            color: "#fff",
-                            "& fieldset": { borderColor: "#333" },
-                            "&:hover fieldset": { borderColor: "#00a1e0" },
-                            "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
-                          }
-                        }}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12}>
-                      <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Description *</FormLabel>
-                      <TextField
-                        fullWidth
-                        multiline
-                        rows={3}
-                        size="small"
-                        placeholder="Describe your responsibilities, achievements, and key projects..."
-                        value={experience.description}
-                        onChange={(e) => handleExperienceChange(index, "description", e.target.value)}
-                        sx={{
-                          mb: 1,
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#1a1e23",
-                            color: "#fff",
-                            "& fieldset": { borderColor: "#333" },
-                            "&:hover fieldset": { borderColor: "#00a1e0" },
-                            "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
-                          }
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'column', md: 'row' }, gap: { xs: 2, md: 2 } }}>
+                  <Box sx={{ flex: { md: '1 1 50%' }, width: { xs: '100%' } }}>
+                    <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Company *</FormLabel>
+                    <TextField
+                      fullWidth                      size="small"
+                      placeholder="Company/Organization Name"
+                      value={experience.company}
+                      onChange={(e) => handleExperienceChange(index, "company", e.target.value)}
+                      sx={{
+                        mb: 1,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#1a1e23",
+                          color: "#fff",
+                          "& fieldset": { borderColor: "#333" },
+                          "&:hover fieldset": { borderColor: "#00a1e0" },
+                          "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                        }
+                      }}
+                    />
+                  </Box>
+                  
+                  <Box sx={{ flex: { md: '1 1 50%' }, width: { xs: '100%' } }}>
+                    <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Role *</FormLabel>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="Job Title/Position"
+                      value={experience.role}
+                      onChange={(e) => handleExperienceChange(index, "role", e.target.value)}
+                      sx={{
+                        mb: 1,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#1a1e23",
+                          color: "#fff",
+                          "& fieldset": { borderColor: "#333" },
+                          "&:hover fieldset": { borderColor: "#00a1e0" },
+                          "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, md: 2 }, mt: 2 }}>
+                  <Box sx={{ flex: { md: '1 1 50%' }, width: { xs: '100%' } }}>
+                    <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Duration *</FormLabel>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="e.g., Jan 2020 - Dec 2022"
+                      value={experience.duration}
+                      onChange={(e) => handleExperienceChange(index, "duration", e.target.value)}
+                      sx={{
+                        mb: 1,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#1a1e23",
+                          color: "#fff",
+                          "& fieldset": { borderColor: "#333" },
+                          "&:hover fieldset": { borderColor: "#00a1e0" },
+                          "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box sx={{ mt: 2 }}>
+                  <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Description *</FormLabel>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    size="small"
+                    placeholder="Describe your responsibilities, achievements, and key projects..."
+                    value={experience.description}
+                    onChange={(e) => handleExperienceChange(index, "description", e.target.value)}
+                    sx={{
+                      mb: 1,
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "#1a1e23",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "#333" },
+                        "&:hover fieldset": { borderColor: "#00a1e0" },
+                        "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                      }
+                    }}
+                  />
+                </Box>
+              </Box>
             ))}
 
             <Button
@@ -269,7 +283,7 @@ export default function ExperiencePage() {
             >
               {loading ? "Saving..." : "Save Experience"}            </Button>
           </form>
-        </Paper>
+        </Box>
       </Box>
     </Box>
   );

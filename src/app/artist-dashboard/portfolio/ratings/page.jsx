@@ -2,12 +2,8 @@
 import { 
   Box, 
   Typography, 
-  Paper, 
   Rating, 
   Button, 
-  Grid, 
-  Card, 
-  CardContent, 
   LinearProgress, 
   Chip,
   CircularProgress,
@@ -53,14 +49,19 @@ export default function RatingsPage() {
       const response = await fetch('/api/portfolio/ratings');
       if (response.ok) {
         const data = await response.json();
-        
-        // If we have ratings data from API, use it
+          // If we have ratings data from API, use it
         if (data.ratings) {
           setRatingsData({
             currentRating: data.ratings.currentRating || 0,
             totalReviews: data.ratings.totalReviews || 0,
-            ratingBreakdown: data.ratings.ratingBreakdown || ratingsData.ratingBreakdown,
-            recentReviews: data.ratings.recentReviews || []
+            ratingBreakdown: Array.isArray(data.ratings.ratingBreakdown) ? data.ratings.ratingBreakdown : [
+              { stars: 5, count: 0, percentage: 0 },
+              { stars: 4, count: 0, percentage: 0 },
+              { stars: 3, count: 0, percentage: 0 },
+              { stars: 2, count: 0, percentage: 0 },
+              { stars: 1, count: 0, percentage: 0 }
+            ],
+            recentReviews: Array.isArray(data.ratings.recentReviews) ? data.ratings.recentReviews : []
           });
         } else {
           // Use mock data for demonstration if no real data exists
@@ -165,17 +166,57 @@ export default function RatingsPage() {
     if (rating >= 3.0) return "#ff9800";
     return "#f44336";
   };
-
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ color: "#fff", mb: 3 }}>
-        Ratings & Reviews
-      </Typography>
-      
-      <Grid container spacing={3}>
-        {/* Overall Rating Card */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 4, backgroundColor: "#23272b", color: "#fff", textAlign: "center" }}>
+    <Box 
+      sx={{ 
+        backgroundColor: '#15191c',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        p: { xs: 2, sm: 3, md: 5 }
+      }}
+    >
+      <Box 
+        sx={{ 
+          width: '100%',
+          maxWidth: 800,
+          backgroundColor: '#1a1e23',
+          borderRadius: 2,
+          p: { xs: 3, sm: 4 }
+        }}
+      >
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            color: "#fff", 
+            mb: 4,
+            textAlign: 'center',
+            fontWeight: 600
+          }}
+        >
+          Ratings & Reviews
+        </Typography>
+        
+        {/* Overall Rating and Breakdown Container */}
+        <Box 
+          sx={{ 
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 3,
+            mb: 4
+          }}
+        >
+          {/* Overall Rating */}
+          <Box 
+            sx={{ 
+              flex: 1,
+              backgroundColor: "#2a2e33", 
+              borderRadius: 2,
+              p: 4, 
+              textAlign: "center"
+            }}
+          >
             <Typography variant="h3" sx={{ color: "#00a1e0", mb: 1 }}>
               {ratingsData.currentRating.toFixed(1)}
             </Typography>
@@ -200,16 +241,20 @@ export default function RatingsPage() {
                 color: "#fff"
               }}
             />
-          </Paper>
-        </Grid>
-        
-        {/* Rating Breakdown */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 4, backgroundColor: "#23272b", color: "#fff" }}>
-            <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
+          </Box>
+          
+          {/* Rating Breakdown */}
+          <Box 
+            sx={{ 
+              flex: 1,
+              backgroundColor: "#2a2e33", 
+              borderRadius: 2,
+              p: 4
+            }}
+          >            <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
               Rating Breakdown
             </Typography>
-            {ratingsData.ratingBreakdown.map((item) => (
+            {Array.isArray(ratingsData.ratingBreakdown) && ratingsData.ratingBreakdown.map((item) => (
               <Box key={item.stars} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Typography sx={{ minWidth: 20, color: "#fff" }}>
                   {item.stars}
@@ -234,64 +279,90 @@ export default function RatingsPage() {
                 </Typography>
               </Box>
             ))}
-          </Paper>
-        </Grid>
+          </Box>
+        </Box>
         
         {/* Recent Reviews */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 4, backgroundColor: "#23272b", color: "#fff" }}>
-            <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
-              Recent Reviews
-            </Typography>
-            {ratingsData.recentReviews.length > 0 ? (
-              ratingsData.recentReviews.map((review, index) => (
-                <Card key={index} sx={{ mb: 2, backgroundColor: "#2a2e33", color: "#fff" }}>
-                  <CardContent>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                      <Typography variant="h6" sx={{ color: "#00a1e0" }}>
-                        {review.reviewer}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#ccc" }}>
-                        {new Date(review.date).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                    <Rating
-                      value={review.rating}
-                      readOnly
-                      size="small"
-                      sx={{
-                        mb: 1,
-                        "& .MuiRating-iconFilled": { color: "#FFD700" }
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ color: "#fff" }}>
-                      "{review.comment}"
+        <Box 
+          sx={{ 
+            backgroundColor: "#2a2e33", 
+            borderRadius: 2,
+            p: 4,
+            mb: 4
+          }}
+        >          <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
+            Recent Reviews
+          </Typography>
+          {Array.isArray(ratingsData.recentReviews) && ratingsData.recentReviews.length > 0 ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {ratingsData.recentReviews.map((review, index) => (
+                <Box 
+                  key={index} 
+                  sx={{ 
+                    backgroundColor: "#1a1e23", 
+                    borderRadius: 2,
+                    p: 3
+                  }}
+                >
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: "#00a1e0" }}>
+                      {review.reviewer}
                     </Typography>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Alert severity="info" sx={{ backgroundColor: "#1a1e23", color: "#00a1e0" }}>
-                No reviews yet. Complete your first project to start receiving reviews!
-              </Alert>
-            )}
-          </Paper>
-        </Grid>
+                    <Typography variant="body2" sx={{ color: "#ccc" }}>
+                      {new Date(review.date).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  <Rating
+                    value={review.rating}
+                    readOnly
+                    size="small"
+                    sx={{
+                      mb: 1,
+                      "& .MuiRating-iconFilled": { color: "#FFD700" }
+                    }}
+                  />
+                  <Typography variant="body1" sx={{ color: "#fff" }}>
+                    "{review.comment}"
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Alert 
+              severity="info" 
+              sx={{ 
+                backgroundColor: "#1a1e23", 
+                color: "#00a1e0",
+                border: "1px solid #00a1e0",
+                '& .MuiAlert-icon': {
+                  color: "#00a1e0"
+                }
+              }}
+            >
+              No reviews yet. Complete your first project to start receiving reviews!
+            </Alert>
+          )}
+        </Box>
         
         {/* Information Note */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 3, backgroundColor: "#1a1e23", border: "1px solid #00a1e0" }}>
-            <Typography variant="body1" sx={{ color: "#00a1e0", mb: 1 }}>
-              📊 Rating Information
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#ccc" }}>
-              Your ratings are automatically calculated based on client reviews after project completion. 
-              To improve your rating, focus on delivering high-quality work, meeting deadlines, and maintaining 
-              excellent communication with clients. Ratings are updated in real-time as new reviews are submitted.
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
+        <Box 
+          sx={{ 
+            backgroundColor: "#1a1e23", 
+            borderRadius: 2,
+            p: 3, 
+            border: "1px solid #00a1e0" 
+          }}
+        >
+          <Typography variant="body1" sx={{ color: "#00a1e0", mb: 1 }}>
+            📊 Rating Information
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#ccc" }}>
+            Your ratings are automatically calculated based on client reviews after project completion. 
+            To improve your rating, focus on delivering high-quality work, meeting deadlines, and maintaining 
+            excellent communication with clients. Ratings are updated in real-time as new reviews are submitted.
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 }

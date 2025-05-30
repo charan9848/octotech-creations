@@ -2,15 +2,12 @@
 import { 
   Box, 
   Typography, 
-  Paper, 
   TextField, 
   Button, 
-  Grid, 
-  IconButton, 
-  Card, 
-  CardContent,
+  IconButton,
   CircularProgress,
-  Alert
+  Alert,
+  FormLabel
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -98,11 +95,30 @@ export default function AwardsPage() {
       setSubmitting(false);
     }
   };
-
   if (status === "loading" || loading) {
     return (
-      <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <CircularProgress sx={{ color: '#00a1e0' }} />
+      <Box 
+        sx={{ 
+          backgroundColor: '#15191c',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: { xs: 2, sm: 3 }
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: '#1a1e23',
+            borderRadius: 2,
+            padding: 6,
+            minWidth: 300,
+            textAlign: 'center'
+          }}
+        >
+          <CircularProgress sx={{ color: '#00a1e0' }} />
+          <Typography sx={{ mt: 2, color: '#fff' }}>Loading...</Typography>
+        </Box>
       </Box>
     );
   }
@@ -110,137 +126,215 @@ export default function AwardsPage() {
   if (!session) {
     return null;
   }
-
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ color: "#fff", mb: 3 }}>
-        Awards & Recognition
-      </Typography>
-      
-      <Paper sx={{ p: 4, backgroundColor: "#23272b", color: "#fff" }}>
-        <Typography variant="body1" sx={{ color: "#ccc", mb: 3 }}>
+    <Box 
+      sx={{ 
+        backgroundColor: '#15191c',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: { xs: 2, sm: 3 }
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: '#1a1e23',
+          borderRadius: 2,
+          padding: { xs: 3, sm: 4, md: 6 },
+   
+          width: '100%'
+        }}
+      >
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            color: "#fff", 
+            mb: 1,
+            textAlign: 'center',
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+          }}
+        >
+          Awards & Recognition
+        </Typography>
+        
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            color: "#ccc", 
+            mb: 4,
+            textAlign: 'center',
+            fontSize: { xs: '0.9rem', sm: '1rem' }
+          }}
+        >
           Showcase your achievements, awards, and recognitions in the art industry.
         </Typography>
         
-        <Formik
+        <Box
+          sx={{
+            backgroundColor: '#23272b',
+            borderRadius: 2,
+            padding: { xs: 2, sm: 3, md: 4 }
+          }}
+        >
+          <Formik
           initialValues={initialData}
           validationSchema={awardsSchema}
           enableReinitialize={true}
           onSubmit={handleSubmit}
         >
           {({ values, errors, touched }) => (
-            <Form>
-              <FieldArray name="awards">
+            <Form>              <FieldArray name="awards">
                 {({ push, remove }) => (
-                  <>
+                  <Box>
                     {values.awards.map((award, index) => (
-                      <Card key={index} sx={{ mb: 3, backgroundColor: "#2a2e33", color: "#fff" }}>
-                        <CardContent>
-                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <EmojiEventsIcon sx={{ color: "#FFD700" }} />
-                              <Typography variant="h6" sx={{ color: "#00a1e0" }}>
-                                Award {index + 1}
-                              </Typography>
-                            </Box>
-                            {values.awards.length > 1 && (
-                              <IconButton
-                                onClick={() => remove(index)}
-                                sx={{ color: "#ff4444" }}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )}
+                      <Box 
+                        key={index} 
+                        sx={{ 
+                          mb: 3, 
+                          backgroundColor: "#2a2e33", 
+                          borderRadius: 2,
+                          padding: { xs: 2, sm: 3 }
+                        }}
+                      >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <EmojiEventsIcon sx={{ color: "#FFD700" }} />
+                            <Typography variant="h6" sx={{ color: "#00a1e0" }}>
+                              Award {index + 1}
+                            </Typography>
                           </Box>
-                          
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
+                          {values.awards.length > 1 && (
+                            <IconButton
+                              onClick={() => remove(index)}
+                              sx={{ color: "#ff4444" }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                        </Box>
+                        
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            flexDirection: 'column',
+                            gap: 3
+                          }}
+                        >
+                          <Box 
+                            sx={{ 
+                              display: 'flex',
+                              flexDirection: { xs: 'column', md: 'row' },
+                              gap: { xs: 3, md: 2 }
+                            }}
+                          >
+                            <Box sx={{ flex: 1 }}>
+                              <FormLabel sx={{ color: '#00a1e0', fontSize: '0.875rem', mb: 1, display: 'block' }}>
+                                Award Title
+                              </FormLabel>
                               <Field
                                 as={TextField}
                                 name={`awards.${index}.title`}
-                                label="Award Title"
                                 placeholder="e.g., Best Digital Art 2024"
                                 fullWidth
                                 error={touched.awards?.[index]?.title && errors.awards?.[index]?.title}
                                 helperText={touched.awards?.[index]?.title && errors.awards?.[index]?.title}
                                 sx={{
-                                  "& .MuiInputLabel-root": { color: "#00a1e0" },
                                   "& .MuiOutlinedInput-root": {
                                     color: "#fff",
-                                    "& fieldset": { borderColor: "#00a1e0" },
-                                    "&:hover fieldset": { borderColor: "#007bb5" }
+                                    backgroundColor: '#1a1e23',
+                                    "& fieldset": { borderColor: "#404040" },
+                                    "&:hover fieldset": { borderColor: "#00a1e0" },
+                                    "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
                                   }
                                 }}
                               />
-                            </Grid>
+                            </Box>
                             
-                            <Grid item xs={12} md={6}>
+                            <Box sx={{ flex: 1 }}>
+                              <FormLabel sx={{ color: '#00a1e0', fontSize: '0.875rem', mb: 1, display: 'block' }}>
+                                Year
+                              </FormLabel>
                               <Field
                                 as={TextField}
                                 name={`awards.${index}.year`}
-                                label="Year"
                                 placeholder="2024"
                                 fullWidth
                                 error={touched.awards?.[index]?.year && errors.awards?.[index]?.year}
                                 helperText={touched.awards?.[index]?.year && errors.awards?.[index]?.year}
                                 sx={{
-                                  "& .MuiInputLabel-root": { color: "#00a1e0" },
                                   "& .MuiOutlinedInput-root": {
                                     color: "#fff",
-                                    "& fieldset": { borderColor: "#00a1e0" },
-                                    "&:hover fieldset": { borderColor: "#007bb5" }
+                                    backgroundColor: '#1a1e23',
+                                    "& fieldset": { borderColor: "#404040" },
+                                    "&:hover fieldset": { borderColor: "#00a1e0" },
+                                    "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
                                   }
                                 }}
                               />
-                            </Grid>
-                            
-                            <Grid item xs={12}>
-                              <Field
-                                as={TextField}
-                                name={`awards.${index}.organization`}
-                                label="Organization/Event"
-                                placeholder="e.g., Creative Arts Guild, Art Competition 2024"
-                                fullWidth
-                                error={touched.awards?.[index]?.organization && errors.awards?.[index]?.organization}
-                                helperText={touched.awards?.[index]?.organization && errors.awards?.[index]?.organization}
-                                sx={{
-                                  "& .MuiInputLabel-root": { color: "#00a1e0" },
-                                  "& .MuiOutlinedInput-root": {
-                                    color: "#fff",
-                                    "& fieldset": { borderColor: "#00a1e0" },
-                                    "&:hover fieldset": { borderColor: "#007bb5" }
-                                  }
-                                }}
-                              />
-                            </Grid>
-                            
-                            <Grid item xs={12}>
-                              <Field
-                                as={TextField}
-                                name={`awards.${index}.description`}
-                                label="Description"
-                                multiline
-                                rows={3}
-                                placeholder="Describe what this award was for and why it's significant..."
-                                fullWidth
-                                error={touched.awards?.[index]?.description && errors.awards?.[index]?.description}
-                                helperText={touched.awards?.[index]?.description && errors.awards?.[index]?.description}
-                                sx={{
-                                  "& .MuiInputLabel-root": { color: "#00a1e0" },
-                                  "& .MuiOutlinedInput-root": {
-                                    color: "#fff",
-                                    "& fieldset": { borderColor: "#00a1e0" },
-                                    "&:hover fieldset": { borderColor: "#007bb5" }
-                                  }
-                                }}
-                              />
-                            </Grid>
-                          </Grid>
-                        </CardContent>
-                      </Card>
+                            </Box>
+                          </Box>
+                          
+                          <Box>
+                            <FormLabel sx={{ color: '#00a1e0', fontSize: '0.875rem', mb: 1, display: 'block' }}>
+                              Organization/Event
+                            </FormLabel>
+                            <Field
+                              as={TextField}
+                              name={`awards.${index}.organization`}
+                              placeholder="e.g., Creative Arts Guild, Art Competition 2024"
+                              fullWidth
+                              error={touched.awards?.[index]?.organization && errors.awards?.[index]?.organization}
+                              helperText={touched.awards?.[index]?.organization && errors.awards?.[index]?.organization}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  color: "#fff",
+                                  backgroundColor: '#1a1e23',
+                                  "& fieldset": { borderColor: "#404040" },
+                                  "&:hover fieldset": { borderColor: "#00a1e0" },
+                                  "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                                }
+                              }}
+                            />
+                          </Box>
+                          
+                          <Box>
+                            <FormLabel sx={{ color: '#00a1e0', fontSize: '0.875rem', mb: 1, display: 'block' }}>
+                              Description
+                            </FormLabel>
+                            <Field
+                              as={TextField}
+                              name={`awards.${index}.description`}
+                              multiline
+                              rows={3}
+                              placeholder="Describe what this award was for and why it's significant..."
+                              fullWidth
+                              error={touched.awards?.[index]?.description && errors.awards?.[index]?.description}
+                              helperText={touched.awards?.[index]?.description && errors.awards?.[index]?.description}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  color: "#fff",
+                                  backgroundColor: '#1a1e23',
+                                  "& fieldset": { borderColor: "#404040" },
+                                  "&:hover fieldset": { borderColor: "#00a1e0" },
+                                  "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                                }
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      </Box>
                     ))}
                     
-                    <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+                    <Box 
+                      sx={{ 
+                        display: "flex", 
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: 2, 
+                        mt: 4,
+                        justifyContent: { xs: 'stretch', sm: 'flex-start' }
+                      }}
+                    >
                       <Button
                         variant="outlined"
                         startIcon={<AddIcon />}
@@ -251,7 +345,8 @@ export default function AwardsPage() {
                           "&:hover": {
                             borderColor: "#007bb5",
                             backgroundColor: "rgba(0, 161, 224, 0.1)"
-                          }
+                          },
+                         
                         }}
                       >
                         Add Award
@@ -266,19 +361,19 @@ export default function AwardsPage() {
                           backgroundColor: "#00a1e0",
                           "&:hover": { backgroundColor: "#007bb5" },
                           color: "#fff",
-                          px: 4
+                         
                         }}
                       >
                         {submitting ? 'Saving...' : 'Save Awards'}
-                      </Button>
-                    </Box>
-                  </>
+                      </Button>                    </Box>
+                  </Box>
                 )}
               </FieldArray>
             </Form>
           )}
         </Formik>
-      </Paper>
+        </Box>
+      </Box>
     </Box>
   );
 }

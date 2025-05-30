@@ -169,11 +169,16 @@ export default function SpecializationPage() {
     const updatedList = list.filter(listItem => listItem !== item);
     setFieldValue(fieldName, updatedList);
   };
-
   if (status === "loading" || loading) {
     return (
-      <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <CircularProgress sx={{ color: '#00a1e0' }} />
+      <Box sx={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        minHeight: "400px",
+        backgroundColor: "#15191c" 
+      }}>
+        <CircularProgress sx={{ color: "#00a1e0" }} />
       </Box>
     );
   }
@@ -186,351 +191,387 @@ export default function SpecializationPage() {
       sx={{
         backgroundColor: '#15191c',
         minHeight: '100vh',
-        p: 4
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        p: { xs: 2, sm: 3, md: 5 }
       }}
     >
-      <Box
-        sx={{
-          maxWidth: '800px',
-          mx: 'auto'
+      <Box 
+        sx={{ 
+          width: '100%',
+          
+          backgroundColor: '#1a1e23',
+          borderRadius: 2,
+          p: { xs: 3, sm: 4 }
         }}
       >
-        <Typography variant="h4" color="white" mb={1}>
+        <Typography variant="h4" sx={{ color: "#fff", mb: 1 }}>
           Specialization
         </Typography>
         <Typography
           variant="body2"
-          color="#78838D"
-          mb={4}
-          fontSize="14px"
+          sx={{ color: "#78838D", mb: 4, fontSize: "14px" }}
         >
           Define your skills, expertise levels, and tools. This helps clients understand your capabilities.
-        </Typography>
+          Artist ID: <strong>{session?.user?.artistid}</strong>        </Typography>
         
-        <Formik
-          initialValues={initialData}
-          validationSchema={specializationSchema}
-          enableReinitialize={true}
-          onSubmit={handleSubmit}
-        >
-          {({ values, errors, touched, setFieldValue }) => (
-            <Form>
-              {/* Main Specializations */}
-              <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
-                Main Specializations
-              </Typography>
-              
-              <FieldArray name="specializations">
-                {({ push, remove }) => (
-                  <Box>
-                    {values.specializations.map((specialization, index) => (
-                      <Box key={index} sx={{ mb: 4, p: 3, border: '1px solid #333', borderRadius: '8px' }}>
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                          <Typography variant="h6" sx={{ color: "#00a1e0" }}>
-                            Specialization {index + 1}
-                          </Typography>
-                          {values.specializations.length > 1 && (
-                            <IconButton
-                              onClick={() => remove(index)}
-                              sx={{ color: "#ff4444" }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
+        <Box sx={{ backgroundColor: "#23272b", borderRadius: 2, p: { xs: 3, sm: 4 } }}>
+          <Formik
+            initialValues={initialData}
+            validationSchema={specializationSchema}
+            enableReinitialize={true}
+            onSubmit={handleSubmit}
+          >
+            {({ values, errors, touched, setFieldValue }) => (
+              <Form>
+                {/* Main Specializations */}
+                <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
+                  Main Specializations
+                </Typography>
+                
+                <FieldArray name="specializations">
+                  {({ push, remove }) => (
+                    <Box>                      {values.specializations.map((specialization, index) => (
+                        <Box 
+                          key={index} 
+                          sx={{ 
+                            mb: 3, 
+                            backgroundColor: "#2a2e33", 
+                            borderRadius: 2,
+                            p: 3,
+                            border: '1px solid #333'
+                          }}
+                        >
+                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                            <Typography variant="h6" sx={{ color: "#00a1e0" }}>
+                              Specialization {index + 1}
+                            </Typography>
+                            {values.specializations.length > 1 && (
+                              <IconButton
+                                onClick={() => remove(index)}
+                                sx={{ color: "#ff4444" }}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                          </Box>
+                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'column', md: 'row' }, gap: { xs: 2, md: 2 } }}>
+                            <Box sx={{ flex: { md: '1 1 50%' }, width: { xs: '100%' } }}>
+                              <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Skill/Specialization *</FormLabel>
+                              <Field
+                                as={TextField}
+                                name={`specializations.${index}.skill`}
+                                placeholder="e.g., 3D Modeling, Digital Painting"
+                                fullWidth
+                                size="small"
+                                error={touched.specializations?.[index]?.skill && Boolean(errors.specializations?.[index]?.skill)}
+                                sx={{
+                                  mb: 1,
+                                  "& .MuiOutlinedInput-root": {
+                                    backgroundColor: "#1a1e23",
+                                    color: "#fff",
+                                    "& fieldset": { borderColor: "#333" },
+                                    "&:hover fieldset": { borderColor: "#00a1e0" },
+                                    "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                                  }
+                                }}
+                              />
+                            </Box>
+                            <Box sx={{ flex: { md: '1 1 33%' }, width: { xs: '100%' } }}>
+                              <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Level *</FormLabel><Field
+                                as={Select}
+                                name={`specializations.${index}.level`}
+                                fullWidth
+                                size="small"
+                                error={touched.specializations?.[index]?.level && Boolean(errors.specializations?.[index]?.level)}
+                                MenuProps={{
+                                  PaperProps: {
+                                    sx: {
+                                      backgroundColor: "#2a2e33",
+                                      "& .MuiMenuItem-root": {
+                                        color: "#fff",
+                                        "&:hover": {
+                                          backgroundColor: "#00a1e0"
+                                        },
+                                        "&.Mui-selected": {
+                                          backgroundColor: "#00a1e0",
+                                          "&:hover": {
+                                            backgroundColor: "#007bb5"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }}
+                                sx={{
+                                  mb: 1,
+                                  "& .MuiOutlinedInput-root": {
+                                    backgroundColor: "#1a1e23",
+                                    color: "#fff",
+                                    "& fieldset": { borderColor: "#333" },
+                                    "&:hover fieldset": { borderColor: "#00a1e0" },
+                                    "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                                  },
+                                  "& .MuiSelect-select": {
+                                    color: "#fff !important"
+                                  },
+                                  "& .MuiSvgIcon-root": { color: "#00a1e0" }
+                                }}
+                              >
+                                {skillLevels.map((level) => (
+                                  <MenuItem key={level} value={level}>
+                                    {level}
+                                  </MenuItem>
+                                ))}
+                              </Field>
+                            </Box>
+                              <Box sx={{ flex: { md: '1 1 16%' }, width: { xs: '100%' } }}>
+                              <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Years of Experience *</FormLabel>
+                              <Field
+                                as={TextField}
+                                name={`specializations.${index}.yearsOfExperience`}
+                                type="number"
+                                fullWidth
+                                size="small"
+                                error={touched.specializations?.[index]?.yearsOfExperience && Boolean(errors.specializations?.[index]?.yearsOfExperience)}
+                                sx={{
+                                  mb: 1,
+                                  "& .MuiOutlinedInput-root": {
+                                    backgroundColor: "#1a1e23",
+                                    color: "#fff",
+                                    "& fieldset": { borderColor: "#333" },
+                                    "&:hover fieldset": { borderColor: "#00a1e0" },
+                                    "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                                  }
+                                }}
+                              />
+                            </Box>
+                          </Box>
                         </Box>
-                        
-                        <Box sx={{ mb: 3 }}>
-                          <FormLabel sx={{ color: "#00a1e0" }}>Skill/Specialization *</FormLabel>
-                          <Field
-                            as={TextField}
-                            name={`specializations.${index}.skill`}
-                            placeholder="e.g., 3D Modeling, Digital Painting"
-                            fullWidth
-                            size="small"
-                            error={touched.specializations?.[index]?.skill && Boolean(errors.specializations?.[index]?.skill)}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                color: "#fff",
-                                "& fieldset": { borderColor: "#00a1e0" },
-                                "&:hover fieldset": { borderColor: "#007bb5" }
+                      ))}
+                      
+                      <Button
+                        onClick={() => push({ skill: "", level: "", yearsOfExperience: 0 })}
+                        startIcon={<AddIcon />}
+                        sx={{
+                          mb: 3,
+                          color: "#00a1e0",
+                          borderColor: "#00a1e0",
+                          "&:hover": {
+                            borderColor: "#007bb5",
+                            backgroundColor: "rgba(0, 161, 224, 0.1)"
+                          }
+                        }}
+                        variant="outlined"
+                      >
+                        Add Specialization
+                      </Button>
+                    </Box>
+                  )}
+                </FieldArray>
+
+                {/* Primary Skills */}                <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
+                  Primary Skills
+                </Typography>
+                
+                <Box sx={{ mb: 3, backgroundColor: "#2a2e33", borderRadius: 2, p: 3, border: '1px solid #333' }}>
+                  <Box sx={{ mb: 2 }}>
+                      <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Add Primary Skill</FormLabel>                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={newSkill}
+                          onChange={(e) => setNewSkill(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addSkillToList(values.primarySkills, setFieldValue, 'primarySkills');
+                            }
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "#1a1e23",
+                              color: "#fff",
+                              "& fieldset": { borderColor: "#333" },
+                              "&:hover fieldset": { borderColor: "#00a1e0" },
+                              "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          onClick={() => addSkillToList(values.primarySkills, setFieldValue, 'primarySkills')}
+                          sx={{
+                            borderColor: "#00a1e0",
+                            color: "#00a1e0",
+                            whiteSpace: 'nowrap',
+                            minWidth: { xs: '100%', sm: 'auto' },
+                            "&:hover": {
+                              borderColor: "#007bb5",
+                              backgroundColor: "rgba(0, 161, 224, 0.1)"
+                            }
+                          }}
+                        >
+                          Add Skill
+                        </Button>
+                      </Box>
+                      
+                      <Typography variant="body2" sx={{ color: "#ccc", mb: 2 }}>
+                        Suggested skills:
+                      </Typography>                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                        {predefinedSkills.filter(skill => !values.primarySkills.includes(skill)).slice(0, 8).map((skill) => (
+                          <Chip
+                            key={skill}
+                            label={skill}
+                            onClick={() => {
+                              if (!values.primarySkills.includes(skill)) {
+                                setFieldValue('primarySkills', [...values.primarySkills, skill]);
                               }
                             }}
+                            sx={{
+                              backgroundColor: "#1a1e23",
+                              color: "#00a1e0",
+                              "&:hover": { backgroundColor: "#00a1e0", color: "#fff" }
+                            }}
                           />
-                          <FormHelperText sx={{ minHeight: "10px" }} error>
-                            {touched.specializations?.[index]?.skill && errors.specializations?.[index]?.skill}
-                          </FormHelperText>
-                        </Box>
-                        
-                        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                          <Box sx={{ flex: 1 }}>
-                            <FormLabel sx={{ color: "#00a1e0" }}>Level *</FormLabel>
-                            <Field
-                              as={Select}
-                              name={`specializations.${index}.level`}
-                              fullWidth
-                              size="small"
-                              error={touched.specializations?.[index]?.level && Boolean(errors.specializations?.[index]?.level)}
-                              sx={{
-                                color: "#fff",
-                                "& .MuiOutlinedInput-notchedOutline": { borderColor: "#00a1e0" },
-                                "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#007bb5" },
-                                "& .MuiSvgIcon-root": { color: "#00a1e0" }
-                              }}
-                            >
-                              {skillLevels.map((level) => (
-                                <MenuItem key={level} value={level} sx={{ backgroundColor: "#23272b", color: "#fff" }}>
-                                  {level}
-                                </MenuItem>
-                              ))}
-                            </Field>
-                            <FormHelperText sx={{ minHeight: "10px" }} error>
-                              {touched.specializations?.[index]?.level && errors.specializations?.[index]?.level}
-                            </FormHelperText>
-                          </Box>
-                          
-                          <Box sx={{ flex: 1 }}>
-                            <FormLabel sx={{ color: "#00a1e0" }}>Years of Experience *</FormLabel>
-                            <Field
-                              as={TextField}
-                              name={`specializations.${index}.yearsOfExperience`}
-                              type="number"
-                              fullWidth
-                              size="small"
-                              error={touched.specializations?.[index]?.yearsOfExperience && Boolean(errors.specializations?.[index]?.yearsOfExperience)}
-                              sx={{
-                                "& .MuiOutlinedInput-root": {
-                                  color: "#fff",
-                                  "& fieldset": { borderColor: "#00a1e0" },
-                                  "&:hover fieldset": { borderColor: "#007bb5" }
-                                }
-                              }}
-                            />
-                            <FormHelperText sx={{ minHeight: "10px" }} error>
-                              {touched.specializations?.[index]?.yearsOfExperience && errors.specializations?.[index]?.yearsOfExperience}
-                            </FormHelperText>
-                          </Box>
-                        </Box>
+                        ))}
                       </Box>
-                    ))}
-                    
-                    <Button
-                      variant="outlined"
-                      startIcon={<AddIcon />}
-                      onClick={() => push({ skill: "", level: "", yearsOfExperience: 0 })}
-                      sx={{
-                        borderColor: "#00a1e0",
-                        color: "#00a1e0",
-                        mb: 4,
-                        "&:hover": {
-                          borderColor: "#007bb5",
-                          backgroundColor: "rgba(0, 161, 224, 0.1)"
-                        }
-                      }}
-                    >
-                      Add Specialization
-                    </Button>
+                      
+                      <Typography variant="body2" sx={{ color: "#ccc", mb: 2 }}>
+                        Your skills:
+                      </Typography>                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                        {values.primarySkills.map((skill) => (
+                          <Chip
+                            key={skill}
+                            label={skill}
+                            onDelete={() => removeFromList(values.primarySkills, skill, setFieldValue, 'primarySkills')}
+                            sx={{
+                              backgroundColor: "#00a1e0",
+                              color: "#fff"
+                            }}
+                          />
+                        ))}
+                      </Box>
+                        {touched.primarySkills && errors.primarySkills && (
+                        <Typography variant="caption" sx={{ color: "#ff4444", mt: 1, display: 'block' }}>
+                          {errors.primarySkills}
+                        </Typography>
+                      )}
                   </Box>
-                )}
-              </FieldArray>
+                </Box>
 
-              {/* Primary Skills */}
-              <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
-                Primary Skills
-              </Typography>
-              
-              <Box sx={{ mb: 4 }}>
-                <FormLabel sx={{ color: "#00a1e0" }}>Add Primary Skill</FormLabel>
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addSkillToList(values.primarySkills, setFieldValue, 'primarySkills');
-                      }
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        color: "#fff",
-                        "& fieldset": { borderColor: "#00a1e0" },
-                        "&:hover fieldset": { borderColor: "#007bb5" }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={() => addSkillToList(values.primarySkills, setFieldValue, 'primarySkills')}
-                    sx={{
-                      borderColor: "#00a1e0",
-                      color: "#00a1e0",
-                      whiteSpace: 'nowrap',
-                      "&:hover": {
-                        borderColor: "#007bb5",
-                        backgroundColor: "rgba(0, 161, 224, 0.1)"
-                      }
-                    }}
-                  >
-                    Add Skill
-                  </Button>
-                </Box>
-                
-                <Typography variant="body2" sx={{ color: "#78838D", mb: 2 }}>
-                  Suggested skills:
+                {/* Tools */}
+                <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
+                  Tools & Software
                 </Typography>
-                <Box sx={{ mb: 3 }}>
-                  {predefinedSkills.filter(skill => !values.primarySkills.includes(skill)).slice(0, 8).map((skill) => (
-                    <Chip
-                      key={skill}
-                      label={skill}
-                      onClick={() => {
-                        if (!values.primarySkills.includes(skill)) {
-                          setFieldValue('primarySkills', [...values.primarySkills, skill]);
-                        }
-                      }}
-                      sx={{
-                        m: 0.5,
-                        backgroundColor: "#1a1e23",
-                        color: "#00a1e0",
-                        "&:hover": { backgroundColor: "#00a1e0", color: "#fff" }
-                      }}
-                    />
-                  ))}
-                </Box>
                 
-                <Typography variant="body2" sx={{ color: "#78838D", mb: 2 }}>
-                  Your skills:
-                </Typography>
-                <Box sx={{ mb: 2 }}>
-                  {values.primarySkills.map((skill) => (
-                    <Chip
-                      key={skill}
-                      label={skill}
-                      onDelete={() => removeFromList(values.primarySkills, skill, setFieldValue, 'primarySkills')}
-                      sx={{
-                        m: 0.5,
-                        backgroundColor: "#00a1e0",
-                        color: "#fff"
-                      }}
-                    />
-                  ))}
+                <Box sx={{ mb: 3, backgroundColor: "#2a2e33", borderRadius: 2, p: 3, border: '1px solid #333' }}>
+                  <Box sx={{ mb: 2 }}>
+                      <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Add Tool/Software</FormLabel>                      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={newTool}
+                          onChange={(e) => setNewTool(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addToolToList(values.tools, setFieldValue, 'tools');
+                            }
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "#1a1e23",
+                              color: "#fff",
+                              "& fieldset": { borderColor: "#333" },
+                              "&:hover fieldset": { borderColor: "#00a1e0" },
+                              "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          onClick={() => addToolToList(values.tools, setFieldValue, 'tools')}
+                          sx={{
+                            borderColor: "#00a1e0",
+                            color: "#00a1e0",
+                            whiteSpace: 'nowrap',
+                            minWidth: { xs: '100%', sm: 'auto' },
+                            "&:hover": {
+                              borderColor: "#007bb5",
+                              backgroundColor: "rgba(0, 161, 224, 0.1)"
+                            }
+                          }}
+                        >
+                          Add Tool
+                        </Button>
+                      </Box>
+                      
+                      <Typography variant="body2" sx={{ color: "#ccc", mb: 2 }}>
+                        Popular tools:
+                      </Typography>                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                        {predefinedTools.filter(tool => !values.tools.includes(tool)).slice(0, 8).map((tool) => (
+                          <Chip
+                            key={tool}
+                            label={tool}
+                            onClick={() => {
+                              if (!values.tools.includes(tool)) {
+                                setFieldValue('tools', [...values.tools, tool]);
+                              }
+                            }}
+                            sx={{
+                              backgroundColor: "#1a1e23",
+                              color: "#00a1e0",
+                              "&:hover": { backgroundColor: "#00a1e0", color: "#fff" }
+                            }}
+                          />
+                        ))}
+                      </Box>
+                      
+                      <Typography variant="body2" sx={{ color: "#ccc", mb: 2 }}>
+                        Your tools:
+                      </Typography>                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                        {values.tools.map((tool) => (
+                          <Chip
+                            key={tool}
+                            label={tool}
+                            onDelete={() => removeFromList(values.tools, tool, setFieldValue, 'tools')}
+                            sx={{
+                              backgroundColor: "#00a1e0",
+                              color: "#fff"
+                            }}
+                          />
+                        ))}
+                      </Box>
+                        {touched.tools && errors.tools && (
+                        <Typography variant="caption" sx={{ color: "#ff4444", mt: 1, display: 'block' }}>
+                          {errors.tools}
+                        </Typography>
+                      )}
+                  </Box>
                 </Box>
-                
-                <FormHelperText sx={{ minHeight: "10px" }} error>
-                  {touched.primarySkills && errors.primarySkills}
-                </FormHelperText>
-              </Box>
 
-              {/* Tools */}
-              <Typography variant="h6" sx={{ color: "#00a1e0", mb: 3 }}>
-                Tools & Software
-              </Typography>
-              
-              <Box sx={{ mb: 4 }}>
-                <FormLabel sx={{ color: "#00a1e0" }}>Add Tool/Software</FormLabel>
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={newTool}
-                    onChange={(e) => setNewTool(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addToolToList(values.tools, setFieldValue, 'tools');
-                      }
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        color: "#fff",
-                        "& fieldset": { borderColor: "#00a1e0" },
-                        "&:hover fieldset": { borderColor: "#007bb5" }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={() => addToolToList(values.tools, setFieldValue, 'tools')}
-                    sx={{
-                      borderColor: "#00a1e0",
-                      color: "#00a1e0",
-                      whiteSpace: 'nowrap',
-                      "&:hover": {
-                        borderColor: "#007bb5",
-                        backgroundColor: "rgba(0, 161, 224, 0.1)"
-                      }
-                    }}
-                  >
-                    Add Tool
-                  </Button>
-                </Box>
-                
-                <Typography variant="body2" sx={{ color: "#78838D", mb: 2 }}>
-                  Popular tools:
-                </Typography>
-                <Box sx={{ mb: 3 }}>
-                  {predefinedTools.filter(tool => !values.tools.includes(tool)).slice(0, 8).map((tool) => (
-                    <Chip
-                      key={tool}
-                      label={tool}
-                      onClick={() => {
-                        if (!values.tools.includes(tool)) {
-                          setFieldValue('tools', [...values.tools, tool]);
-                        }
-                      }}
-                      sx={{
-                        m: 0.5,
-                        backgroundColor: "#1a1e23",
-                        color: "#00a1e0",
-                        "&:hover": { backgroundColor: "#00a1e0", color: "#fff" }
-                      }}
-                    />
-                  ))}
-                </Box>
-                
-                <Typography variant="body2" sx={{ color: "#78838D", mb: 2 }}>
-                  Your tools:
-                </Typography>
-                <Box sx={{ mb: 2 }}>
-                  {values.tools.map((tool) => (
-                    <Chip
-                      key={tool}
-                      label={tool}
-                      onDelete={() => removeFromList(values.tools, tool, setFieldValue, 'tools')}
-                      sx={{
-                        m: 0.5,
-                        backgroundColor: "#00a1e0",
-                        color: "#fff"
-                      }}
-                    />
-                  ))}
-                </Box>
-                
-                <FormHelperText sx={{ minHeight: "10px" }} error>
-                  {touched.tools && errors.tools}
-                </FormHelperText>
-              </Box>
-
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={submitting}
-                startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : null}
-                sx={{
-                  backgroundColor: "#00a1e0",
-                  "&:hover": { backgroundColor: "#007bb5" },
-                  color: "#fff",
-                  py: 1.5
-                }}
-              >
-                {submitting ? 'Saving...' : 'Save Specialization'}
-              </Button>
-            </Form>
-          )}
-        </Formik>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  disabled={submitting}
+                  startIcon={
+                    submitting ? <CircularProgress size={20} color="inherit" /> : null
+                  }
+                  sx={{
+                    mt: 2,
+                    backgroundColor: "#00a1e0",
+                    "&:hover": { backgroundColor: "#007bb5" },
+                    "&:disabled": { backgroundColor: "#333" }
+                  }}
+                >
+                  {submitting ? "Saving..." : "Save Specialization"}
+                </Button>
+              </Form>            )}
+          </Formik>
+        </Box>
       </Box>
     </Box>
   );
