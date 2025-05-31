@@ -30,7 +30,7 @@ import {
   Paper,
   Tooltip
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, FieldArray } from "formik";
@@ -84,6 +84,9 @@ export default function ProjectsPage() {
     projects: []
   });
 
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);
+
   useEffect(() => {
     if (status === "loading") return;
     
@@ -92,9 +95,18 @@ export default function ProjectsPage() {
       return;
     }
 
-    fetchProjects();
-  }, [session, status]);
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
 
+    fetchProjects();
+  }, [session?.user?.artistid, status]);
+
+  // Reset data loaded flag when user logs out
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
   const fetchProjects = async () => {
     try {
       const response = await fetch('/api/portfolio/projects');
@@ -104,6 +116,9 @@ export default function ProjectsPage() {
           setInitialData({ projects: data.projects });
         }
       }
+      
+      // Mark data as loaded
+      dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error fetching projects:', error);
       toast.error('Failed to load projects data');

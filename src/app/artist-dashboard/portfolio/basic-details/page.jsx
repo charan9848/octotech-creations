@@ -2,7 +2,7 @@
 import { Box, Typography, Button, CircularProgress, FormHelperText, FormLabel, TextField, Paper, Input } from "@mui/material";
 import { CloudUpload, Image as ImageIcon } from "@mui/icons-material";
 import { useFormik } from "formik";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as yup from "yup";
@@ -15,21 +15,20 @@ export default function BasicDetailsPage() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
-  const { data: session, status } = useSession();
+  const [previewUrl, setPreviewUrl] = useState("");  const { data: session, status } = useSession();
   const router = useRouter();
   const notify = useNotifications();
-
-  const validationSchema = yup.object({
+  
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);
+  const validationSchema = useMemo(() => yup.object({
     bio: yup.string().required('Bio is required').min(10, 'Bio should be at least 10 characters'),
     quotation: yup.string().required('Quotation is required'),
     contactEmail: yup.string().email('Invalid email').required('Contact email is required'),
     phone: yup.string().required('Phone number is required'),
     location: yup.string().required('Location is required'),
     portfolioImage: yup.string().required('Portfolio image is required')
-  });
-
-  const formik = useFormik({
+  }), []);const formik = useFormik({
     initialValues: {
       bio: "",
       quotation: "",
@@ -45,6 +44,7 @@ export default function BasicDetailsPage() {
         await axios.post('/api/portfolio/basic-details', values);
         toast.success("Basic details saved successfully!");
         notify.actionComplete('basic_details_save', 'basic information');
+        
         // Add notification to dashboard
         if (window.addDashboardNotification) {
           window.addDashboardNotification('success', 'Basic details saved successfully', 'basic_details_save');
@@ -123,14 +123,17 @@ export default function BasicDetailsPage() {
       // Upload immediately
       handleImageUpload(file);
     }
-  };
-
-  useEffect(() => {
+  };  useEffect(() => {
     if (status === "loading") return;
     if (!session) {
       router.push("/artist-login");
       return;
-    }    // Fetch existing portfolio data
+    }
+
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
+
+    // Fetch existing portfolio data
     const fetchPortfolioData = async () => {
       try {
         const response = await axios.get('/api/portfolio/basic-details');
@@ -148,13 +151,25 @@ export default function BasicDetailsPage() {
         if (basicDetails.portfolioImage) {
           setPreviewUrl(basicDetails.portfolioImage);
         }
+        
+        // Mark data as loaded
+        dataLoadedRef.current = true;
       } catch (error) {
         console.error("Failed to fetch portfolio data:", error);
       } finally {
         setFetchLoading(false);
       }
-    };    fetchPortfolioData();
-  }, [session, status, router]);
+    };
+
+    fetchPortfolioData();
+  }, [session?.user?.artistid, status]);
+
+  // Reset data loaded flag when session changes (user logs out/in)
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
 
   // Cleanup effect for object URLs
   useEffect(() => {
@@ -190,15 +205,14 @@ export default function BasicDetailsPage() {
       <Box sx={{ maxWidth: 800, mx: 'auto' }}>
         <Typography variant="h4" sx={{ color: "#fff", mb: 1 }}>
           Basic Details
-        </Typography>
-        <Typography
+        </Typography>        <Typography
           variant="body2"
           sx={{ color: "#78838D", mb: 4, fontSize: "14px" }}
         >
           Please fill in your basic information to create your artist portfolio.
           Artist ID: <strong>{session?.user?.artistid}</strong>
         </Typography>
-        
+
         <Paper sx={{ p: 4, backgroundColor: "#23272b", borderRadius: 2 }}>
           <form onSubmit={formik.handleSubmit}>
             {/* Bio Field */}

@@ -22,21 +22,26 @@ const Artistlogin = () => {
     const validationSchema = yup.object({
         artistid: yup.string().required('Artist ID is required'),
         password: yup.string().required('Password is required'),
-    });
-
-    const handleLogin = async (values) => {
+    });    const handleLogin = async (values) => {
         setLoading(true);
-      const res = await signIn("credentials", {
-        redirect: false,
-        artistid: values.artistid,
-        password: values.password,
-      });
-      if (res.ok) {
-        toast.success("Login Success");
-        router.push("/artist-dashboard");
-      } else {
-        toast.error("Invalid credentials");
-      }
+        try {
+            const res = await signIn("credentials", {
+                redirect: false,
+                artistid: values.artistid,
+                password: values.password,
+            });
+            if (res.ok) {
+                toast.success("Login Success");
+                router.push("/artist-dashboard");
+            } else {
+                toast.error("Invalid credentials");
+                setLoading(false); // Reset loading state on failed login
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error("An error occurred during login");
+            setLoading(false); // Reset loading state on error
+        }
     };
 
     const formik = useFormik({

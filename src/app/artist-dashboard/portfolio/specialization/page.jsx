@@ -12,7 +12,7 @@ import {
   Select,
   MenuItem
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, FieldArray } from "formik";
@@ -95,6 +95,9 @@ export default function SpecializationPage() {
     tools: []
   });
 
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);
+
   useEffect(() => {
     if (status === "loading") return;
     
@@ -103,9 +106,18 @@ export default function SpecializationPage() {
       return;
     }
 
-    fetchSpecialization();
-  }, [session, status]);
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
 
+    fetchSpecialization();
+  }, [session?.user?.artistid, status]);
+
+  // Reset data loaded flag when user logs out
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
   const fetchSpecialization = async () => {
     try {
       const response = await fetch('/api/portfolio/specialization');
@@ -119,6 +131,9 @@ export default function SpecializationPage() {
           });
         }
       }
+      
+      // Mark data as loaded
+      dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error fetching specialization:', error);
       toast.error('Failed to load specialization data');

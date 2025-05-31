@@ -9,7 +9,7 @@ import {
   Alert,
   FormLabel
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, FieldArray } from "formik";
@@ -44,6 +44,9 @@ export default function AwardsPage() {
     awards: [{ title: "", year: "", description: "", organization: "" }]
   });
 
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);
+
   useEffect(() => {
     if (status === "loading") return;
     
@@ -52,9 +55,17 @@ export default function AwardsPage() {
       return;
     }
 
-    fetchAwards();
-  }, [session, status]);
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
 
+    fetchAwards();
+  }, [session?.user?.artistid, status]);
+  // Reset data loaded flag when user logs out
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
   const fetchAwards = async () => {
     try {
       const response = await fetch('/api/portfolio/awards');
@@ -64,6 +75,9 @@ export default function AwardsPage() {
           setInitialData({ awards: data.awards });
         }
       }
+      
+      // Mark data as loaded
+      dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error fetching awards:', error);
       toast.error('Failed to load awards data');

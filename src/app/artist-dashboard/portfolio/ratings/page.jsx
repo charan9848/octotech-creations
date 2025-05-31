@@ -14,7 +14,7 @@ import {
   DialogContent,
   DialogActions
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import StarIcon from "@mui/icons-material/Star";
@@ -42,8 +42,10 @@ export default function RatingsPage() {
       { stars: 2, count: 0, percentage: 0 },
       { stars: 1, count: 0, percentage: 0 }
     ],
-    recentReviews: []
-  });
+    recentReviews: []  });
+
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -51,10 +53,21 @@ export default function RatingsPage() {
     if (!session) {
       router.push("/signin");
       return;
-    }    fetchRatings();
-    fetchProjects();
-  }, [session, status]);
+    }
 
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
+
+    fetchRatings();
+    fetchProjects();
+  }, [session?.user?.artistid, status]);
+
+  // Reset data loaded flag when user logs out
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
   const fetchProjects = async () => {
     try {
       const response = await fetch('/api/portfolio/projects');
@@ -100,6 +113,9 @@ export default function RatingsPage() {
           });
         }
       }
+      
+      // Mark data as loaded
+      dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error fetching ratings:', error);
       toast.error('Failed to load ratings data');

@@ -13,7 +13,7 @@ import {
   DialogTitle,
   FormLabel
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, FieldArray } from "formik";
@@ -165,10 +165,10 @@ export default function ArtworksPage() {
   const [submitting, setSubmitting] = useState(false);
   const [initialData, setInitialData] = useState({
     artworks: [{ title: "", image: "", description: "", date: "" }]
-  });
-  const [dataLoaded, setDataLoaded] = useState(false);
-
-  useEffect(() => {
+  });  const [dataLoaded, setDataLoaded] = useState(false);
+  
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);  useEffect(() => {
     if (status === "loading") return;
     
     if (!session) {
@@ -176,8 +176,19 @@ export default function ArtworksPage() {
       return;
     }
 
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
+
     fetchArtworks();
-  }, [session, status]);
+  }, [session?.user?.artistid, status]);
+
+  // Reset data loaded flag when user logs out
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
+  
   const fetchArtworks = async () => {
     try {
       const response = await fetch('/api/portfolio/artworks');
@@ -210,10 +221,12 @@ export default function ArtworksPage() {
       // Ensure we still have a valid structure
       setInitialData({
         artworks: [{ title: "", image: "", description: "", date: "" }]
-      });
-    } finally {
+      });    } finally {
       setLoading(false);
       setDataLoaded(true);
+      
+      // Mark data as loaded
+      dataLoadedRef.current = true;
     }
   };
   const handleSubmit = async (values) => {

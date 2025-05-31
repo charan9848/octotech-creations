@@ -1,6 +1,6 @@
 "use client";
 import { Box, Typography, TextField, Button, IconButton, CircularProgress, FormHelperText, FormLabel } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
@@ -14,11 +14,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 export default function ExperiencePage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: session, status } = useSession();  const router = useRouter();
   const notify = useNotifications();
 
-  const validationSchema = yup.object({
+  // Use ref to track if data has been loaded to prevent multiple fetches
+  const dataLoadedRef = useRef(false);
+  const validationSchema = useMemo(() => yup.object({
     experience: yup.array().of(
       yup.object({
         company: yup.string().required('Company is required'),
@@ -27,9 +28,7 @@ export default function ExperiencePage() {
         description: yup.string().required('Description is required')
       })
     ).min(1, 'At least one experience is required')
-  });
-
-  const formik = useFormik({
+  }), []);const formik = useFormik({
     initialValues: {
       experience: [
         { company: "", role: "", duration: "", description: "" }
@@ -42,6 +41,7 @@ export default function ExperiencePage() {
         await axios.post('/api/portfolio/experience', values);
         toast.success("Experience saved successfully!");
         notify.actionComplete('experience_save', `${values.experience.length} experiences`);
+        
         // Add notification to dashboard
         if (window.addDashboardNotification) {
           window.addDashboardNotification('success', `Successfully saved ${values.experience.length} experiences`, 'experience_save');
@@ -59,13 +59,15 @@ export default function ExperiencePage() {
       }
     }
   });
-
   useEffect(() => {
     if (status === "loading") return;
     if (!session) {
       router.push("/artist-login");
       return;
     }
+
+    // Prevent multiple API calls using ref
+    if (dataLoadedRef.current) return;
 
     // Fetch existing experience data
     const fetchExperienceData = async () => {
@@ -75,6 +77,9 @@ export default function ExperiencePage() {
         formik.setValues({
           experience: experience || [{ company: "", role: "", duration: "", description: "" }]
         });
+        
+        // Mark data as loaded
+        dataLoadedRef.current = true;
       } catch (error) {
         console.error("Failed to fetch experience data:", error);
       } finally {
@@ -83,7 +88,14 @@ export default function ExperiencePage() {
     };
 
     fetchExperienceData();
-  }, [session, status, router]);
+  }, [session?.user?.artistid, status]);
+
+  // Reset data loaded flag when user logs out
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      dataLoadedRef.current = false;
+    }
+  }, [status]);
 
   const addExperience = () => {
     const newExperience = [...formik.values.experience, { company: "", role: "", duration: "", description: "" }];
