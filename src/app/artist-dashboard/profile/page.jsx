@@ -21,9 +21,11 @@ import {
 import { CloudUpload, PhotoCamera } from "@mui/icons-material";
 import * as yup from "yup";
 import { toast } from "react-hot-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const Profile = () => {
   const { data: session, status } = useSession();
+  const notify = useNotifications();
   const [artist, setArtist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,7 +59,6 @@ const Profile = () => {
       }
     };    fetchArtist();
   }, [session, status]);
-
   // Handle image upload to Cloudinary
   const handleImageUpload = async (file) => {
     setUploading(true);
@@ -73,11 +74,29 @@ const Profile = () => {
 
       if (response.data.url) {
         formik.setFieldValue('image', response.data.url);
-        toast.success('Image uploaded successfully!');
+        notify.actionComplete('upload', 'success');
+        // Add to dashboard notifications
+        if (typeof window !== 'undefined' && window.addDashboardNotification) {
+          window.addDashboardNotification({
+            type: 'success',
+            title: 'Image Upload',
+            message: 'Profile image uploaded successfully',
+            category: 'profile'
+          });
+        }
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      notify.error('Failed to upload image');
+      // Add to dashboard notifications
+      if (typeof window !== 'undefined' && window.addDashboardNotification) {
+        window.addDashboardNotification({
+          type: 'error',
+          title: 'Upload Failed',
+          message: 'Failed to upload profile image',
+          category: 'profile'
+        });
+      }
     } finally {
       setUploading(false);
     }
@@ -114,15 +133,23 @@ const Profile = () => {
       email: artist?.email || "",
       image: artist?.image || ""
     },
-    validationSchema: validationSchema,
-    onSubmit: async (values) => {
+    validationSchema: validationSchema,    onSubmit: async (values) => {
       setSaving(true);
       setMessage("");
       setError("");
       try {
         const response = await axios.put(`/api/artists/${session.user.artistid}`, values);
         setMessage("Profile updated successfully!");
-        toast.success("Profile updated!");
+        notify.actionComplete('update', 'success');
+        // Add to dashboard notifications
+        if (typeof window !== 'undefined' && window.addDashboardNotification) {
+          window.addDashboardNotification({
+            type: 'success',
+            title: 'Profile Updated',
+            message: 'Your profile has been updated successfully',
+            category: 'profile'
+          });
+        }
         // Re-fetch updated artist
         const res = await axios.get(`/api/artists/${session.user.artistid}`);
         setArtist(res.data);
@@ -130,7 +157,16 @@ const Profile = () => {
         console.error("Profile update error:", err);
         const errorMessage = err.response?.data?.error || "Failed to update profile";
         setError(errorMessage);
-        toast.error(errorMessage);
+        notify.error(errorMessage);
+        // Add to dashboard notifications
+        if (typeof window !== 'undefined' && window.addDashboardNotification) {
+          window.addDashboardNotification({
+            type: 'error',
+            title: 'Update Failed',
+            message: errorMessage,
+            category: 'profile'
+          });
+        }
       } finally {
         setSaving(false);
       }

@@ -23,6 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ImageIcon from "@mui/icons-material/Image";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { toast } from "react-hot-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 
 // Validation Schema
 const artworkSchema = Yup.object().shape({
@@ -68,11 +69,13 @@ const ImageUpload = ({ onImageUpload, currentImage, artworkIndex }) => {
 
       if (!response.ok) {
         throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
+      }      const data = await response.json();
       onImageUpload(data.url);
       toast.success('Image uploaded successfully!');
+      // Add notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('success', 'Image uploaded successfully', 'image_upload');
+      }
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload image');
@@ -157,11 +160,13 @@ const ImageUpload = ({ onImageUpload, currentImage, artworkIndex }) => {
 export default function ArtworksPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const notify = useNotifications();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [initialData, setInitialData] = useState({
     artworks: [{ title: "", image: "", description: "", date: "" }]
   });
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -173,24 +178,44 @@ export default function ArtworksPage() {
 
     fetchArtworks();
   }, [session, status]);
-
   const fetchArtworks = async () => {
     try {
       const response = await fetch('/api/portfolio/artworks');
       if (response.ok) {
         const data = await response.json();
         if (data.artworks && data.artworks.length > 0) {
-          setInitialData({ artworks: data.artworks });
+          // Ensure all required fields have default values
+          const normalizedArtworks = data.artworks.map(artwork => ({
+            title: artwork.title || "",
+            image: artwork.image || "",
+            description: artwork.description || "",
+            date: artwork.date || ""
+          }));
+          setInitialData({ artworks: normalizedArtworks });
+        } else {
+          // Ensure we have at least one artwork with proper defaults
+          setInitialData({
+            artworks: [{ title: "", image: "", description: "", date: "" }]
+          });
         }
+      } else {
+        // Fallback to default structure
+        setInitialData({
+          artworks: [{ title: "", image: "", description: "", date: "" }]
+        });
       }
     } catch (error) {
       console.error('Error fetching artworks:', error);
       toast.error('Failed to load artworks data');
+      // Ensure we still have a valid structure
+      setInitialData({
+        artworks: [{ title: "", image: "", description: "", date: "" }]
+      });
     } finally {
       setLoading(false);
+      setDataLoaded(true);
     }
   };
-
   const handleSubmit = async (values) => {
     setSubmitting(true);
     
@@ -204,19 +229,26 @@ export default function ArtworksPage() {
       });
 
       if (response.ok) {
-        toast.success('Artworks saved successfully!');
+        notify.actionComplete('artwork_upload', `${values.artworks.length} artworks`);
+        // Add notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Successfully saved ${values.artworks.length} artworks`, 'artwork_save');
+        }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save artworks');
       }
     } catch (error) {
       console.error('Error saving artworks:', error);
-      toast.error(error.message || 'Failed to save artworks');
+      notify.error(error.message || 'Failed to save artworks');
+      // Add error notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('error', 'Failed to save artworks', 'artwork_save_error');
+      }
     } finally {
       setSubmitting(false);
     }
-  };
-  if (status === "loading" || loading) {
+  };if (status === "loading" || loading || !dataLoaded) {
     return (
       <Box sx={{ 
         display: "flex", 
@@ -247,7 +279,7 @@ export default function ArtworksPage() {
       <Box 
         sx={{ 
           width: '100%',
-          maxWidth: 800,
+          
           backgroundColor: '#1a1e23',
           borderRadius: 2,
           p: { xs: 3, sm: 4 }
@@ -265,8 +297,7 @@ export default function ArtworksPage() {
         </Typography>
         
         <Box sx={{ backgroundColor: "#23272b", borderRadius: 2, p: { xs: 3, sm: 4 } }}>
-        
-        <Formik
+          <Formik
           initialValues={initialData}
           validationSchema={artworkSchema}
           enableReinitialize={true}
@@ -276,7 +307,8 @@ export default function ArtworksPage() {
             <Form>
               <FieldArray name="artworks">
                 {({ push, remove }) => (
-                  <>                    {values.artworks.map((artwork, index) => (
+                  <>
+                    {values.artworks && values.artworks.map((artwork, index) => (
                       <Box 
                         key={index} 
                         sx={{ 
@@ -300,13 +332,15 @@ export default function ArtworksPage() {
                             </IconButton>
                           )}
                         </Box>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
                             <Box sx={{ flex: { md: '1 1 50%' }, width: { xs: '100%' } }}>
                               <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Title *</FormLabel>
                               <Field
                                 as={TextField}
                                 name={`artworks.${index}.title`}
+                                value={artwork?.title || ""}
                                 placeholder="Enter artwork title"
                                 fullWidth
                                 size="small"
@@ -334,6 +368,7 @@ export default function ArtworksPage() {
                               <Field
                                 as={TextField}
                                 name={`artworks.${index}.date`}
+                                value={artwork?.date || ""}
                                 type="date"
                                 fullWidth
                                 size="small"
@@ -357,11 +392,12 @@ export default function ArtworksPage() {
                               )}
                             </Box>
                           </Box>
-                            <Box>
+                          
+                          <Box>
                             <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Artwork Image *</FormLabel>
                             <ImageUpload
                               onImageUpload={(url) => setFieldValue(`artworks.${index}.image`, url)}
-                              currentImage={artwork.image}
+                              currentImage={artwork?.image || ""}
                               artworkIndex={index}
                             />
                             {touched.artworks?.[index]?.image && errors.artworks?.[index]?.image && (
@@ -370,11 +406,13 @@ export default function ArtworksPage() {
                               </Typography>
                             )}
                           </Box>
-                            <Box>
+                          
+                          <Box>
                             <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Description *</FormLabel>
                             <Field
                               as={TextField}
                               name={`artworks.${index}.description`}
+                              value={artwork?.description || ""}
                               placeholder="Describe your artwork, inspiration, and techniques used..."
                               fullWidth
                               multiline
@@ -401,7 +439,8 @@ export default function ArtworksPage() {
                         </Box>
                       </Box>
                     ))}
-                      <Box sx={{ display: "flex", flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 3 }}>
+                    
+                    <Box sx={{ display: "flex", flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 3 }}>
                       <Button
                         variant="outlined"
                         startIcon={<AddIcon />}
@@ -438,8 +477,9 @@ export default function ArtworksPage() {
                   </>
                 )}
               </FieldArray>
-            </Form>            )}
-          </Formik>
+            </Form>
+          )}
+        </Formik>
         </Box>
       </Box>
     </Box>

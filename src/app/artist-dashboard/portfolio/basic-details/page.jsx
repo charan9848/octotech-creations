@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as yup from "yup";
 import { toast } from "react-hot-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 import axios from "axios";
 
 export default function BasicDetailsPage() {
@@ -17,6 +18,7 @@ export default function BasicDetailsPage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const { data: session, status } = useSession();
   const router = useRouter();
+  const notify = useNotifications();
 
   const validationSchema = yup.object({
     bio: yup.string().required('Bio is required').min(10, 'Bio should be at least 10 characters'),
@@ -42,8 +44,19 @@ export default function BasicDetailsPage() {
       try {
         await axios.post('/api/portfolio/basic-details', values);
         toast.success("Basic details saved successfully!");
+        notify.actionComplete('basic_details_save', 'basic information');
+        // Add notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', 'Basic details saved successfully', 'basic_details_save');
+        }
       } catch (error) {
-        toast.error(error.response?.data?.error || "Failed to save basic details");
+        const errorMessage = error.response?.data?.error || "Failed to save basic details";
+        toast.error(errorMessage);
+        notify.error(errorMessage);
+        // Add error notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('error', 'Failed to save basic details', 'basic_details_error');
+        }
       } finally {
         setLoading(false);
       }
@@ -68,9 +81,19 @@ export default function BasicDetailsPage() {
       formik.setFieldValue('portfolioImage', imageUrl);
       setPreviewUrl(imageUrl);
       toast.success("Image uploaded successfully!");
+      notify.actionComplete('image_upload', 'portfolio image');
+      // Add notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('success', 'Portfolio image uploaded successfully', 'image_upload');
+      }
     } catch (error) {
       toast.error("Failed to upload image");
+      notify.error("Failed to upload image");
       console.error("Upload error:", error);
+      // Add error notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('error', 'Failed to upload portfolio image', 'image_upload_error');
+      }
     } finally {
       setUploadLoading(false);
     }

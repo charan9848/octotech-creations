@@ -20,6 +20,7 @@ import * as Yup from "yup";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-hot-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 
 // Validation Schema
 const specializationSchema = Yup.object().shape({
@@ -83,6 +84,7 @@ const predefinedTools = [
 export default function SpecializationPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const notify = useNotifications();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [newSkill, setNewSkill] = useState("");
@@ -139,13 +141,24 @@ export default function SpecializationPage() {
 
       if (response.ok) {
         toast.success('Specialization saved successfully!');
+        notify.actionComplete('specialization_save', 'specialization data');
+        // Add notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', 'Specialization saved successfully', 'specialization_save');
+        }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save specialization');
       }
     } catch (error) {
       console.error('Error saving specialization:', error);
-      toast.error(error.message || 'Failed to save specialization');
+      const errorMessage = error.message || 'Failed to save specialization';
+      toast.error(errorMessage);
+      notify.error(errorMessage);
+      // Add error notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('error', 'Failed to save specialization', 'specialization_error');
+      }
     } finally {
       setSubmitting(false);
     }

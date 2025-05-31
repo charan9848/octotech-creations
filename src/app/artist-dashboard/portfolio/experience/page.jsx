@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "react-hot-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 import axios from "axios";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -15,6 +16,7 @@ export default function ExperiencePage() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const { data: session, status } = useSession();
   const router = useRouter();
+  const notify = useNotifications();
 
   const validationSchema = yup.object({
     experience: yup.array().of(
@@ -39,8 +41,19 @@ export default function ExperiencePage() {
       try {
         await axios.post('/api/portfolio/experience', values);
         toast.success("Experience saved successfully!");
+        notify.actionComplete('experience_save', `${values.experience.length} experiences`);
+        // Add notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Successfully saved ${values.experience.length} experiences`, 'experience_save');
+        }
       } catch (error) {
-        toast.error(error.response?.data?.error || "Failed to save experience");
+        const errorMessage = error.response?.data?.error || "Failed to save experience";
+        toast.error(errorMessage);
+        notify.error(errorMessage);
+        // Add error notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('error', 'Failed to save experience', 'experience_error');
+        }
       } finally {
         setLoading(false);
       }

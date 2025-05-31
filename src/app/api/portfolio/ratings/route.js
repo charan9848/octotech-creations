@@ -13,20 +13,18 @@ export async function GET(request) {
     const db = client.db(process.env.MONGODB_DB);
     const portfolio = await db.collection("portfolios").findOne({ 
       artistId: session.user.artistid 
-    });
-
-    if (!portfolio || !portfolio.ratings) {
+    });    if (!portfolio || !portfolio.ratings) {
       return Response.json({ 
         ratings: {
-          averageRating: 0,
+          currentRating: 0,
           totalReviews: 0,
-          ratingBreakdown: {
-            5: 0,
-            4: 0,
-            3: 0,
-            2: 0,
-            1: 0
-          },
+          ratingBreakdown: [
+            { stars: 5, count: 0, percentage: 0 },
+            { stars: 4, count: 0, percentage: 0 },
+            { stars: 3, count: 0, percentage: 0 },
+            { stars: 2, count: 0, percentage: 0 },
+            { stars: 1, count: 0, percentage: 0 }
+          ],
           reviews: []
         }
       });

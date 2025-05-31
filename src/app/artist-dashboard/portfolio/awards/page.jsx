@@ -18,6 +18,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { toast } from "react-hot-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 
 // Validation Schema
 const awardsSchema = Yup.object().shape({
@@ -36,6 +37,7 @@ const awardsSchema = Yup.object().shape({
 export default function AwardsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const notify = useNotifications();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [initialData, setInitialData] = useState({
@@ -80,17 +82,26 @@ export default function AwardsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-      });
-
-      if (response.ok) {
+      });      if (response.ok) {
         toast.success('Awards saved successfully!');
+        notify.actionComplete('awards_save', `${values.awards.length} awards`);
+        // Add notification to dashboard
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Successfully saved ${values.awards.length} awards`, 'awards_save');
+        }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save awards');
       }
     } catch (error) {
       console.error('Error saving awards:', error);
-      toast.error(error.message || 'Failed to save awards');
+      const errorMessage = error.message || 'Failed to save awards';
+      toast.error(errorMessage);
+      notify.error(errorMessage);
+      // Add error notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('error', 'Failed to save awards', 'awards_error');
+      }
     } finally {
       setSubmitting(false);
     }
