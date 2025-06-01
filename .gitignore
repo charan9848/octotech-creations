@@ -85,6 +85,9 @@ temp-uploads/
 .env.backup
 config.local.js
 
+# Documentation (generated files)
+API_DOCUMENTATION.md
+
 # Optional caches
 .eslintcache
 .stylelintcache
