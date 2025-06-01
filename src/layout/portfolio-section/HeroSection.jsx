@@ -59,7 +59,7 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                     </Typography>
                     <Typography
                         variant="h2"
-                        fontWeight="100"
+                       
                         color="#707173"
                         mt={3}
                         sx={{
