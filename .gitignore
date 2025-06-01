@@ -43,6 +43,50 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
+# IDEs and editors
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Database related
+*.sql
+*.sqlite
+*.db
+database-backup/
+*.backup
+
+# Temporary files
+tmp/
+temp/
+uploads/
+temp-uploads/
+
+# Application specific
+.env.backup
+config.local.js
+
+# Optional caches
+.eslintcache
+.stylelintcache
+.npm
+.yarn-integrity

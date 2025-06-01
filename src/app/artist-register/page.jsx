@@ -16,11 +16,14 @@ import Link from 'next/link';
 const ArtistRegister = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [emailChecking, setEmailChecking] = useState(false);
+    const [artistIdChecking, setArtistIdChecking] = useState(false);
+    const [emailAvailable, setEmailAvailable] = useState(null);
+    const [artistIdAvailable, setArtistIdAvailable] = useState(null);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
     const router = useRouter();
 
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-    const validationSchema = yup.object({
+    const handleClickShowPassword = () => setShowPassword((show) => !show);    const validationSchema = yup.object({
         artistid: yup.string().required('Artist ID is required').min(4, 'User ID too short'),
         username: yup.string().required('Username is required').min(4, 'Username too short'),
         email: yup.string().email('Invalid email').required('Email is required'),
@@ -30,7 +33,74 @@ const ArtistRegister = () => {
             .matches(/[A-Z]/, 'Password must contain at least one uppercase letter.')
             .matches(/[0-9]/, 'Password must contain at least one number.')
             .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character.'),
-    });
+    });    // Function to check email uniqueness
+    const checkEmailUniqueness = async (email) => {
+        if (!email || !yup.string().email().isValidSync(email)) {
+            setEmailAvailable(null);
+            return;
+        }
+        
+        setEmailChecking(true);
+        try {
+            const response = await axios.post('/api/check-email', { email });
+            setEmailAvailable(response.data.available);
+        } catch (error) {
+            console.error('Email check failed:', error);
+            setEmailAvailable(null);
+        } finally {
+            setEmailChecking(false);
+        }
+    };
+
+    // Function to check artistid uniqueness
+    const checkArtistIdUniqueness = async (artistid) => {
+        if (!artistid || artistid.length < 4) {
+            setArtistIdAvailable(null);
+            return;
+        }
+        
+        setArtistIdChecking(true);
+        try {
+            const response = await axios.post('/api/check-artistid', { artistid });
+            setArtistIdAvailable(response.data.available);
+        } catch (error) {
+            console.error('Artist ID check failed:', error);
+            setArtistIdAvailable(null);
+        } finally {
+            setArtistIdChecking(false);
+        }
+    };    // Debounced validation
+    const handleEmailChange = (e) => {
+        formik.handleChange(e);
+        const email = e.target.value;
+        
+        // Clear previous timeout
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+        }
+        
+        // Set new timeout
+        const newTimeout = setTimeout(() => {
+            checkEmailUniqueness(email);
+        }, 500);
+        setDebounceTimeout(newTimeout);
+    };
+
+    const handleArtistIdChange = (e) => {
+        formik.handleChange(e);
+        const artistid = e.target.value;
+        
+        // Clear previous timeout
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+        }
+        
+        // Set new timeout
+        const newTimeout = setTimeout(() => {
+            checkArtistIdUniqueness(artistid);
+        }, 500);
+        setDebounceTimeout(newTimeout);
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -103,21 +173,35 @@ const ArtistRegister = () => {
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: false, amount: 0.7 }}>
-                    <form onSubmit={formik.handleSubmit}>
-                        <FormLabel>Artistid *</FormLabel>
+                    <form onSubmit={formik.handleSubmit}>                        <FormLabel>Artistid *</FormLabel>
                         <TextField
                             name="artistid"
                             type="text"
                             placeholder="Enter your user ID"
                             fullWidth
                             size="small"
-                            onChange={formik.handleChange}
+                            onChange={handleArtistIdChange}
                             onBlur={formik.handleBlur}
                             error={formik.touched.artistid && Boolean(formik.errors.artistid)}
                             value={formik.values.artistid}
+                            InputProps={{
+                                endAdornment: artistIdChecking ? (
+                                    <CircularProgress size={16} />
+                                ) : artistIdAvailable === false ? (
+                                    <span style={{ color: 'red', fontSize: '12px' }}>❌</span>
+                                ) : artistIdAvailable === true ? (
+                                    <span style={{ color: 'green', fontSize: '12px' }}>✅</span>
+                                ) : null
+                            }}
                         />
                         <FormHelperText sx={{ minHeight: "10px" }} error>
                             {formik.touched.artistid && formik.errors.artistid}
+                            {!formik.errors.artistid && artistIdAvailable === false && (
+                                <span style={{ color: 'red' }}>Artist ID already exists</span>
+                            )}
+                            {!formik.errors.artistid && artistIdAvailable === true && (
+                                <span style={{ color: 'green' }}>Artist ID is available</span>
+                            )}
                         </FormHelperText>
 
                         <FormLabel>Username *</FormLabel>
@@ -134,22 +218,35 @@ const ArtistRegister = () => {
                         />
                         <FormHelperText sx={{ minHeight: "10px" }} error>
                             {formik.touched.username && formik.errors.username}
-                        </FormHelperText>
-
-                        <FormLabel>Email *</FormLabel>
+                        </FormHelperText>                        <FormLabel>Email *</FormLabel>
                         <TextField
                             name="email"
                             type="email"
                             placeholder="Enter your email"
                             fullWidth
                             size="small"
-                            onChange={formik.handleChange}
+                            onChange={handleEmailChange}
                             onBlur={formik.handleBlur}
                             error={formik.touched.email && Boolean(formik.errors.email)}
                             value={formik.values.email}
+                            InputProps={{
+                                endAdornment: emailChecking ? (
+                                    <CircularProgress size={16} />
+                                ) : emailAvailable === false ? (
+                                    <span style={{ color: 'red', fontSize: '12px' }}>❌</span>
+                                ) : emailAvailable === true ? (
+                                    <span style={{ color: 'green', fontSize: '12px' }}>✅</span>
+                                ) : null
+                            }}
                         />
                         <FormHelperText sx={{ minHeight: "10px" }} error>
                             {formik.touched.email && formik.errors.email}
+                            {!formik.errors.email && emailAvailable === false && (
+                                <span style={{ color: 'red' }}>Email already exists</span>
+                            )}
+                            {!formik.errors.email && emailAvailable === true && (
+                                <span style={{ color: 'green' }}>Email is available</span>
+                            )}
                         </FormHelperText>
 
                         <FormLabel>Password *</FormLabel>
@@ -178,13 +275,18 @@ const ArtistRegister = () => {
                         />
                         <FormHelperText sx={{ minHeight: "10px" }} error>
                             {formik.touched.password && formik.errors.password}
-                        </FormHelperText>
-
-                        <Button
+                        </FormHelperText>                        <Button
                             type="submit"
                             variant="contained"
                             fullWidth
-                            disabled={!formik.isValid || loading}
+                            disabled={
+                                !formik.isValid || 
+                                loading || 
+                                emailAvailable === false || 
+                                artistIdAvailable === false ||
+                                emailChecking ||
+                                artistIdChecking
+                            }
                             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                             sx={{ mt: 2 }}
                         >

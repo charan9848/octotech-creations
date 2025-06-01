@@ -2,12 +2,15 @@
   "name": "octotech-creations",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "setup-db": "node src/scripts/setup-database-indexes.js",
+    "cleanup-duplicates": "node src/scripts/cleanup-duplicates.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -21,6 +24,7 @@
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.6.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "formik": "^2.4.6",
     "lodash": "^4.17.21",

@@ -47,6 +47,17 @@ export async function PUT(request, context) {
       return Response.json({ error: "Artist not found." }, { status: 404 });
     }
 
+    // Check if email is being changed and if the new email already exists
+    if (updateData.email !== existingArtist.email) {
+      const emailExists = await users.findOne({ 
+        email: updateData.email, 
+        artistid: { $ne: id } // Exclude current artist
+      });
+      if (emailExists) {
+        return Response.json({ error: "Email already exists. Please use a different email." }, { status: 400 });
+      }
+    }
+
     // Update the artist profile
     const result = await users.updateOne(
       { artistid: id },
@@ -74,9 +85,19 @@ export async function PUT(request, context) {
       message: "Profile updated successfully",
       artist: updatedArtist
     });
-
   } catch (err) {
     console.error("Profile update error:", err);
+    
+    // Handle MongoDB duplicate key error
+    if (err.code === 11000) {
+      const field = err.message.includes('email') ? 'email' : 'artistid';
+      const message = field === 'email' 
+        ? "Email already exists. Please use a different email."
+        : "Artist ID already exists. Please choose a different ID.";
+      
+      return Response.json({ error: message }, { status: 400 });
+    }
+    
     return Response.json({ error: "Failed to update profile." }, { status: 500 });
   }
 }

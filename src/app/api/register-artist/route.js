@@ -6,27 +6,56 @@ const MAX_ARTISTS = 4; // Set your limit
 export async function POST(request) {
   try {
     const data = await request.json();
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    data.password = hashedPassword;
 
     // Connect to your database
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     const users = db.collection("artists");
 
-    // Count current artists
-    const artistCount = await db.collection("artists").countDocuments();
-    if (artistCount >= MAX_ARTISTS) {
+    // Check if email already exists
+    const existingEmail = await users.findOne({ email: data.email });
+    if (existingEmail) {
       return Response.json(
-        { error: "Artist registration limit reached." },
+        { message: "Email already exists. Please use a different email." },
         { status: 400 }
       );
     }
 
-    await users.insertOne(data);
+    // Check if artistid already exists
+    const existingArtistId = await users.findOne({ artistid: data.artistid });
+    if (existingArtistId) {
+      return Response.json(
+        { message: "Artist ID already exists. Please choose a different ID." },
+        { status: 400 }
+      );
+    }
+
+    // Count current artists
+    const artistCount = await db.collection("artists").countDocuments();
+    if (artistCount >= MAX_ARTISTS) {
+      return Response.json(
+        { message: "Artist registration limit reached." },
+        { status: 400 }
+      );
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    data.password = hashedPassword;    await users.insertOne(data);
     return Response.json({ message: "User registered!" });
   } catch (err) {
-    return Response.json({ error: "Registration failed." }, { status: 500 });
+    console.error("Registration error:", err);
+    
+    // Handle MongoDB duplicate key error
+    if (err.code === 11000) {
+      const field = err.message.includes('email') ? 'email' : 'artistid';
+      const message = field === 'email' 
+        ? "Email already exists. Please use a different email."
+        : "Artist ID already exists. Please choose a different ID.";
+      
+      return Response.json({ message }, { status: 400 });
+    }
+    
+    return Response.json({ message: "Registration failed." }, { status: 500 });
   }
 }
