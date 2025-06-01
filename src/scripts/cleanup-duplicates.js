@@ -1,18 +1,10 @@
 // Script to clean up duplicate entries in the artists collection
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { createRequire } from 'module';
-import dotenv from 'dotenv';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const path = require('path');
+const dotenv = require('dotenv');
+const { MongoClient } = require('mongodb');
 
 // Load environment variables from .env.local
-dotenv.config({ path: join(__dirname, '../../.env.local') });
-
-// Import MongoDB client using require for compatibility
-const require = createRequire(import.meta.url);
-const { MongoClient } = require('mongodb');
+dotenv.config({ path: path.join(__dirname, '../../.env.local') });
 
 async function getMongoClient() {
   if (!process.env.MONGODB_URI) {
