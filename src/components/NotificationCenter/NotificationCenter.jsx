@@ -235,44 +235,40 @@ export default function NotificationCenter() {
                   >
                     <ListItemIcon sx={{ minWidth: 40 }}>
                       {getIcon(notification.type)}
-                    </ListItemIcon>                    <ListItemText
-                      primary={
-                        <Typography variant="body2" sx={{ color: '#fff', mb: 0.5 }}>
-                          {notification.message}
+                    </ListItemIcon>                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ color: '#fff', mb: 1 }}>
+                        {notification.message}
+                      </Typography>
+                      <Box 
+                        sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center'
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: '#999' }}>
+                          {formatTime(notification.timestamp)}
                         </Typography>
-                      }                      secondary={
-                        <span 
-                          style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center', 
-                            marginTop: '8px' 
+                        <Chip
+                          label={notification.type}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            backgroundColor: 
+                              notification.type === 'success' ? 'rgba(76, 175, 80, 0.2)' :
+                              notification.type === 'error' ? 'rgba(244, 67, 54, 0.2)' :
+                              notification.type === 'warning' ? 'rgba(255, 152, 0, 0.2)' :
+                              'rgba(0, 161, 224, 0.2)',
+                            color: 
+                              notification.type === 'success' ? '#4caf50' :
+                              notification.type === 'error' ? '#f44336' :
+                              notification.type === 'warning' ? '#ff9800' :
+                              '#00a1e0'
                           }}
-                        >
-                          <Typography component="span" variant="caption" sx={{ color: '#999' }}>
-                            {formatTime(notification.timestamp)}
-                          </Typography>
-                          <Chip
-                            label={notification.type}
-                            size="small"
-                            sx={{
-                              height: 20,
-                              fontSize: '0.7rem',
-                              backgroundColor: 
-                                notification.type === 'success' ? 'rgba(76, 175, 80, 0.2)' :
-                                notification.type === 'error' ? 'rgba(244, 67, 54, 0.2)' :
-                                notification.type === 'warning' ? 'rgba(255, 152, 0, 0.2)' :
-                                'rgba(0, 161, 224, 0.2)',
-                              color: 
-                                notification.type === 'success' ? '#4caf50' :
-                                notification.type === 'error' ? '#f44336' :
-                                notification.type === 'warning' ? '#ff9800' :
-                                '#00a1e0'
-                            }}
-                          />
-                        </span>
-                      }
-                    />
+                        />
+                      </Box>
+                    </Box>
                   </ListItem>
                   {index < notifications.length - 1 && (
                     <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />

@@ -26,21 +26,28 @@ const LogoutButton = styled(Button)({
 
 export default function Navbar() {
   const theme = useTheme();
-  const pathname = usePathname();
-  const { data: session } = useSession();
+  const pathname = usePathname();  const { data: session } = useSession();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
-
-  const MenuContent = [
+  
+  // Define different menu content based on authentication status
+  const loggedOutMenuContent = [
     { id: 1, name: "home", icon: <HomeOutlinedIcon />, path: "/" },
     { id: 2, name: "services", icon: <BuildOutlinedIcon />, path: "/#services" },
     { id: 3, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
     { id: 4, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
   ];
 
-  const ArtistMenu = [
-    { id: 1, name: "dashboard", icon: <HomeOutlinedIcon />, path: "/artist-dashboard" },
-    { id: 2, name: "portfolio", icon: <FolderOutlinedIcon />, path: "/artist-portfolio" },
+  const loggedInMenuContent = [
+    { id: 1, name: "home", icon: <HomeOutlinedIcon />, path: "/" },
+    { id: 2, name: "services", icon: <BuildOutlinedIcon />, path: "/#services" },
+    { id: 3, name: "portfolio", icon: <FolderOutlinedIcon />, path: session?.user?.artistid ? `/portfolio/${session.user.artistid}` : "/portfolio" },
+    { id: 4, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
+    { id: 5, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
+    { id: 6, name: "dashboard", icon: <FolderOutlinedIcon />, path: "/artist-dashboard" },
   ];
+
+  // Use appropriate menu content based on session status
+  const MenuContent = session ? loggedInMenuContent : loggedOutMenuContent;
 
   const [open, setOpen] = useState(false);
 
@@ -101,11 +108,9 @@ export default function Navbar() {
         )}
       </Box>
 
-      <Divider sx={{ backgroundColor: "#fff" }} />
-
-      <Box sx={{ padding: "20px" }}>
+      <Divider sx={{ backgroundColor: "#fff" }} />      <Box sx={{ padding: "20px" }}>
         <List>
-          {(session ? ArtistMenu : MenuContent).map((menu) => (
+          {MenuContent.map((menu) => (
             <ListItem key={menu.id} disablePadding>
               <Link href={menu.path} passHref style={{ textDecoration: 'none', width: '100%' }}>
                 <ListItemButton
@@ -147,7 +152,7 @@ export default function Navbar() {
           backgroundColor: theme.palette.appBar?.main || "#000000", // Added fallback
           paddingTop: "3px",
           paddingBottom: "3px",
-          zIndex: theme.zIndex.drawer - 1,
+          zIndex: theme.zIndex.drawer + 1, // Place navbar above drawer
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -198,38 +203,37 @@ export default function Navbar() {
               margin: 0,
               padding: 0,
             }}
-          >
-            {(session ? ArtistMenu : MenuContent).map((menu) => (
-              <Link href={menu.path} key={menu.id} passHref style={{ textDecoration: 'none' }}>
-                <Button
+          >            {MenuContent.map((menu) => (
+            <Link href={menu.path} key={menu.id} passHref style={{ textDecoration: 'none' }}>
+              <Button
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "20px",
+                  "&:hover .menu-text": {
+                    color: "rgb(0, 161, 224)", // Change Typography color on hover
+                  },
+                }}
+                disableRipple
+              >
+                {menu.icon}
+                <Typography
+                  variant="body1"
+                  className="menu-text"
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginRight: "20px",
-                    "&:hover .menu-text": {
-                      color: "rgb(0, 161, 224)", // Change Typography color on hover
-                    },
+                    marginLeft: "5px",
+                    color:
+                      pathname === menu.path
+                        ? "rgb(0, 161, 224)" // Active color
+                        : "#ffffff", // Default color
+                    fontWeight: pathname === menu.path ? "bold" : "normal",
                   }}
-                  disableRipple
                 >
-                  {menu.icon}
-                  <Typography
-                    variant="body1"
-                    className="menu-text"
-                    sx={{
-                      marginLeft: "5px",
-                      color:
-                        pathname === menu.path
-                          ? "rgb(0, 161, 224)" // Active color
-                          : "#ffffff", // Default color
-                      fontWeight: pathname === menu.path ? "bold" : "normal",
-                    }}
-                  >
-                    {menu.name.toUpperCase()}
-                  </Typography>
-                </Button>
-              </Link>
-            ))}
+                  {menu.name.toUpperCase()}
+                </Typography>
+              </Button>
+            </Link>
+          ))}
           </Box>
 
           {/* Sign In Button */}
@@ -246,7 +250,7 @@ export default function Navbar() {
             {session ? (
               <LogoutButton
                 variant="contained"
-                
+
                 disableRipple
                 onClick={() => setLogoutDialogOpen(true)}
               >
@@ -300,34 +304,34 @@ export default function Navbar() {
 
       {/* Logout Confirmation Dialog */}
       <Dialog
-  open={logoutDialogOpen}
-  onClose={() => setLogoutDialogOpen(false)}
-  PaperProps={{
-    sx: {
-      backgroundColor: "#15191c",
-      color: "#fff",
-      borderRadius: 2,
-    },
-  }}
->
-  <DialogContent>
-    <DialogContentText
-      variant="h4" fontSize={20}
-      sx={{ color: "#fff" }}
-    >
-      Are you sure you want to logout?
-    </DialogContentText>
-  </DialogContent>
-  <DialogActions>
-    
-    <Button onClick={() => setLogoutDialogOpen(false)} variant="outlined">
-      Cancel
-    </Button>
-    <Button onClick={handleLogout} color="error" variant="contained">
-      Yes, Logout
-    </Button>
-  </DialogActions>
-</Dialog>
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            backgroundColor: "#15191c",
+            color: "#fff",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogContent>
+          <DialogContentText
+            variant="h4" fontSize={20}
+            sx={{ color: "#fff" }}
+          >
+            Are you sure you want to logout?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+
+          <Button onClick={() => setLogoutDialogOpen(false)} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleLogout} color="error" variant="contained">
+            Yes, Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

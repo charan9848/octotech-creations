@@ -31,8 +31,7 @@ const portfolio = () => {
 
                 setPortfolio(portfolioResponse.data);
                 setArtist(artistResponse.data);
-                console.log("Portfolio data:", portfolioResponse.data);
-                console.log("Artist data:", artistResponse.data);
+               
             } catch (error) {
                 console.error("Error fetching data:", error);
                 setError(error.message);

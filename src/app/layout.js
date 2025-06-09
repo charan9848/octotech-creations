@@ -25,7 +25,7 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const hideNavAndFooter = pathname.startsWith('/artist-dashboard');
+  const hideNavAndFooter = false; // Show navbar and footer on all pages
 
   return (
     <html lang="en">
@@ -64,12 +64,8 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider>
           <ThemeProvider theme={theme}>
-            {!hideNavAndFooter && (
-              <>
-                <Navbar />
-                <Toolbar />
-              </>
-            )}
+            <Navbar />
+            <Toolbar />
             
             <main>
               {children}
@@ -84,7 +80,8 @@ export default function RootLayout({ children }) {
                 }}
               />
             </main>
-            {!hideNavAndFooter && <Footer />}
+            
+            <Footer />
           </ThemeProvider>
         </SessionProvider>
       </body>

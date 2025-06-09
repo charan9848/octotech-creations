@@ -1,5 +1,7 @@
-import { Box, Typography, Avatar } from "@mui/material";
+import { Box, Typography, Avatar, Button } from "@mui/material";
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import ArrowCircleDownSharpIcon from '@mui/icons-material/ArrowCircleDownSharp';
+import ExpandMoreSharpIcon from '@mui/icons-material/ExpandMoreSharp';
 
 export function HeroSection({ name, bio, quotation, email, phone, logo }) {
     return (
@@ -16,7 +18,7 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                     height: "100%",
                     objectFit: "cover",
                     objectPosition: "center",
-                    opacity: 0.25
+                    opacity: 0.50
                 }}
                 preload="auto"
                 autoPlay
@@ -36,16 +38,38 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                     width: "100%",
                     position: "relative",
                     zIndex: 1,
-                    my: 5,
+                    my: 4,
                     padding: 3,
                 }}
 
-            >
-                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", width: "45%" }} my={5} p={3}>
+            >     <Box sx={{display: 'flex', flexDirection: 'column', width: "2%", alignItems: 'center' }}>
+                    <Box sx={{ width: '2px', backgroundColor: '#707173', height: '30%', alignSelf: 'stretch', mx: 'auto' }} />
+                    <Typography
+                        my={2}
+                        variant="h2"
+                        color="white"
+                        sx={{
+                            writingMode: 'vertical-rl',
+                            textOrientation: 'mixed',
+                            transform: 'rotate(180deg)',
+                            whiteSpace: 'nowrap',
+                            fontSize: {
+                                xs: "0.8rem",
+                                sm: "1rem",
+                                md: "1.2rem",
+                            }
+                        }}
+                    >
+                        {email}
+                    </Typography>
+                    <Box sx={{ width: '2px', backgroundColor: '#707173', height: '30%', alignSelf: 'stretch', mx: 'auto' }} />
+                    <ExpandMoreSharpIcon sx={{ color: 'white', fontSize: '2rem', mt: 2 }} />
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", width: "45%" }} p={3}>
                     <Typography
                         variant="h1"
                         color="White"
-                        mt={2}
+
                         sx={{
                             fontSize: {
                                 xs: "1.5rem",
@@ -59,7 +83,7 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                     </Typography>
                     <Typography
                         variant="h2"
-                       
+
                         color="#707173"
                         mt={3}
                         sx={{
@@ -72,9 +96,24 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                         }}
                     >
                         {bio}
-                    </Typography>
+                    </Typography>                    <Button 
+                        variant="contained" 
+                        sx={{ 
+                            width: { xs: '100%', sm: '80%', md: '60%', lg: '50%' },
+                            mt: 5,
+                            fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem', lg: '1rem' },
+                            padding: { xs: '8px 16px', sm: '10px 20px', md: '12px 24px' },
+                            minHeight: { xs: '36px', sm: '40px', md: '44px' }
+                        }} 
+                        startIcon={<ArrowCircleDownSharpIcon sx={{ 
+                            color: 'white',
+                            fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' }
+                        }} />}
+                    >
+                        Scroll Down
+                    </Button>
                 </Box>
-                <Box mt={5} p={3}>
+                <Box p={3} sx={{  display: 'flex', flexDirection: 'column', justifyContent: "center", alignItems: "center", width: "30%" }}>
                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                         <Avatar
                             src={logo}
@@ -86,9 +125,9 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                             }}
                         />
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }} m={2}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', width: "70%" }} m={2}>
                         {quotation &&
-                            <Typography variant="body2" sx={{
+                            <Typography variant="body2" textAlign="center" sx={{
                                 textDecoration: 'none',
                                 fontSize: {
                                     xs: "8px",
@@ -98,7 +137,7 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                                 color: 'white'
                             }}>~ {quotation}</Typography>
                         }
-                        {email &&
+                        {/* {email &&
                             <Typography variant="body2" sx={{
                                 textDecoration: 'none',
                                 fontSize: {
@@ -119,8 +158,32 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                                 },
                                 color: 'white'
                             }}><MailOutlineIcon sx={{ fontSize: '12px', verticalAlign: "middle" }} /> {phone}</Typography>
-                        }
+                        } */}
                     </Box>
+
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', width: "2%", alignItems: 'center' }}>
+                    <Box sx={{ width: '2px', backgroundColor: '#707173', height: '30%', alignSelf: 'stretch', mx: 'auto' }} />
+                    <Typography
+                        my={2}
+                        variant="h2"
+                        color="white"
+                        sx={{
+                            writingMode: 'vertical-rl',
+                            textOrientation: 'mixed',
+                            transform: 'rotate(360deg)',
+                            whiteSpace: 'nowrap',
+                            fontSize: {
+                                xs: "0.8rem",
+                                sm: "1rem",
+                                md: "1.2rem",
+                            }
+                        }}
+                    >
+                        {phone}
+                    </Typography>
+                    <Box sx={{ width: '2px', backgroundColor: '#707173', height: '30%', alignSelf: 'stretch', mx: 'auto' }} />
+                    <ExpandMoreSharpIcon sx={{ color: '#707173', fontSize: '2rem', mt: 2 }} />
                 </Box>
             </Box>
         </Box>

@@ -30,46 +30,9 @@ export default function DashboardLayout({ children }) {
     setPortfolioOpen(!portfolioOpen);
   };const handleLogout = () => {
     signOut({ callbackUrl: "/artist-login" });
-  };
-  return (
-    <Box sx={{ display: "flex", backgroundColor: "#15191c", minHeight: "100vh" }}>
-      <CssBaseline />
-
-      {/* Top Navigation Bar */}
-      <AppBar
-        position="fixed"
-        sx={{
-          width: `calc(100% - ${drawerWidth}px)`,
-          ml: `${drawerWidth}px`,
-          backgroundColor: "#1a1e23",
-          borderBottom: "1px solid #2a2e33",
-          boxShadow: "none"
-        }}
-      >
-        <Toolbar sx={{ justifyContent: "space-between" }}>          <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
-            Dashboard
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <NotificationCenter />
-            <IconButton
-              onClick={() => setLogoutDialogOpen(true)}
-              sx={{
-                color: "#fff",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                },
-                ml: 1
-              }}
-              title="Logout"
-            >
-              <LogoutIcon />
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
+  };  return (
+    <Box sx={{ display: "flex", backgroundColor: "#15191c", minHeight: "100vh" }} >
+      <CssBaseline />      <Drawer
         variant="permanent"
         sx={{
           width: drawerWidth,
@@ -79,10 +42,15 @@ export default function DashboardLayout({ children }) {
             boxSizing: "border-box",
             background: "#23272b",
             color: "#fff",
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            overflowY: "auto",
           },
         }}
+        
       >
-        <Toolbar>
+        <Toolbar >
           <Typography variant="h2" >
             Artist Panel
           </Typography>
@@ -297,11 +265,39 @@ export default function DashboardLayout({ children }) {
                   sx: { color: pathname === "/artist-dashboard/profile" ? "#fff" : "#fff !important" }
                 }}              />
             </ListItemButton>          </ListItem>
+          
+          {/* Divider before bottom actions */}
+          <Divider sx={{ my: 2, backgroundColor: "rgba(255, 255, 255, 0.2)" }} />
+          
+          {/* Logout Button */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => setLogoutDialogOpen(true)}
+              sx={{
+                "&:hover": { backgroundColor: "#d32f2f" }
+              }}
+            >
+              <ListItemIcon>
+                <LogoutIcon sx={{ color: "#d32f2f" }} />
+              </ListItemIcon>
+              <ListItemText
+                primary="Logout"
+                primaryTypographyProps={{
+                  sx: { color: "#fff !important" }
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
         </List>
-      </Drawer>{/* Main content area */}
-      <Box component="main" sx={{ flexGrow: 1, p: 2, color: "#fff", backgroundColor: "#15191c", minHeight: "100vh", position: "relative", mt: 8 }}>
+        
+        {/* Notification Center at bottom of sidebar */}
+        <Box sx={{ position: "absolute", bottom: 16, left: 16 }}>
+          <NotificationCenter />
+        </Box>
+      </Drawer>      {/* Main content area */}
+      <Box component="main" sx={{ flexGrow: 1, p: 2, color: "#fff", backgroundColor: "#15191c", minHeight: "100vh", position: "relative", overflowY: "auto" }}>
         {children}
-      </Box>      {/* Logout Confirmation Dialog */}
+      </Box>{/* Logout Confirmation Dialog */}
       <Dialog
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}

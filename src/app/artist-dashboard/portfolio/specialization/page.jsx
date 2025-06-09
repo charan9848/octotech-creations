@@ -141,7 +141,6 @@ export default function SpecializationPage() {
       setLoading(false);
     }
   };
-
   const handleSubmit = async (values) => {
     setSubmitting(true);
     
@@ -151,7 +150,7 @@ export default function SpecializationPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ specialization: values }),
       });
 
       if (response.ok) {
