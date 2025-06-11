@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://octotech-creations.vercel.app/artist-login</loc><lastmod>2025-06-01T07:46:29.100Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/awards</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-register</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/experience</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/projects</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/ratings</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/specialization</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/home</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/about</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/basic-details</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/contact</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/profile</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://octotech-creations.vercel.app/artist-dashboard/portfolio/artworks</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-login</loc><lastmod>2025-06-01T07:46:29.100Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/awards</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-register</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/experience</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/projects</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/ratings</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/specialization</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/home</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/about</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/basic-details</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/contact</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/profile</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.octotechcreations.com/artist-dashboard/portfolio/artworks</loc><lastmod>2025-06-01T07:46:29.101Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
