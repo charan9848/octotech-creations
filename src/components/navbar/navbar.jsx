@@ -13,6 +13,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import NotificationCenter from "@/components/NotificationCenter/NotificationCenter";
 
 const LogoutButton = styled(Button)({
   backgroundColor: "#e53935",
@@ -26,7 +27,8 @@ const LogoutButton = styled(Button)({
 
 export default function Navbar() {
   const theme = useTheme();
-  const pathname = usePathname();  const { data: session } = useSession();
+  const pathname = usePathname();
+  const { data: session } = useSession();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   
   // Define different menu content based on authentication status
@@ -59,7 +61,6 @@ export default function Navbar() {
     signOut({ callbackUrl: "/artist-login" });
     setLogoutDialogOpen(false);
   };
-
   const DrawerList = (
     <Box
       sx={{
@@ -67,6 +68,8 @@ export default function Navbar() {
         backgroundColor: "#000", // Black background
         height: "100%", // Full height
         color: "#fff", // White text color
+        marginTop: 0, // Ensure no extra margin
+        paddingTop: 0, // Ensure no extra padding
       }}
       role="presentation"
       onClick={toggleDrawer(false)} // Close drawer when clicking inside
@@ -105,10 +108,17 @@ export default function Navbar() {
               Sign In
             </Button>
           </Link>
-        )}
-      </Box>
+        )}      </Box>
 
-      <Divider sx={{ backgroundColor: "#fff" }} />      <Box sx={{ padding: "20px" }}>
+      {/* Notification Center in mobile drawer - Only show when logged in */}
+      {session && (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+          <NotificationCenter />
+        </Box>
+      )}
+
+      <Divider sx={{ backgroundColor: "#fff" }} />
+      <Box sx={{ padding: "20px" }}>
         <List>
           {MenuContent.map((menu) => (
             <ListItem key={menu.id} disablePadding>
@@ -152,7 +162,7 @@ export default function Navbar() {
           backgroundColor: theme.palette.appBar?.main || "#000000", // Added fallback
           paddingTop: "3px",
           paddingBottom: "3px",
-          zIndex: theme.zIndex.drawer + 1, // Place navbar above drawer
+          zIndex: 1300, // High z-index to stay above drawer and other elements
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -233,8 +243,7 @@ export default function Navbar() {
                 </Typography>
               </Button>
             </Link>
-          ))}
-          </Box>
+          ))}          </Box>
 
           {/* Sign In Button */}
           <Box
@@ -246,16 +255,17 @@ export default function Navbar() {
                 xl: "flex", // Show on extra-large screens
               },
             }}
-          >
-            {session ? (
-              <LogoutButton
-                variant="contained"
-
-                disableRipple
-                onClick={() => setLogoutDialogOpen(true)}
-              >
-                Logout
-              </LogoutButton>
+          >            {session ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <NotificationCenter />
+                <LogoutButton
+                  variant="contained"
+                  disableRipple
+                  onClick={() => setLogoutDialogOpen(true)}
+                >
+                  Logout
+                </LogoutButton>
+              </Box>
             ) : (
 
               <>
@@ -294,8 +304,17 @@ export default function Navbar() {
             <Button variant="contained" size="small" >Start free now</Button>
             <Button onClick={toggleDrawer(true)}>
               <MenuIcon />
-            </Button>
-            <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
+            </Button>            <Drawer 
+              anchor="right" 
+              open={open} 
+              onClose={toggleDrawer(false)}
+              sx={{
+                zIndex: 1400, // Above navbar to overlay it
+                '& .MuiDrawer-paper': {
+                  zIndex: 1400,
+                },
+              }}
+            >
               {DrawerList}
             </Drawer>
           </Box>

@@ -4,11 +4,13 @@ import { motion } from 'framer-motion';
 
 import { Box, Typography } from "@mui/material";
 import MovieFilterOutlinedIcon from '@mui/icons-material/MovieFilterOutlined';
-import AnimationOutlinedIcon from '@mui/icons-material/AnimationOutlined';
-import CenterFocusStrongOutlinedIcon from '@mui/icons-material/CenterFocusStrongOutlined';
-import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined';
-import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
-import TextFieldsOutlinedIcon from '@mui/icons-material/TextFieldsOutlined';
+import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined';
+import VideoLibraryOutlinedIcon from '@mui/icons-material/VideoLibraryOutlined';
+import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
+import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
+import ThreeDRotationOutlinedIcon from '@mui/icons-material/ThreeDRotationOutlined';
+import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
+import ColorLensOutlinedIcon from '@mui/icons-material/ColorLensOutlined';
 import React from 'react'
 
 import { fadeIn } from "@/app/variants";
@@ -17,39 +19,51 @@ const HeroBody1 = () => {
   const services = [
     {
       id: "1",
-      title: 'VFX (Visual Effects)',
-      description: 'We add explosions, fire, smoke, and digital elements that bring your scenes to life. Perfect for films, commercials, and music videos.',
+      title: 'VIDEO EDITING',
+      description: 'Professional video editing services with seamless cuts, color correction, and audio synchronization for films, commercials, and content.',
       icon: MovieFilterOutlinedIcon,
     },
     {
       id: "2",
-      title: '3D Animation',
-      description: 'Create dynamic characters, environments, and objects with smooth, high-quality motion. Perfect for storytelling and product showcases.',
-      icon: AnimationOutlinedIcon,
+      title: 'VFX',
+      description: 'We add explosions, fire, smoke, and digital elements that bring your scenes to life. Perfect for films, commercials, and music videos.',
+      icon: AutoFixHighOutlinedIcon,
     },
     {
       id: "3",
-      title: 'Motion Tracking',
-      description: 'We track camera movements to integrate 3D or VFX elements with real footage. Every frame feels like it belongs.',
-      icon: CenterFocusStrongOutlinedIcon,
+      title: 'REELS',
+      description: 'Create engaging short-form content for social media platforms with dynamic editing, effects, and optimized formatting.',
+      icon: VideoLibraryOutlinedIcon,
     },
     {
       id: "4",
-      title: 'Rotoscoping',
-      description: 'We separate characters or objects from the background with pixel-perfect masks. Great for compositing and background swaps.',
-      icon: ContentCutOutlinedIcon,
+      title: 'MOTION GRAPHICS',
+      description: 'Animated graphics, infographics, and visual elements that enhance your content with professional motion design.',
+      icon: TimelineOutlinedIcon,
     },
     {
       id: "5",
-      title: 'Compositing',
-      description: 'We blend layers, lighting, and effects into one polished shot. The result? A perfectly unified cinematic scene.',
-      icon: LayersOutlinedIcon,
+      title: 'TITLES/LOGO ANIMATION',
+      description: 'Bring your branding to life with animated logos, title sequences, and branded elements for professional presentation.',
+      icon: TitleOutlinedIcon,
     },
     {
       id: "6",
-      title: 'Motion Graphics & Titles',
-      description: 'Bring your branding to life with animated intros, text, and visuals for ads, intros, and promos.',
-      icon: TextFieldsOutlinedIcon,
+      title: '3D CGI',
+      description: 'Create stunning 3D computer-generated imagery, characters, environments, and objects with photorealistic quality.',
+      icon: ThreeDRotationOutlinedIcon,
+    },
+    {
+      id: "7",
+      title: 'REAL ESTATE',
+      description: 'Specialized video production for real estate including property tours, aerial footage, and virtual walkthroughs.',
+      icon: HomeWorkOutlinedIcon,
+    },
+    {
+      id: "8",
+      title: 'DI-COLOUR GRADING',
+      description: 'Professional digital intermediate color grading services to achieve cinematic looks and enhance the visual storytelling of your content.',
+      icon: ColorLensOutlinedIcon,
     },
   ];
 

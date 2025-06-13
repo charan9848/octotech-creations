@@ -62,12 +62,23 @@ export default function BasicDetailsPage() {
       }
     }
   });
-
   const handleImageUpload = async (file) => {
     if (!file) return;
 
     setUploadLoading(true);
     try {
+      // Delete old image if it exists and is from our upload service
+      const currentImage = formik.values.portfolioImage;
+      if (currentImage && currentImage.trim() && currentImage.includes('cloudinary')) {
+        try {
+          await axios.delete(`/api/upload?url=${encodeURIComponent(currentImage)}`);
+          console.log('Old portfolio image deleted successfully');
+        } catch (deleteError) {
+          console.warn('Failed to delete old portfolio image:', deleteError);
+          // Continue with upload even if delete fails
+        }
+      }
+
       const formData = new FormData();
       formData.append('file', file);
 

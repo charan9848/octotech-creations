@@ -58,11 +58,22 @@ const Profile = () => {
         setLoading(false);
       }
     };    fetchArtist();
-  }, [session, status]);
-  // Handle image upload to Cloudinary
+  }, [session, status]);  // Handle image upload to Cloudinary
   const handleImageUpload = async (file) => {
     setUploading(true);
     try {
+      // Delete old image if it exists and is from our upload service
+      const currentImage = formik.values.image;
+      if (currentImage && currentImage.trim() && currentImage.includes('cloudinary')) {
+        try {
+          await axios.delete(`/api/upload?url=${encodeURIComponent(currentImage)}`);
+          console.log('Old profile image deleted successfully');
+        } catch (deleteError) {
+          console.warn('Failed to delete old profile image:', deleteError);
+          // Continue with upload even if delete fails
+        }
+      }
+
       const formData = new FormData();
       formData.append('file', file);
 

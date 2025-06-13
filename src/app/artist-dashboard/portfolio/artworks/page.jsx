@@ -32,33 +32,68 @@ const artworkSchema = Yup.object().shape({
       title: Yup.string().required("Title is required"),
       description: Yup.string().required("Description is required"),
       date: Yup.date().required("Date is required"),
-      image: Yup.string().url("Must be a valid URL").required("Image is required")
+      image: Yup.string().url("Must be a valid URL").required("Media file is required")
     })
   ).min(1, "At least one artwork is required")
 });
 
-// Image Upload Component
-const ImageUpload = ({ onImageUpload, currentImage, artworkIndex }) => {
+// Media Upload Component (Images and Videos)
+const MediaUpload = ({ onMediaUpload, currentMedia, artworkIndex }) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
 
+  // Function to check if the file is a video
+  const isVideoFile = (file) => {
+    return file && file.type.startsWith('video/');
+  };
+
+  // Function to check if URL is a video
+  const isVideoUrl = (url) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.mov', '.avi', '.wmv', '.flv', '.webm', '.m4v'];
+    const urlLower = url.toLowerCase();
+    
+    const hasVideoExtension = videoExtensions.some(ext => urlLower.includes(ext));
+    const isCloudinaryVideo = urlLower.includes('cloudinary') && urlLower.includes('video');
+    
+    return hasVideoExtension || isCloudinaryVideo;
+  };
   const handleFileSelect = async (file) => {
     if (!file) return;
 
-    // Validate file
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+    // Validate file type (images and videos)
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      toast.error('Please select an image or video file');
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
+    // Different size limits for images and videos
+    const maxSize = isVideoFile(file) ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for images
+    const fileType = isVideoFile(file) ? 'video' : 'image';
+    
+    if (file.size > maxSize) {
+      toast.error(`${fileType === 'video' ? 'Video' : 'Image'} size must be less than ${fileType === 'video' ? '50MB' : '5MB'}`);
       return;
     }
 
     setUploading(true);
     
     try {
+      // Delete old media if it exists
+      if (currentMedia && currentMedia.trim()) {
+        try {
+          await fetch(`/api/upload?url=${encodeURIComponent(currentMedia)}`, {
+            method: 'DELETE',
+          });
+          console.log('Old media deleted successfully');
+        } catch (deleteError) {
+          console.warn('Failed to delete old media:', deleteError);
+          // Continue with upload even if delete fails
+        }
+      }
+
       const formData = new FormData();
       formData.append('file', file);
 
@@ -69,16 +104,19 @@ const ImageUpload = ({ onImageUpload, currentImage, artworkIndex }) => {
 
       if (!response.ok) {
         throw new Error('Upload failed');
-      }      const data = await response.json();
-      onImageUpload(data.url);
-      toast.success('Image uploaded successfully!');
+      }
+      
+      const data = await response.json();
+      onMediaUpload(data.url);
+      const mediaType = isVideoFile(file) ? 'Video' : 'Image';
+      toast.success(`${mediaType} uploaded successfully!`);
       // Add notification to dashboard
       if (window.addDashboardNotification) {
-        window.addDashboardNotification('success', 'Image uploaded successfully', 'image_upload');
+        window.addDashboardNotification('success', `${mediaType} uploaded successfully`, 'media_upload');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload media');
     } finally {
       setUploading(false);
     }
@@ -90,67 +128,212 @@ const ImageUpload = ({ onImageUpload, currentImage, artworkIndex }) => {
     const file = e.dataTransfer.files[0];
     handleFileSelect(file);
   };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     handleFileSelect(file);
   };
+  const handleUrlSubmit = async () => {
+    if (!urlInput.trim()) {
+      toast.error('Please enter a valid URL');
+      return;
+    }
 
+    // Basic URL validation
+    try {
+      new URL(urlInput);
+    } catch {
+      toast.error('Please enter a valid URL');
+      return;
+    }
+
+    try {
+      // Delete old media if it exists and is from our upload service
+      if (currentMedia && currentMedia.trim() && currentMedia.includes('cloudinary')) {
+        try {
+          await fetch(`/api/upload?url=${encodeURIComponent(currentMedia)}`, {
+            method: 'DELETE',
+          });
+          console.log('Old media deleted successfully');
+        } catch (deleteError) {
+          console.warn('Failed to delete old media:', deleteError);
+          // Continue with URL update even if delete fails
+        }
+      }
+
+      onMediaUpload(urlInput.trim());
+      const mediaType = isVideoUrl(urlInput) ? 'Video' : 'Image';
+      toast.success(`${mediaType} URL added successfully!`);
+      
+      // Add notification to dashboard
+      if (window.addDashboardNotification) {
+        window.addDashboardNotification('success', `${mediaType} URL added successfully`, 'media_url_add');
+      }
+      
+      setUrlInput('');
+      setShowUrlInput(false);
+    } catch (error) {
+      console.error('URL update error:', error);
+      toast.error('Failed to update media URL');
+    }
+  };
+
+  const handleUrlCancel = () => {
+    setUrlInput('');
+    setShowUrlInput(false);
+  };
   return (
     <Box>
       <input
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         onChange={handleFileChange}
         style={{ display: 'none' }}
-        id={`image-upload-${artworkIndex}`}
+        id={`media-upload-${artworkIndex}`}
       />
       
-      <Box
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        onDragEnter={() => setDragActive(true)}
-        onDragLeave={() => setDragActive(false)}
-        sx={{
-          border: `2px dashed ${dragActive ? '#007bb5' : '#00a1e0'}`,
-          borderRadius: 2,
-          p: 3,
-          textAlign: 'center',
-          cursor: 'pointer',
-          backgroundColor: dragActive ? 'rgba(0, 161, 224, 0.1)' : '#2a2e33',
-          transition: 'all 0.3s ease',
-          mb: 2
-        }}
-        onClick={() => document.getElementById(`image-upload-${artworkIndex}`).click()}
-      >
-        {uploading ? (
-          <CircularProgress size={40} sx={{ color: '#00a1e0' }} />
-        ) : (
-          <>
-            <CloudUploadIcon sx={{ fontSize: 48, color: '#00a1e0', mb: 1 }} />
-            <Typography variant="body1" sx={{ color: '#fff', mb: 1 }}>
-              {dragActive ? 'Drop image here' : 'Click to upload or drag and drop'}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#ccc' }}>
-              PNG, JPG, GIF up to 5MB
-            </Typography>
-          </>
-        )}
-      </Box>
+      {!showUrlInput ? (
+        <>
+          <Box
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onDragEnter={() => setDragActive(true)}
+            onDragLeave={() => setDragActive(false)}
+            sx={{
+              border: `2px dashed ${dragActive ? '#007bb5' : '#00a1e0'}`,
+              borderRadius: 2,
+              p: 3,
+              textAlign: 'center',
+              cursor: 'pointer',
+              backgroundColor: dragActive ? 'rgba(0, 161, 224, 0.1)' : '#2a2e33',
+              transition: 'all 0.3s ease',
+              mb: 2
+            }}
+            onClick={() => document.getElementById(`media-upload-${artworkIndex}`).click()}
+          >
+            {uploading ? (
+              <CircularProgress size={40} sx={{ color: '#00a1e0' }} />
+            ) : (
+              <>
+                <CloudUploadIcon sx={{ fontSize: 48, color: '#00a1e0', mb: 1 }} />
+                <Typography variant="body1" sx={{ color: '#fff', mb: 1 }}>
+                  {dragActive ? 'Drop media here' : 'Click to upload or drag and drop'}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#ccc' }}>
+                  Images: PNG, JPG, GIF up to 5MB<br />
+                  Videos: MP4, MOV, WebM up to 50MB
+                </Typography>
+              </>
+            )}
+          </Box>
 
-      {currentImage && (
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
+            <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
+              OR
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setShowUrlInput(true)}
+              sx={{
+                borderColor: '#00a1e0',
+                color: '#00a1e0',
+                '&:hover': {
+                  borderColor: '#007bb5',
+                  backgroundColor: 'rgba(0, 161, 224, 0.1)'
+                }
+              }}
+            >
+              Paste Media URL
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ color: '#fff', mb: 2 }}>
+            Paste your image or video URL (Cloudinary, Google Drive, etc.)
+          </Typography>
+          <TextField
+            fullWidth
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="https://example.com/image.jpg or https://cloudinary.com/video.mp4"
+            size="small"
+            sx={{
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "#1a1e23",
+                color: "#fff",
+                "& fieldset": { borderColor: "#333" },
+                "&:hover fieldset": { borderColor: "#00a1e0" },
+                "&.Mui-focused fieldset": { borderColor: "#00a1e0" }
+              }
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleUrlSubmit();
+              }
+            }}
+          />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleUrlSubmit}
+              sx={{
+                backgroundColor: '#00a1e0',
+                '&:hover': { backgroundColor: '#007bb5' }
+              }}
+            >
+              Add URL
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleUrlCancel}
+              sx={{
+                borderColor: '#666',
+                color: '#ccc',
+                '&:hover': {
+                  borderColor: '#999',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {currentMedia && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="subtitle2" sx={{ color: "#00a1e0", mb: 1 }}>
-            Current Image:
-          </Typography>          <Box sx={{ maxWidth: 300, backgroundColor: "#1a1e23", borderRadius: 2, overflow: 'hidden' }}>
-            <CardMedia
-              component="img"
-              height="200"
-              image={currentImage}
-              alt="Artwork preview"
-              sx={{ objectFit: 'cover' }}
-            />
+            Current Media:
+          </Typography>
+          <Box sx={{ maxWidth: 300, backgroundColor: "#1a1e23", borderRadius: 2, overflow: 'hidden' }}>
+            {isVideoUrl(currentMedia) ? (
+              <video
+                width="100%"
+                height="200"
+                controls
+                style={{ objectFit: 'cover' }}
+              >
+                <source src={currentMedia} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <CardMedia
+                component="img"
+                height="200"
+                image={currentMedia}
+                alt="Artwork preview"
+                sx={{ objectFit: 'cover' }}
+              />
+            )}
           </Box>
+          <Typography variant="caption" sx={{ color: '#ccc', mt: 1, display: 'block' }}>
+            {currentMedia}
+          </Typography>
         </Box>
       )}
     </Box>
@@ -300,12 +483,11 @@ export default function ArtworksPage() {
       >
         <Typography variant="h4" sx={{ color: "#fff", mb: 1 }}>
           Artworks
-        </Typography>
-        <Typography
+        </Typography>        <Typography
           variant="body2"
           sx={{ color: "#78838D", mb: 4, fontSize: "14px" }}
         >
-          Showcase your best artworks. Upload images, add descriptions, and creation dates.
+          Showcase your best artworks. Upload images or videos, add descriptions, and creation dates.
           Artist ID: <strong>{session?.user?.artistid}</strong>
         </Typography>
         
@@ -405,12 +587,11 @@ export default function ArtworksPage() {
                               )}
                             </Box>
                           </Box>
-                          
-                          <Box>
-                            <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Artwork Image *</FormLabel>
-                            <ImageUpload
-                              onImageUpload={(url) => setFieldValue(`artworks.${index}.image`, url)}
-                              currentImage={artwork?.image || ""}
+                            <Box>
+                            <FormLabel sx={{ color: "#fff", mb: 1, display: 'block' }}>Artwork Media (Image/Video) *</FormLabel>
+                            <MediaUpload
+                              onMediaUpload={(url) => setFieldValue(`artworks.${index}.image`, url)}
+                              currentMedia={artwork?.image || ""}
                               artworkIndex={index}
                             />
                             {touched.artworks?.[index]?.image && errors.artworks?.[index]?.image && (

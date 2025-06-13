@@ -9,7 +9,9 @@
     "lint": "next lint",
     "postbuild": "next-sitemap",
     "setup-db": "node src/scripts/setup-database-indexes.js",
-    "cleanup-duplicates": "node src/scripts/cleanup-duplicates.js"
+    "cleanup-duplicates": "node src/scripts/cleanup-duplicates.js",
+    "cleanup-cloudinary": "node src/scripts/cleanup-cloudinary-duplicates.js",
+    "safe-cleanup": "node src/scripts/safe-cloudinary-cleanup.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -29,6 +31,7 @@
     "formik": "^2.4.6",
     "lodash": "^4.17.21",
     "lucide-react": "^0.511.0",
+    "moment": "^2.30.1",
     "mongodb": "^6.16.0",
     "motion": "^12.12.1",
     "multer": "^2.0.0",

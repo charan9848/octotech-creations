@@ -17,7 +17,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation"; // Add this import
 import { signOut } from "next-auth/react";
 import React, { useState } from "react";
-import NotificationCenter from "@/components/NotificationCenter/NotificationCenter";
 
 const drawerWidth = 220;
 
@@ -264,9 +263,7 @@ export default function DashboardLayout({ children }) {
                 primaryTypographyProps={{
                   sx: { color: pathname === "/artist-dashboard/profile" ? "#fff" : "#fff !important" }
                 }}              />
-            </ListItemButton>          </ListItem>
-          
-          {/* Divider before bottom actions */}
+            </ListItemButton>          </ListItem>          {/* Divider before bottom actions */}
           <Divider sx={{ my: 2, backgroundColor: "rgba(255, 255, 255, 0.2)" }} />
           
           {/* Logout Button */}
@@ -287,14 +284,8 @@ export default function DashboardLayout({ children }) {
                 }}
               />
             </ListItemButton>
-          </ListItem>
-        </List>
-        
-        {/* Notification Center at bottom of sidebar */}
-        <Box sx={{ position: "absolute", bottom: 16, left: 16 }}>
-          <NotificationCenter />
-        </Box>
-      </Drawer>      {/* Main content area */}
+          </ListItem></List>
+      </Drawer>{/* Main content area */}
       <Box component="main" sx={{ flexGrow: 1, p: 2, color: "#fff", backgroundColor: "#15191c", minHeight: "100vh", position: "relative", overflowY: "auto" }}>
         {children}
       </Box>{/* Logout Confirmation Dialog */}

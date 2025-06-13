@@ -23,7 +23,7 @@ const ArtistRegister = () => {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const router = useRouter();
 
-    const handleClickShowPassword = () => setShowPassword((show) => !show);    const validationSchema = yup.object({
+    const handleClickShowPassword = () => setShowPassword((show) => !show); const validationSchema = yup.object({
         artistid: yup.string().required('Artist ID is required').min(4, 'User ID too short'),
         username: yup.string().required('Username is required').min(4, 'Username too short'),
         email: yup.string().email('Invalid email').required('Email is required'),
@@ -39,7 +39,7 @@ const ArtistRegister = () => {
             setEmailAvailable(null);
             return;
         }
-        
+
         setEmailChecking(true);
         try {
             const response = await axios.post('/api/check-email', { email });
@@ -58,7 +58,7 @@ const ArtistRegister = () => {
             setArtistIdAvailable(null);
             return;
         }
-        
+
         setArtistIdChecking(true);
         try {
             const response = await axios.post('/api/check-artistid', { artistid });
@@ -73,12 +73,12 @@ const ArtistRegister = () => {
     const handleEmailChange = (e) => {
         formik.handleChange(e);
         const email = e.target.value;
-        
+
         // Clear previous timeout
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
         }
-        
+
         // Set new timeout
         const newTimeout = setTimeout(() => {
             checkEmailUniqueness(email);
@@ -89,12 +89,12 @@ const ArtistRegister = () => {
     const handleArtistIdChange = (e) => {
         formik.handleChange(e);
         const artistid = e.target.value;
-        
+
         // Clear previous timeout
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
         }
-        
+
         // Set new timeout
         const newTimeout = setTimeout(() => {
             checkArtistIdUniqueness(artistid);
@@ -143,10 +143,10 @@ const ArtistRegister = () => {
                 p={4}
                 mt={3}
                 sx={{
-                     height: 'auto',
+                    height: 'auto',
                     width: '100',
                     borderRadius: '8px'
-                    
+
                 }}
             >
                 <Box>
@@ -275,14 +275,15 @@ const ArtistRegister = () => {
                         />
                         <FormHelperText sx={{ minHeight: "10px" }} error>
                             {formik.touched.password && formik.errors.password}
-                        </FormHelperText>                        <Button
+                        </FormHelperText>
+                        <Button
                             type="submit"
                             variant="contained"
                             fullWidth
                             disabled={
-                                !formik.isValid || 
-                                loading || 
-                                emailAvailable === false || 
+                                !formik.isValid ||
+                                loading ||
+                                emailAvailable === false ||
                                 artistIdAvailable === false ||
                                 emailChecking ||
                                 artistIdChecking
@@ -293,14 +294,14 @@ const ArtistRegister = () => {
                             {loading ? "Registering..." : "Register"}
                         </Button>
                         <Typography
-                        variant="body1"
-                        sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}
-                        color="#78838D"
-                    >
-                        <small>
-                            Already have an account? <Link href="/artist-login">Login</Link>
-                        </small>
-                    </Typography>
+                            variant="body1"
+                            sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}
+                            color="#78838D"
+                        >
+                            <small>
+                                Already have an account? <Link href="/artist-login">Login</Link>
+                            </small>
+                        </Typography>
                     </form>
                 </motion.div>
             </Box>

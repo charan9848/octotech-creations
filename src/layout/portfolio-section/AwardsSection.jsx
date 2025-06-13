@@ -1,18 +1,30 @@
 'use client';
-import React from 'react';
-import { Box, Typography, Grid, Card, CardContent } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Card, CardContent, Pagination } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BusinessIcon from '@mui/icons-material/Business';
 
 export function AwardsSection({ awards }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8; // 2 rows of 4 items each
+  
   // Return null if awards is null, undefined, not an array, or empty
   if (!awards || !Array.isArray(awards) || awards.length === 0) {
     return null;
   }
 
+  // Calculate pagination
+  const totalPages = Math.ceil(awards.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAwards = awards.slice(startIndex, endIndex);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
   return (
-    <Box sx={{ py: 6, px: 4, backgroundColor: '#0B1113' }}>
+    <Box sx={{ py: 6, px: 4 }}>
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold', mb: 2 }}>
           Awards & Recognition
@@ -20,11 +32,30 @@ export function AwardsSection({ awards }) {
         <Typography variant="body1" sx={{ color: '#ccc' }}>
           Achievements and honors received throughout my career
         </Typography>
-      </Box>
-
-      <Grid container spacing={3} justifyContent="center">
-        {awards.map((award, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+      </Box><Box 
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 3,
+          justifyContent: currentAwards.length <= 3 ? 'center' : 'flex-start'
+        }}
+      >
+        {currentAwards.map((award, index) => (
+          <Box 
+            key={index}
+            sx={{
+              flex: {
+                xs: '1 1 100%',    // 1 per row on mobile
+                sm: '1 1 calc(50% - 12px)',  // 2 per row on tablet
+                md: '1 1 calc(25% - 18px)'   // 4 per row on desktop
+              },
+              maxWidth: {
+                xs: '100%',
+                sm: 'calc(50% - 12px)',
+                md: 'calc(25% - 18px)'
+              }
+            }}
+          >
             <Card
               sx={{
                 backgroundColor: '#1a1e23',
@@ -80,12 +111,68 @@ export function AwardsSection({ awards }) {
                   <Typography variant="body2" sx={{ color: '#ccc', lineHeight: 1.6, mt: 2 }}>
                     {award.description}
                   </Typography>
-                )}
-              </CardContent>
+                )}              </CardContent>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
+      
+      {/* Message for few items */}
+      {currentAwards.length <= 3 && awards.length <= 8 && (
+        <Box sx={{ textAlign: 'center', mt: 4, p: 3 }}>
+          <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
+            {awards.length === 1 ? '🏆 Outstanding Achievement' : 
+             awards.length === 2 ? '🏆 Distinguished Honors' : 
+             '🏆 Excellence Recognition'}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#ccc', maxWidth: 600, mx: 'auto' }}>
+            {awards.length === 1 ? 
+              'This prestigious award represents the highest level of achievement and recognition in the field.' :
+              awards.length === 2 ?
+              'These distinguished honors reflect exceptional dedication and outstanding contributions to the craft.' :
+              'These awards celebrate remarkable achievements and the pursuit of excellence in creative endeavors.'}
+          </Typography>
+        </Box>
+      )}
+      
+      {/* Empty space filler for partial pages */}
+      {currentAwards.length < 8 && currentAwards.length > 3 && (
+        <Box sx={{ textAlign: 'center', mt: 4, p: 3 }}>
+          <Typography variant="body2" sx={{ color: '#666', fontStyle: 'italic' }}>
+            More achievements and recognition to come...
+          </Typography>
+        </Box>
+      )}
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            sx={{
+              '& .MuiPaginationItem-root': {
+                backgroundColor: '#1a1e23',
+                border: '1px solid #333',
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: '#FFD700',
+                  borderColor: '#FFD700',
+                  color: '#000'
+                },
+                '&.Mui-selected': {
+                  backgroundColor: '#FFD700',
+                  borderColor: '#FFD700',
+                  color: '#000'
+                }
+              }
+            }}
+          />
+        </Box>
+      )}
     </Box>
   );
 }
