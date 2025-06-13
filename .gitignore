@@ -87,9 +87,54 @@ config.local.js
 
 # Documentation (generated files)
 API_DOCUMENTATION.md
+GIT_SCRIPT_README.md
 
 # Optional caches
 .eslintcache
 .stylelintcache
 .npm
 .yarn-integrity
+
+# Cloudinary and image processing
+cloudinary-temp/
+image-processing/
+
+# Font testing files (temporary)
+font-test.*
+/src/app/font-test/
+/src/app/fonts.js
+FONT_SETUP_GUIDE.md
+
+# Scripts output
+script-output/
+cleanup-results/
+
+# PowerShell script logs
+*.ps1.log
+
+# Node.js specific
+.node_repl_history
+.npm-debug.log*
+.pnpm-debug.log*
+
+# Package manager lock files (if using specific one)
+# Uncomment the one you DON'T use:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Build artifacts
+dist/
+build/
+out/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary directories
+test-files/
+experimental/
+sandbox/
