@@ -91,11 +91,14 @@ const nextConfig = {
         },
       ],
     };
-  },
-  // Experimental features for better performance
+  },  // Experimental features for better performance
   experimental: {
     scrollRestoration: true,
+    optimizePackageImports: ['framer-motion'],
   },
+  
+  // Transpile packages for better compatibility
+  transpilePackages: ['framer-motion'],
 };
 
 export default nextConfig;

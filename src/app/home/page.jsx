@@ -10,6 +10,7 @@ import HeroBody1Scroll from '@/layout/Hero-Section/Hero-body1-scroll';
 import HeroBody2 from '@/layout/Hero-Section/Hero-body2';
 import HeroBody3 from '@/layout/Hero-Section/Hero-body3';
 import VideoEditingSection from '@/layout/Hero-Section/services/video-editing-section';
+import Reviews from '@/layout/Hero-Section/testinomals/reviews';
 import { Box } from '@mui/material';
 
 const HomeComponent = () => (
@@ -22,6 +23,7 @@ const HomeComponent = () => (
       <HeroBody2 />
       <HeroBody3 />
       <OurTeam/>
+      <Reviews/>
     </section>
   </Box>
 );
