@@ -1,4 +1,103 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  // Production optimizations
+  compress: true,
+  poweredByHeader: false,
+  
+  // Development configuration
+  allowedDevOrigins: [
+    'chrome-extension://*',
+    'devtools://*',
+    'localhost:*',
+    '127.0.0.1:*',
+  ],
+    // Image optimization
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    domains: [
+      'res.cloudinary.com',
+      'cloudinary.com',
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Security headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
+  },
+  // Redirects for SEO
+  async redirects() {
+    return [
+      // Redirect from Vercel domain to custom domain
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'octotech-creations.vercel.app',
+          },
+        ],
+        destination: 'https://octotechcreations.com/:path*',
+        permanent: true,
+      },
+      // Redirect /home to / for consistency
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
+
+  // Handle rewrites for development tools
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Handle Chrome DevTools requests
+        {
+          source: '/.well-known/:path*',
+          destination: '/api/not-found',
+        },
+      ],
+    };
+  },
+
+  // Experimental features for better performance
+  experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
+  },
+};
 
 export default nextConfig;
