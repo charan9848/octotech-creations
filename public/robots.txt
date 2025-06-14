@@ -1,9 +1,6 @@
-# *
+# robots.txt for https://octotechcreations.com
 User-agent: *
 Allow: /
-
-# Host
-Host: https://octotechcreations.com
 
 # Sitemaps
 Sitemap: https://octotechcreations.com/sitemap.xml
