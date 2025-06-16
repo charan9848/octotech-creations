@@ -61,11 +61,10 @@ const nextConfig = {
     return [
       // Redirect from Vercel domain to custom domain
       {
-        source: '/:path*',
-        has: [
+        source: '/:path*',        has: [
           {
             type: 'host',
-            value: 'octotech-creations.vercel.app',
+            value: 'octotechcreations.com',
           },
         ],
         destination: 'https://octotechcreations.com/:path*',

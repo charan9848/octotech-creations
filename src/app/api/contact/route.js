@@ -58,11 +58,9 @@ export async function POST(req) {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-
-    // Auto-reply to user
+    await transporter.sendMail(mailOptions);    // Auto-reply to user
     const autoReplyOptions = {
-      from: 'no-reply@octotech-creations.vercel.app', // or your domain's no-reply address
+      from: 'no-reply@octotechcreations.com', // or your domain's no-reply address
       to: email,
       subject: "Thank you for contacting Octotech Creations",
       text: `Thank you for contacting us, ${firstname}!\n\nWe have received your message and will get back to you shortly.\n\nBest regards,\nOctotech Creations Team`,
