@@ -1,24 +1,23 @@
 module.exports = {
   siteUrl: 'https://octotechcreations.com',
-  generateRobotsTxt: true,
+  generateRobotsTxt: false, // We have our own robots.txt
   changefreq: 'weekly',
   priority: 0.5,
+  exclude: [
+    '/artist-dashboard*',
+    '/artist-login',
+    '/artist-register',
+    '/home', // Redirects to /
+    '/api/*',
+  ],
   transform: async (config, path) => {
     // Custom priority based on path
     let priority = 0.5; // default priority
     
-    if (path === '/' || path === '/home') {
+    if (path === '/') {
       priority = 1.0; // Homepage - highest priority
     } else if (path === '/about' || path === '/contact') {
       priority = 0.9; // Main pages - very high priority
-    } else if (path.startsWith('/artist-login') || path.startsWith('/artist-register')) {
-      priority = 0.6; // Auth pages - medium priority
-    } else if (path.startsWith('/artist-dashboard')) {
-      if (path === '/artist-dashboard') {
-        priority = 0.7; // Main dashboard - high priority
-      } else {
-        priority = 0.4; // Dashboard sub-pages - lower priority
-      }
     } else if (path.startsWith('/portfolio/')) {
       priority = 0.8; // Portfolio pages - high priority
     } else if (path.startsWith('/feedback/')) {

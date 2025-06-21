@@ -29,10 +29,22 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-
   // Security headers
   async headers() {
     return [
+      {
+        source: '/robots.txt',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/plain',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, s-maxage=3600',
+          },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
@@ -55,7 +67,7 @@ const nextConfig = {
         ],
       },
     ];
-  },  // Redirects for SEO
+  },// Redirects for SEO
   async redirects() {
     return [
       // Redirect from Vercel domain to custom domain
@@ -90,11 +102,15 @@ const nextConfig = {
       },
     ];
   },
-
   // Handle rewrites for development tools
   async rewrites() {
     return {
       beforeFiles: [
+        // Ensure robots.txt is served correctly
+        {
+          source: '/robots.txt',
+          destination: '/robots.txt',
+        },
         // Handle Chrome DevTools requests
         {
           source: '/.well-known/:path*',
@@ -102,7 +118,7 @@ const nextConfig = {
         },
       ],
     };
-  },  // Experimental features for better performance
+  },// Experimental features for better performance
   experimental: {
     scrollRestoration: true,
     optimizePackageImports: ['framer-motion'],
