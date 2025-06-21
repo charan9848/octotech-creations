@@ -2,5 +2,23 @@
 User-agent: *
 Allow: /
 
+# Block private/admin areas
+Disallow: /artist-dashboard/
+Disallow: /artist-login
+Disallow: /artist-register
+Disallow: /api/
+
+# Block development files
+Disallow: /*.json$
+Disallow: /*.config.*$
+
+# Allow important pages
+Allow: /portfolio/
+Allow: /contact
+Allow: /about
+
+# Crawl-delay for better server performance
+Crawl-delay: 1
+
 # Sitemaps
 Sitemap: https://octotechcreations.com/sitemap.xml
