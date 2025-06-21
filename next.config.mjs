@@ -67,7 +67,7 @@ const nextConfig = {
         ],
       },
     ];
-  },// Redirects for SEO
+  },  // Redirects for SEO
   async redirects() {
     return [
       // Redirect from Vercel domain to custom domain
@@ -82,18 +82,18 @@ const nextConfig = {
         destination: 'https://octotechcreations.com/:path*',
         permanent: true,
       },
-      // Redirect www to non-www for consistency
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.octotechcreations.com',
-          },
-        ],
-        destination: 'https://octotechcreations.com/:path*',
-        permanent: true,
-      },
+      // Temporarily disable www redirect to fix redirect loop
+      // {
+      //   source: '/:path*',
+      //   has: [
+      //     {
+      //       type: 'host',
+      //       value: 'www.octotechcreations.com',
+      //     },
+      //   ],
+      //   destination: 'https://octotechcreations.com/:path*',
+      //   permanent: true,
+      // },
       // Redirect /home to / for consistency
       {
         source: '/home',
