@@ -71,10 +71,9 @@ export default function RootLayout({ children }) {
         <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
         <meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
         <meta name="msapplication-square150x150logo" content="/mstile-150x150.png" />
-        <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />
-        <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
+        <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />        <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
         <meta name="theme-color" content="#00ACC1" />
-        <link rel="canonical" href="https://octotechcreations.com/" />        {/* Add your Google site verification meta tag below */}
+        {/* Add your Google site verification meta tag below */}
         <meta name="google-site-verification" content="u8wjNF9K9V2zHuWohf1n3iK4AapXkxqOR4sL0FzUgkA" />
         {/* Google AdSense */}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9290596302357676"

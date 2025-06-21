@@ -55,16 +55,28 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  // Redirects for SEO
+  },  // Redirects for SEO
   async redirects() {
     return [
       // Redirect from Vercel domain to custom domain
       {
-        source: '/:path*',        has: [
+        source: '/:path*',
+        has: [
           {
             type: 'host',
-            value: 'octotechcreations.com',
+            value: 'octotech-creations.vercel.app',
+          },
+        ],
+        destination: 'https://octotechcreations.com/:path*',
+        permanent: true,
+      },
+      // Redirect www to non-www for consistency
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.octotechcreations.com',
           },
         ],
         destination: 'https://octotechcreations.com/:path*',
