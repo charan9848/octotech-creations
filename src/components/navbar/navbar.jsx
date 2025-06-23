@@ -92,7 +92,7 @@ export default function Navbar() {
             Logout
           </LogoutButton>
         ) : (
-          <Link href="/artist-login" passHref style={{ width: "100%" }}>
+          <Link href="#" passHref style={{ width: "100%" }}>
             <Button
               variant="text"
               disableRipple
@@ -269,7 +269,7 @@ export default function Navbar() {
             ) : (
 
               <>
-                <Button variant="contained" size="small" >Start free now</Button>
+                {/* <Button variant="contained" size="small" >Start free now</Button> */}
 
                 <Button
                   variant="text"
@@ -301,7 +301,7 @@ export default function Navbar() {
               },
             }}
           >
-            <Button variant="contained" size="small" >Start free now</Button>
+            {/* <Button variant="contained" size="small" >Start free now</Button> */}
             <Button onClick={toggleDrawer(true)}>
               <MenuIcon />
             </Button>            <Drawer 

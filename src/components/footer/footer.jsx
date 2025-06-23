@@ -19,13 +19,13 @@ const footer = () => {
     const octotechInfo = [
         {
             id: 1, // Numeric ID for the section
-            title: "Services",
+            title: "Navigations",
             links: [
-                { id: 101, name: "VFX Editing", link: "/services/vfx-editing" },
-                { id: 102, name: "2D & 3D Animation", link: "/services/animation" },
-                { id: 103, name: "Video Editing (Short Films, Weddings, Birthdays, etc.)", link: "/services/video-editing" },
-                { id: 104, name: "Motion Graphics", link: "/services/motion-graphics" },
-                { id: 105, name: "Custom Template Requests", link: "/services/custom-templates" },
+                { id: 101, name: "Home", link: "/home" },
+                { id: 102, name: "Contact Us", link: "/contact" },
+                { id: 103, name: "Artist Login", link: "/artist-login" },
+                { id: 104, name: "Services", link: "/#services" },
+                
             ],
         },
         {
@@ -34,7 +34,7 @@ const footer = () => {
             links: [
                 { id: 201, name: "About Us", link: "/about" },
                 { id: 202, name: "Testimonials", link: "/testimonials" },
-                { id: 203, name: "Our Team", link: "/team" },
+                { id: 203, name: "Our Team", link: "/#ourteam" },
             ],
         },
         {
@@ -86,7 +86,7 @@ const footer = () => {
 
 
     return (
-        <Box sx={{ backgroundColor: '#0B1113', display: "flex", flexWrap: 'wrap', flexDirection: { xs: "column", sm: "column", md: "row" } }} p={5}>
+        <Box sx={{ backgroundColor: '#0B1113', display: "flex", flexWrap: 'wrap', flexDirection: { xs: "column", sm: "column", md: "row" } }} p={5} >
             <Box sx={{ width: { md: "22%", sm: "45%", xs: "75%" }, padding: "20px" }} >
                 <Box sx={{ display: "flex", alignItems: "center", }} py={2} ps={1}>
                     <Box
@@ -158,7 +158,7 @@ const footer = () => {
                     ))
                 }
             </Box>
-            <Box sx={{ width: { md: "30%", sm: "50%", xs: '75%' }, display: "flex", justifyContent: 'space-around' }} p={1}>
+            <Box sx={{ width: { md: "30%", sm: "50%", xs: '100%' }, display: "flex", justifyContent: 'space-between' }} p={1}>
 
                 <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', maxWidth: '100' }}>
                     <Box p={4} mt={1} sx={{ height: '100', width: '100', borderRadius: '8px' }}>
@@ -254,21 +254,15 @@ const footer = () => {
 
                         {/* Socials icons */}
 
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, py: 4, }}>
-                            <IconButton href="https://www.facebook.com/octotechcreations" target="_blank">
-                                <FacebookIcon color='#aeb4b4' />
-                            </IconButton>
-                            <IconButton href="https://twitter.com/octotechcreation" target="_blank" color="inherit">
-                                <TwitterIcon />
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, py: 3, }}>
+                            <IconButton href="https://www.facebook.com/people/Octotech-creations/100063945101191/" target="_blank">
+                                <FacebookIcon sx={{ color: 'rgba(77, 84, 87,1)' }} />
                             </IconButton>
                             <IconButton href="https://www.youtube.com/@OCTOTECHCREATIONS" target="_blank">
-                                <YouTubeIcon />
+                                <YouTubeIcon sx={{ color: 'rgba(77, 84, 87,1)' }} />
                             </IconButton>
                             <IconButton href="https://www.instagram.com/octotech_creations" target="_blank">
-                                <InstagramIcon />
-                            </IconButton>
-                            <IconButton href="https://www.linkedin.com/company/octotech-creation" target="_blank">
-                                <LinkedInIcon />
+                                <InstagramIcon sx={{ color: 'rgba(77, 84, 87,1)' }} />
                             </IconButton>
                         </Box>
 
@@ -278,20 +272,9 @@ const footer = () => {
                 </Box>
             </Box>
 
-            <Box sx={{ width: { md: "100%", sm: "100%", xs: '100%' }, display: "flex", justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }} p={1}>
+            <Box sx={{ width: { md: "100%", sm: "100%", xs: '100%' }, display: "flex", justifyContent: { md: 'space-between', xs: 'center' }, alignItems: 'center', flexWrap: 'wrap' }} p={1}>
                 {/* Internal navigation links */}
-                <Box sx={{ display: 'flex', gap: 2, mb: { xs: 2, md: 0 } }}>
-                    <Link href="/" style={{ color: '#78838D', textDecoration: 'none' }}>
-                        <Typography variant="h6" fontSize="12px">Home</Typography>
-                    </Link>
-                    <Link href="/about" style={{ color: '#78838D', textDecoration: 'none' }}>
-                        <Typography variant="h6" fontSize="12px">About</Typography>
-                    </Link>
-                    <Link href="/contact" style={{ color: '#78838D', textDecoration: 'none' }}>
-                        <Typography variant="h6" fontSize="12px">Contact</Typography>
-                    </Link>
-                    {/* Add more links as needed */}
-                </Box>
+
                 <Typography variant="h6" color='rgba(77, 84, 87,1)' fontSize="12px">
                     &copy; {new Date().getFullYear()} Octotech Creation. All rights reserved.
                 </Typography>
