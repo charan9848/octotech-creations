@@ -73,7 +73,7 @@ const OurTeam = () => {
                 controlsList="nodownload nofullscreen noremoteplayback"
                 playsInline
             >
-                <source src="https://res.cloudinary.com/djbilxr7i/video/upload/v1750668833/Blue_Gradient_Modern_Youtube_Intro_nrnrmq.mp4" type="video/mp4" />
+                <source src="https://res.cloudinary.com/djbilxr7i/video/upload/v1763534144/background_video_gqq5pm.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
 
