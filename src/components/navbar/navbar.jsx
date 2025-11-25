@@ -2,6 +2,7 @@ import { AppBar, Box, Button, ListItem, ListItemButton, ListItemIcon, ListItemTe
 import { styled } from "@mui/material/styles";
 import Image from 'next/image';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import Link from "next/link"; // Next.js Link component (not react-router-dom)
 
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -48,8 +49,20 @@ export default function Navbar() {
     { id: 6, name: "dashboard", icon: <FolderOutlinedIcon />, path: "/artist-dashboard" },
   ];
 
+  const adminMenuContent = [
+    { id: 1, name: "home", icon: <HomeOutlinedIcon />, path: "/" },
+    { id: 2, name: "dashboard", icon: <FolderOutlinedIcon />, path: "/admin/dashboard" },
+  ];
+
   // Use appropriate menu content based on session status
-  const MenuContent = session ? loggedInMenuContent : loggedOutMenuContent;
+  let MenuContent = loggedOutMenuContent;
+  if (session) {
+    if (session.user?.role === 'admin') {
+      MenuContent = adminMenuContent;
+    } else {
+      MenuContent = loggedInMenuContent;
+    }
+  }
 
   const [open, setOpen] = useState(false);
 
@@ -92,22 +105,40 @@ export default function Navbar() {
             Logout
           </LogoutButton>
         ) : (
-          <Link href="#" passHref style={{ width: "100%" }}>
-            <Button
-              variant="text"
-              disableRipple
-              sx={{
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <PersonOutlineOutlinedIcon sx={{ marginRight: "5px", fontSize: "25px" }} />
-              Sign In
-            </Button>
-          </Link>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
+            <Link href="/artist-login" passHref style={{ width: "100%" }}>
+              <Button
+                variant="text"
+                disableRipple
+                sx={{
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
+              >
+                <PersonOutlineOutlinedIcon sx={{ marginRight: "5px", fontSize: "25px" }} />
+                Artist Login
+              </Button>
+            </Link>
+            <Link href="/admin/login" passHref style={{ width: "100%" }}>
+              <Button
+                variant="text"
+                disableRipple
+                sx={{
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
+              >
+                <AdminPanelSettingsIcon sx={{ marginRight: "5px", fontSize: "25px" }} />
+                Admin
+              </Button>
+            </Link>
+          </Box>
         )}      </Box>
 
       {/* Notification Center in mobile drawer - Only show when logged in */}
@@ -245,7 +276,7 @@ export default function Navbar() {
             </Link>
           ))}          </Box>
 
-          {/* Sign In Button */}
+          {/* Admin Button */}
           <Box
             sx={{
               display: {
@@ -267,26 +298,40 @@ export default function Navbar() {
                 </LogoutButton>
               </Box>
             ) : (
-
-              <>
-                {/* <Button variant="contained" size="small" >Start free now</Button> */}
-
-                <Button
-                  variant="text"
-                  disableRipple
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    color: "white",
-                    ml: 1
-                  }}
-                >
-                  <PersonOutlineOutlinedIcon
-                    sx={{ marginRight: "5px", fontSize: "25px", color: "white" }}
-                  />
-                  Sign In
-                </Button>
-              </>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Link href="/artist-login" passHref style={{ textDecoration: 'none' }}>
+                  <Button
+                    variant="text"
+                    disableRipple
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "white",
+                    }}
+                  >
+                    <PersonOutlineOutlinedIcon
+                      sx={{ marginRight: "5px", fontSize: "25px", color: "white" }}
+                    />
+                    Artist Login
+                  </Button>
+                </Link>
+                <Link href="/admin/login" passHref style={{ textDecoration: 'none' }}>
+                  <Button
+                    variant="text"
+                    disableRipple
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "white",
+                    }}
+                  >
+                    <AdminPanelSettingsIcon
+                      sx={{ marginRight: "5px", fontSize: "25px", color: "white" }}
+                    />
+                    Admin
+                  </Button>
+                </Link>
+              </Box>
             )}
           </Box>
 

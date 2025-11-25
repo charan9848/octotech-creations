@@ -3,20 +3,37 @@ export const metadata = {
   description: "Welcome to Octotech Creations – your destination for high-quality VFX, 2D/3D editing, and Photoshop resources. Elevate your visuals with our creative expertise and powerful library.",
 };
 
-import OurTeam from '@/layout/Hero-Section/artist-details/our-team';
+import dynamic from 'next/dynamic';
 import Hero from '@/layout/Hero-Section/Hero';
-import HeroBody1 from '@/layout/Hero-Section/Hero-Body1';
-import HeroBody1Scroll from '@/layout/Hero-Section/Hero-body1-scroll';
-import HeroBody2 from '@/layout/Hero-Section/Hero-body2';
-import HeroBody3 from '@/layout/Hero-Section/Hero-body3';
-import VideoEditingSection from '@/layout/Hero-Section/services/video-editing-section';
-import Reviews from '@/layout/Hero-Section/testinomals/reviews';
 import { Box } from '@mui/material';
+import clientPromise from "@/lib/mongodb";
 
-const HomeComponent = () => (
+const HeroBody1Scroll = dynamic(() => import('@/layout/Hero-Section/Hero-body1-scroll'));
+const HeroBody1 = dynamic(() => import('@/layout/Hero-Section/Hero-Body1'));
+const HeroBody2 = dynamic(() => import('@/layout/Hero-Section/Hero-body2'));
+const HeroBody3 = dynamic(() => import('@/layout/Hero-Section/Hero-body3'));
+const OurTeam = dynamic(() => import('@/layout/Hero-Section/artist-details/our-team'));
+const Reviews = dynamic(() => import('@/layout/Hero-Section/testinomals/reviews'));
+
+async function getHeroContent() {
+  try {
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    const content = await db.collection("siteContent").findOne({ section: 'hero' });
+    return content ? JSON.parse(JSON.stringify(content)) : null;
+  } catch (error) {
+    console.error("Error fetching hero content:", error);
+    return null;
+  }
+}
+
+const HomeComponent = async () => {
+  const heroContent = await getHeroContent();
+
+  return (
   <Box>
     <section>
-      <Hero />
+      <Hero content={heroContent} />
       <HeroBody1Scroll/>
       <HeroBody1/>
       {/* <VideoEditingSection/> */}
@@ -26,6 +43,6 @@ const HomeComponent = () => (
       <Reviews/>
     </section>
   </Box>
-);
+)};
 
 export default HomeComponent;

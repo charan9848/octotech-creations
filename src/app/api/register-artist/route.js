@@ -1,8 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 
-const MAX_ARTISTS = 4; // Set your limit
-
 export async function POST(request) {
   try {
     const data = await request.json();
@@ -11,6 +9,10 @@ export async function POST(request) {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     const users = db.collection("artists");
+
+    // Get max artists limit from settings
+    const settings = await db.collection("settings").findOne({ key: "global_settings" });
+    const MAX_ARTISTS = settings?.maxArtists || 4;
 
     // Check if email already exists
     const existingEmail = await users.findOne({ email: data.email });
@@ -41,7 +43,9 @@ export async function POST(request) {
 
     // Hash the password before saving
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    data.password = hashedPassword;    await users.insertOne(data);
+    data.password = hashedPassword;
+    data.createdAt = new Date(); // Add creation timestamp
+    await users.insertOne(data);
     return Response.json({ message: "User registered!" });
   } catch (err) {
     console.error("Registration error:", err);

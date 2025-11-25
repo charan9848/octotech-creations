@@ -97,7 +97,7 @@ const nextConfig = {
   },// Experimental features for better performance
   experimental: {
     scrollRestoration: true,
-    optimizePackageImports: ['framer-motion'],
+    optimizePackageImports: ['framer-motion', '@mui/material', '@mui/icons-material', 'lodash', 'lucide-react', 'react-icons'],
   },
   
   // Transpile packages for better compatibility

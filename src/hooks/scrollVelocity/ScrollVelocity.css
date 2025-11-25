@@ -16,6 +16,8 @@
   color: white;
   width: max-content;
   flex-wrap: nowrap;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .scroller span {

@@ -1,17 +1,6 @@
-"use client";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from '@mui/material/styles';
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import theme from './theme';
-import Navbar from '@/components/navbar/navbar';
-import Footer from '@/components/footer/footer';
 import "./globals.css";
-
-import { Toolbar } from "@mui/material";
-import { SessionProvider } from "next-auth/react";
-import { Toaster } from "react-hot-toast";
-import { usePathname } from 'next/navigation';
+import ClientLayout from "./ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,27 +12,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  const hideNavAndFooter = false; // Show navbar and footer on all pages
+export const metadata = {
+  title: "Octotech Creations | VFX, Animation & Compositing Studio",
+  description: "Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations.",
+  keywords: "VFX, Animation, 3D, Motion Graphics, Octotech, Video Editing, Compositing, Visual Effects, Studio",
+  authors: [{ name: "Octotech Creations" }],
+  viewport: "width=device-width, initial-scale=1",
+  openGraph: {
+    title: "Octotech Creations | VFX, Animation & Compositing Studio",
+    description: "Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations.",
+    type: "website",
+    url: "https://octotechcreations.com",
+    images: [
+      {
+        url: "https://octotechcreations.com/favicon-196x196.png",
+        width: 196,
+        height: 196,
+      },
+    ],
+  },
+};
 
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>Octotech Creations | VFX, Animation & Compositing Studio</title>
-        <meta name="description" content="Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations." />
-        <meta name="keywords" content="VFX, Animation, 3D, Motion Graphics, Octotech, Video Editing, Compositing, Visual Effects, Studio" />
-        <meta name="author" content="Octotech Creations" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="og:title" content="Octotech Creations | VFX, Animation & Compositing Studio" />
-        <meta property="og:description" content="Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://octotechcreations.com" />
-        <meta property="og:image" content="https://octotechcreations.com/favicon-196x196.png" />
-        <meta property="og:image:width" content="196" />
-        <meta property="og:image:height" content="196" />
-        <meta property="og:see_also" content="https://www.youtube.com/@OCTOTECHCREATIONS" />
-        <meta property="og:see_also" content="https://www.instagram.com/octotech_creations/?hl=en" />
         {/* Favicon - Complete set for all devices and browsers */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" sizes="196x196" href="/favicon-196x196.png" />
@@ -157,28 +150,9 @@ export default function RootLayout({ children }) {
         }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <SessionProvider>
-          <ThemeProvider theme={theme}>
-            <Navbar />
-            <Toolbar />
-            
-            <main>
-              {children}
-              <Analytics />
-              <SpeedInsights />
-              <Toaster
-                toastOptions={{
-                  style: {
-                    fontFamily: theme.typography.body1.fontFamily,
-                    fontSize: theme.typography.body1.fontSize,
-                  },
-                }}
-              />
-            </main>
-            
-            <Footer />
-          </ThemeProvider>
-        </SessionProvider>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

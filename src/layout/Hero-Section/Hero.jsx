@@ -5,7 +5,12 @@ import { Box, Typography, Button } from "@mui/material";
 import ExploreIcon from '@mui/icons-material/Explore';
 import React from "react";
 
-const Hero = () => {
+const Hero = ({ content }) => {
+  const title = content?.title || "Production-quality VFX and 3D for movies";
+  const subtitle = content?.subtitle || "Welcome to Octotech Creations, where imagination meets reality.";
+  const videoUrl = content?.videoUrl || "https://a-us.storyblok.com/f/1002378/x/1f6178b540/actionvfxfrontpage15.mp4";
+  const posterUrl = content?.posterUrl || "https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg";
+
   return (
     <Box
       sx={{
@@ -42,9 +47,9 @@ const Hero = () => {
           muted
           disablePictureInPicture
           controlsList="nodownload nofullscreen noremoteplayback"
-          poster="https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg"
+          poster={posterUrl}
         >
-          <source src="https://a-us.storyblok.com/f/1002378/x/1f6178b540/actionvfxfrontpage15.mp4" type="video/mp4" />
+          <source src={videoUrl} type="video/mp4" />
         </video>
       </Box>
 
@@ -60,7 +65,7 @@ const Hero = () => {
       >
         <Box
           component="img"
-          src="https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg"
+          src={posterUrl}
           alt="Hero background"
           sx={{
             width: "100%",
@@ -110,11 +115,18 @@ const Hero = () => {
             whileInView="show"
             viewport={{ once: true, amount: 0.7 }}>
             <Typography variant="h3" sx={{ WebkitTextStroke: '0.5px white', fontSize: { xs: "30px", sm: "40px", md: "50px" } }}>
-              Production-quality
-              <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> VFX </span>
-              and
-              <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> 3D </span>
-              for movies
+              {/* If content is provided, render it as HTML to support basic styling if user inputs it, otherwise just text */}
+              {content?.title ? (
+                 <span dangerouslySetInnerHTML={{ __html: title }} />
+              ) : (
+                <>
+                  Production-quality
+                  <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> VFX </span>
+                  and
+                  <span style={{ color: '#32b4de', WebkitTextStroke: '0.5px #32b4de' }}> 3D </span>
+                  for movies
+                </>
+              )}
             </Typography>
           </motion.div>
           <motion.div
@@ -123,7 +135,7 @@ const Hero = () => {
             whileInView="show"
             viewport={{ once: true, amount: 0.7 }}>
             <Typography variant="body1" mt={2} color="#aeb4b4">
-              Welcome to Octotech Creations, where imagination meets reality.
+              {subtitle}
             </Typography>
           </motion.div>
           <motion.div
