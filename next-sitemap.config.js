@@ -1,5 +1,5 @@
 module.exports = {
-  siteUrl: 'https://octotechcreations.com',
+  siteUrl: 'https://www.octotechcreations.com',
   generateRobotsTxt: false, // We have our own robots.txt
   changefreq: 'weekly',
   priority: 0.5,
