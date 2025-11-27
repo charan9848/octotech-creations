@@ -1,11 +1,11 @@
 "use client";
 
-import { Avatar, Box, Button, Card, CardActions, CardContent, CardHeader, IconButton, Typography } from '@mui/material';
+import { Box, Button, Typography, Grid, Container } from '@mui/material';
 import React from 'react'
-import { red } from '@mui/material/colors';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import { motion } from 'framer-motion';
 import { fadeIn } from "@/app/variants";
+import Link from 'next/link';
 
 const OurTeam = () => {
 
@@ -44,137 +44,190 @@ const OurTeam = () => {
 
     return (
         <Box position="relative" sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "100vh",
-            padding: "10px",
-            backgroundColor: '#15191c'
+            minHeight: "auto",
+            backgroundColor: '#0B1113',
+            overflow: 'hidden',
+            py: 6
         }} id="ourteam">
             {/* Background Video */}
-            <video
-                className="video-background"
-                style={{
-                    position: "absolute",
+            <Box sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                zIndex: 0,
+                opacity: 0.3
+            }}>
+                <video
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                    }}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                >
+                    <source src="https://res.cloudinary.com/djbilxr7i/video/upload/v1763534144/background_video_gqq5pm.mp4" type="video/mp4" />
+                </video>
+                <Box sx={{
+                    position: 'absolute',
                     top: 0,
                     left: 0,
-                    zIndex: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center",
-                    opacity: 0.6
-                }}
-                preload="auto"
-                autoPlay
-                loop
-                muted
-                disablePictureInPicture
-                controlsList="nodownload nofullscreen noremoteplayback"
-                playsInline
-            >
-                <source src="https://res.cloudinary.com/djbilxr7i/video/upload/v1763534144/background_video_gqq5pm.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(to bottom, #0B1113 0%, transparent 20%, transparent 80%, #0B1113 100%)'
+                }} />
+            </Box>
 
-            {/* Content */}
-            <Box sx={{
-                position: 'relative',
-                zIndex: 2,
-                display: "flex",
-                flexDirection: 'column',
-                justifyContent: "center",
-                alignItems: "center",
-                width: "100%",
-                my: 4,
-                padding: 3,
-            }}>
-                <Box textAlign="center" >
+            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+                <Box textAlign="center" mb={5}>
                     <motion.div
                         variants={fadeIn('up', 0.1)}
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.4 }}>
-                        <Typography variant="h1" color="white">Our Team</Typography>
+                        <Typography variant="h3" className="text-shine" sx={{ fontWeight: 'bold', mb: 1, fontFamily: 'Eurostile, sans-serif' }}>
+                            OUR TEAM
+                        </Typography>
                     </motion.div>
                     <motion.div
                         variants={fadeIn('up', 0.2)}
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.5 }}>
-                        <Typography variant="h6" color="#32b4de" my={2}>
-                            Meet the creative minds behind our projects. Our team is a blend of artists, animators, and VFX specialists dedicated to bringing your vision to life.
+                        <Typography variant="body1" sx={{ color: '#aeb4b4', maxWidth: '700px', mx: 'auto', lineHeight: 1.6 }}>
+                            Meet the creative minds behind our projects. A blend of artists, animators, and VFX specialists dedicated to bringing your vision to life.
                         </Typography>
                     </motion.div>
                 </Box>
 
-                <motion.div
-                    variants={fadeIn('up', 0.1)}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true, amount: 0.4 }}>
-                    <Box my={3} sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: { md: 'space-between', sm: 'center', xs: 'center' }, gap: 8, }}>
-                        {
-                            teams.map(team => (                                <Card key={team.id} sx={{
-                                    width: 380,
-                                    backgroundColor: 'transparent',
-                                    backdropFilter: 'blur(100px)',
-                                    color: 'white',
-                                    borderRadius: 5,
-                                    border: '2px solid #333',
-                                    boxShadow: '0 4px 8px rgba(0,0,0,1)',
-                                    transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out',
-
-                                    '&:hover': {
-                                        transform: 'scale(1.05)',
-                                        boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                                    },
+                <Box sx={{
+                    display: 'flex',
+                    overflowX: 'auto',
+                    gap: 3,
+                    py: 2,
+                    px: { xs: 2, md: 4 },
+                    scrollSnapType: 'x mandatory',
+                    scrollbarWidth: 'none',
+                    '&::-webkit-scrollbar': { display: 'none' },
+                    justifyContent: { xs: 'flex-start', md: 'center' }
+                }}>
+                    {teams.map((team, index) => (
+                        <Box key={team.id} sx={{
+                            minWidth: { xs: '300px', sm: '340px', md: '360px' },
+                            scrollSnapAlign: 'center'
+                        }}>
+                            <motion.div
+                                variants={fadeIn('up', 0.2 + (index * 0.1))}
+                                initial="hidden"
+                                whileInView="show"
+                                viewport={{ once: true, amount: 0.2 }}
+                                style={{ height: '100%' }}
+                            >
+                                <Box sx={{
+                                    height: '100%',
+                                    background: '#13171a',
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    p: 3,
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    height: '500'
+                                    alignItems: 'center',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-5px)',
+                                        background: '#1a1f23',
+                                        border: '1px solid rgba(0, 172, 193, 0.3)',
+                                        boxShadow: '0 10px 20px rgba(0,0,0,0.3)'
+                                    }
                                 }}>
-                                    <CardHeader
-                                        avatar={
-                                            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                                                <img src={team.image} alt={team.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                                            </Avatar>
-                                        }
-                                        title={
-                                            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-                                                {team.name}
-                                            </Typography>
-                                        }
-                                        subheader={
-                                            <Typography variant="subtitle1" sx={{ color: '#b0b0b0' }}>
-                                                {team.role}
-                                            </Typography>
-                                        }
-                                        action={
-                                            <IconButton aria-label="instagram" href={team.instagram} target="_blank">
-                                                <InstagramIcon sx={{ color: '#e1306c' }} />
-                                            </IconButton>
-                                        }
-                                    />
-                                    <CardContent sx={{ flexGrow: 1 }}>
-                                        <Typography variant="body2" sx={{ color: '#e0e0e0' }}>
-                                            {team.description}
-                                        </Typography>
-                                    </CardContent>
-                                    <CardActions sx={{ justifyContent: 'center', p: 2, marginTop: 'auto' }} >
-                                        <Button variant='text' href={team.portfolio}>
-                                            <Typography variant="button" sx={{ color: '#32b4de', textDecoration: 'none' }}>
-                                                View Portfolio
-                                            </Typography>
+                                    <Box sx={{ position: 'relative', mb: 2 }}>
+                                        <Box
+                                            component="img"
+                                            src={team.image}
+                                            alt={team.name}
+                                            sx={{
+                                                width: 100,
+                                                height: 100,
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                                border: '3px solid rgba(0, 172, 193, 0.2)',
+                                                padding: '3px'
+                                            }}
+                                        />
+                                        <Box
+                                            component="a"
+                                            href={team.instagram}
+                                            target="_blank"
+                                            sx={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                right: 0,
+                                                background: '#E1306C',
+                                                borderRadius: '50%',
+                                                width: 30,
+                                                height: 30,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white',
+                                                transition: 'transform 0.2s',
+                                                '&:hover': { transform: 'scale(1.1)' }
+                                            }}
+                                        >
+                                            <InstagramIcon sx={{ fontSize: 18 }} />
+                                        </Box>
+                                    </Box>
+
+                                    <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold', mb: 0.5, fontFamily: 'Eurostile, sans-serif' }}>
+                                        {team.name}
+                                    </Typography>
+                                    
+                                    <Typography variant="subtitle2" sx={{ color: '#00ACC1', mb: 2, fontWeight: 500, letterSpacing: 1, textTransform: 'uppercase' }}>
+                                        {team.role}
+                                    </Typography>
+
+                                    <Typography variant="body2" sx={{ 
+                                        color: '#aeb4b4', 
+                                        textAlign: 'center', 
+                                        mb: 3, 
+                                        lineHeight: 1.6, 
+                                        flexGrow: 1, 
+                                        fontSize: '0.9rem'
+                                    }}>
+                                        {team.description}
+                                    </Typography>
+
+                                    <Link href={team.portfolio} style={{ width: '100%', textDecoration: 'none' }}>
+                                        <Button 
+                                            fullWidth 
+                                            variant="outlined" 
+                                            size="small"
+                                            sx={{ 
+                                                color: '#00ACC1',
+                                                borderColor: '#00ACC1',
+                                                borderRadius: '8px',
+                                                py: 1,
+                                                textTransform: 'none',
+                                                fontSize: '0.9rem',
+                                                '&:hover': {
+                                                    borderColor: '#00ACC1',
+                                                    background: 'rgba(0, 172, 193, 0.1)'
+                                                }
+                                            }}
+                                        >
+                                            View Portfolio
                                         </Button>
-
-                                    </CardActions>
-                                </Card>
-
-                            ))
-                        }
-                    </Box>
-                </motion.div>
-            </Box>
+                                    </Link>
+                                </Box>
+                            </motion.div>
+                        </Box>
+                    ))}
+                </Box>
+            </Container>
         </Box>
     )
 }

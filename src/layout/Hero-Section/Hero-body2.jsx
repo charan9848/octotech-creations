@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/app/variants';
 import { Box, Button, Typography } from "@mui/material";
+import Link from 'next/link';
 
 const HeroBody2 = () => {
     return (
@@ -40,7 +41,9 @@ const HeroBody2 = () => {
                     whileInView="show"
                     viewport={{ once: true, amount: 0.7 }}>
                      <Box mt={1}>
-                        <Typography variant="h6"  >Join thousands of artists already using Octotech. Get instant access to our Free VFX and Practice Footage Libraries.</Typography>
+                        <Typography variant="h6" sx={{ maxWidth: '800px', margin: '0 auto', lineHeight: 1.6 }}>
+                            Ready to elevate your visuals? Whether it's for film, advertising, or digital content, our team of experts is here to bring your ideas to life with precision and passion. Let's create something extraordinary together.
+                        </Typography>
                     </Box>
                 </motion.div>
 
@@ -51,7 +54,11 @@ const HeroBody2 = () => {
                     viewport={{ once: true, amount: 0.7 }}>
                     
                 <Box my={4}>
-                    <Button variant="contained" size="large" sx={{ fontSize: "15px", backgroundColor: "Green", padding: "10px 40px" }} >Start free now</Button>
+                    <Link href="/contact" style={{ textDecoration: 'none' }}>
+                        <Button variant="contained" size="large" sx={{ fontSize: "15px", backgroundColor: "#00ACC1", padding: "10px 40px", '&:hover': { backgroundColor: "#00838F" } }} >
+                            Contact Us Now
+                        </Button>
+                    </Link>
                 </Box>
                 </motion.div>
             </Box>
