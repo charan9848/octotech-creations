@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Octotech Creations | VFX, Animation & Compositing Studio",
-  description: "Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations.",
+  description: "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
   keywords: "VFX, Animation, 3D, Motion Graphics, Octotech, Video Editing, Compositing, Visual Effects, Studio",
   authors: [{ name: "Octotech Creations" }],
   viewport: "width=device-width, initial-scale=1",
   openGraph: {
     title: "Octotech Creations | VFX, Animation & Compositing Studio",
-    description: "Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands. Elevate your visuals with Octotech Creations.",
+    description: "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
     type: "website",
     url: "https://octotechcreations.com",
     images: [
@@ -85,7 +85,7 @@ export default function RootLayout({ children }) {
               "height": "196"
             },
             "image": "https://octotechcreations.com/favicon-196x196.png",
-            "description": "Pixel-perfect compositing, VFX, 3D animation, and motion graphics for film, ads, and brands.",
+            "description": "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
             "foundingDate": "2020",
             "founder": {
               "@type": "Person",

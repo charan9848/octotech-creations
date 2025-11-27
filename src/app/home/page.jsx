@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Home | Octotech Creations",
-  description: "Welcome to Octotech Creations – your destination for high-quality VFX, 2D/3D editing, and Photoshop resources. Elevate your visuals with our creative expertise and powerful library.",
+  description: "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
 };
 
 import dynamic from 'next/dynamic';

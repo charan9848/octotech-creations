@@ -40,11 +40,17 @@ const About = () => {
             viewport={{ once: true, amount: 0.7 }}
           >
             <Box m={1} mb={3}>
+              <Typography variant="h2" color="#aeb4b4" paragraph>
+                At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. With over 5 years of experience, we’ve helped brands grow, products stand out, and emotions come alive — not just with edits, but with impact.
+              </Typography>
+              <Typography variant="h2" color="#aeb4b4" paragraph>
+                From cinematic VFX in Tollywood films to 3D ads that replace expensive shoots, from scroll-stopping reels to real estate videos that lead to real bookings, we’ve done one thing consistently: create visuals that drive results.
+              </Typography>
+              <Typography variant="h2" color="#aeb4b4" paragraph>
+                Our clients don’t chase trends — they build trust, and we help them do it with visuals that feel real, purposeful, and powerful. If your goal is to rise above the noise, make people pause, feel, and act — we’re already on the same page.
+              </Typography>
               <Typography variant="h2" color="#aeb4b4">
-                Octotech Creations is a VFX, Animation, and Compositing studio dedicated to bringing imagination to life. 
-                Our team of passionate artists and technologists delivers pixel-perfect compositing, stunning 3D animation, 
-                and cutting-edge motion graphics for films, advertisements, and brands. We blend creativity with technology 
-                to elevate your visual storytelling and help you stand out in a digital world.
+                This isn’t just editing. This is OctoTech — where your story becomes unforgettable.
               </Typography>
             </Box>
           </motion.div>
