@@ -276,7 +276,7 @@ const footer = () => {
                 {/* Internal navigation links */}
 
                 <Typography variant="h6" color='rgba(77, 84, 87,1)' fontSize="12px">
-                    &copy; {new Date().getFullYear()} Octotech Creation. All rights reserved.
+                    &copy; {new Date().getFullYear()} Octotech Creation. All rights reserved. | Developed by Gannoj Bhanu Charan
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Typography variant="h6" fontSize="12px" color='rgba(77, 84, 87,1)'>Terms</Typography>
