@@ -2,9 +2,31 @@
 
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/app/variants';
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, CircularProgress } from "@mui/material";
+import { useState, useEffect } from 'react';
 
 const About = () => {
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const res = await fetch('/api/team');
+        if (res.ok) {
+          const data = await res.json();
+          setTeamMembers(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch team members", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeam();
+  }, []);
+
   return (
     <Box sx={{ backgroundColor: '#0B1113' }} p={5}>
       <Box
@@ -54,25 +76,6 @@ const About = () => {
               </Typography>
             </Box>
           </motion.div>
-          <motion.div
-            variants={fadeIn('up', 0.5)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.5 }}
-          >
-            <Box width="300px" m={1} pb={2}>
-              <Box
-                component="img"
-                src="https://a-us.storyblok.com/f/1002378/413x45/5345ae6caa/software-icons.png"
-                alt="Software Icons"
-                sx={{
-                  width: "100%",
-                  height: "auto",
-                  borderRadius: "8px",
-                }}
-              />
-            </Box>
-          </motion.div>
         </Box>
         <Box>
           <motion.div
@@ -93,6 +96,57 @@ const About = () => {
             />
           </motion.div>
         </Box>
+      </Box>
+
+        <Box mt={10} mb={5}>
+        <motion.div
+          variants={fadeIn('up', 0.2)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.7 }}
+        >
+          <Typography variant="h1" color="white" textAlign="center" mb={6}>
+            Meet The Team
+          </Typography>
+        </motion.div>
+        
+        {loading ? (
+          <Box display="flex" justifyContent="center">
+            <CircularProgress sx={{ color: '#32b4de' }} />
+          </Box>
+        ) : (
+          <Box className="marquee-container">
+            <Box className="marquee-content">
+              {[...teamMembers, ...teamMembers].map((member, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    width: '280px',
+                    backgroundColor: '#15191c',
+                    p: 4,
+                    borderRadius: '12px',
+                    textAlign: 'center',
+                    border: '1px solid #333',
+                    transition: 'all 0.3s ease',
+                    flexShrink: 0,
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      borderColor: '#00ACC1',
+                      boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
+                    }
+                  }}
+                >
+                  <Typography variant="h4" className="text-shine" sx={{ fontSize: '24px !important', mb: 1, WebkitTextStroke: '0px' }}>
+                    {member.username}
+                  </Typography>
+                  <Typography variant="body1" color="#aeb4b4">
+                    {member.role === 'admin' ? 'Administrator' : 'Team Member'}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
       </Box>
     </Box>
   );

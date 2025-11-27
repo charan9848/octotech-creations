@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Alert, TextField, TablePagination, InputAdornment, TableSortLabel } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Alert, TextField, TablePagination, InputAdornment, TableSortLabel, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
@@ -57,7 +57,8 @@ export default function AdminArtists() {
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [editForm, setEditForm] = useState({
     username: '',
-    email: ''
+    email: '',
+    role: 'artist'
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -126,7 +127,8 @@ export default function AdminArtists() {
     setSelectedArtist(artist);
     setEditForm({
       username: artist.username || '',
-      email: artist.email || ''
+      email: artist.email || '',
+      role: artist.role || 'artist'
     });
     setEditDialogOpen(true);
   };
@@ -292,6 +294,7 @@ export default function AdminArtists() {
                   Email
                 </TableSortLabel>
               </TableCell>
+              <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Role</TableCell>
               <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>
                 <TableSortLabel
                   active={orderBy === 'createdAt'}
@@ -324,6 +327,9 @@ export default function AdminArtists() {
                 </TableCell>
                 <TableCell sx={{ color: 'white' }}>{artist.username}</TableCell>
                 <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{artist.email}</TableCell>
+                <TableCell sx={{ color: artist.role === 'admin' ? '#00ACC1' : 'rgba(255,255,255,0.7)', fontWeight: artist.role === 'admin' ? 'bold' : 'normal' }}>
+                  {artist.role || 'artist'}
+                </TableCell>
                 <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{formatDate(artist.createdAt)}</TableCell>
                 <TableCell>
                   <IconButton 
@@ -401,7 +407,27 @@ export default function AdminArtists() {
             variant="outlined"
             value={editForm.email}
             onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+            sx={{ mb: 2 }}
           />
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="role-select-label" sx={{ color: 'rgba(255,255,255,0.7)' }}>Role</InputLabel>
+            <Select
+              labelId="role-select-label"
+              value={editForm.role}
+              onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+              label="Role"
+              sx={{
+                color: 'white',
+                '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#32b4de' },
+                '.MuiSvgIcon-root': { color: 'white' }
+              }}
+            >
+              <MenuItem value="artist">Artist</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }} disabled={actionLoading}>

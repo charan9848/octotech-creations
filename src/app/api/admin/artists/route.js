@@ -65,7 +65,7 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    const { id, username, email } = body;
+    const { id, username, email, role } = body;
 
     if (!id || !username || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -74,9 +74,14 @@ export async function PUT(request) {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
 
+    const updateData = { username, email };
+    if (role) {
+      updateData.role = role;
+    }
+
     const result = await db.collection("artists").updateOne(
       { _id: new ObjectId(id) },
-      { $set: { username, email } }
+      { $set: updateData }
     );
 
     if (result.matchedCount === 1) {
