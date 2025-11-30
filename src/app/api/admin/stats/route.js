@@ -69,6 +69,9 @@ export async function GET(request) {
     const visitorStats = await db.collection("visitor_stats").find({}).toArray();
     const totalVisitors = visitorStats.reduce((acc, curr) => acc + curr.count, 0);
 
+    // Get global settings
+    const settings = await db.collection("settings").findOne({ key: "global_settings" }) || { maxArtists: 4, maintenanceMode: false, allowRegistrations: true };
+
     return NextResponse.json({
       stats: {
         artists: artistsCount,
@@ -80,7 +83,8 @@ export async function GET(request) {
       recentArtists,
       recentMessages,
       allArtistsDates,
-      visitorStats // Send raw daily stats for charting
+      visitorStats, // Send raw daily stats for charting
+      settings
     });
   } catch (error) {
     console.error("Error fetching admin stats:", error);

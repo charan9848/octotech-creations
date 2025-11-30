@@ -34,22 +34,28 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    const { maxArtists } = body;
+    // Extract known settings, ignore others to prevent pollution if needed, or just spread
+    const { maxArtists, maintenanceMode, allowRegistrations } = body;
 
-    if (maxArtists === undefined || maxArtists === null) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+    const updateData = {
+      key: "global_settings",
+      updatedAt: new Date()
+    };
+
+    if (maxArtists !== undefined) updateData.maxArtists = parseInt(maxArtists);
+    if (maintenanceMode !== undefined) updateData.maintenanceMode = maintenanceMode;
+    if (allowRegistrations !== undefined) updateData.allowRegistrations = allowRegistrations;
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
 
     await db.collection("settings").updateOne(
       { key: "global_settings" },
-      { $set: { key: "global_settings", maxArtists: parseInt(maxArtists) } },
+      { $set: updateData },
       { upsert: true }
     );
 
-    return NextResponse.json({ message: 'Settings updated successfully' });
+    return NextResponse.json({ message: "Settings updated" });
   } catch (error) {
     console.error("Settings update error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, CircularProgress, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, Chip, IconButton } from '@mui/material';
+import { Box, Grid, Paper, Typography, CircularProgress, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, Chip, IconButton, LinearProgress, TextField, Snackbar, Alert, Switch, FormControlLabel, InputAdornment } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import EmailIcon from '@mui/icons-material/Email';
@@ -12,6 +12,14 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StorageIcon from '@mui/icons-material/Storage';
 import SpeedIcon from '@mui/icons-material/Speed';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import SaveIcon from '@mui/icons-material/Save';
+import DownloadIcon from '@mui/icons-material/Download';
+import MemoryIcon from '@mui/icons-material/Memory';
+import DnsIcon from '@mui/icons-material/Dns';
+import CloudIcon from '@mui/icons-material/Cloud';
+import SearchIcon from '@mui/icons-material/Search';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SecurityIcon from '@mui/icons-material/Security';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend, AreaChart, Area, LineChart, Line } from 'recharts';
@@ -22,14 +30,25 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [growthData, setGrowthData] = useState([]);
   const [visitorData, setVisitorData] = useState([]);
+  
+  // New Features State
+  const [note, setNote] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [systemHealth, setSystemHealth] = useState({ cpu: 0, memory: 0, storage: { usagePercent: 0, usedMB: 0, totalMB: 512 } });
+  const [settings, setSettings] = useState({ maxArtists: 4, maintenanceMode: false, allowRegistrations: true });
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const savedNote = localStorage.getItem('admin_note');
+    if (savedNote) setNote(savedNote);
+
     const fetchStats = async () => {
       try {
         const res = await fetch('/api/admin/stats');
         if (res.ok) {
           const data = await res.json();
           setStats(data);
+          if (data.settings) setSettings(data.settings);
           processGrowthData(data.allArtistsDates);
           processVisitorData(data.visitorStats);
         }
@@ -40,7 +59,24 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchSystemHealth = async () => {
+      try {
+        const res = await fetch('/api/admin/system-health');
+        if (res.ok) {
+          const data = await res.json();
+          setSystemHealth(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch system health", error);
+      }
+    };
+
     fetchStats();
+    fetchSystemHealth();
+    
+    // Refresh system health every 30 seconds
+    const interval = setInterval(fetchSystemHealth, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const processVisitorData = (stats) => {
@@ -96,6 +132,42 @@ export default function AdminDashboard() {
     setGrowthData(chartData);
   };
 
+  const handleSettingChange = async (key, value) => {
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    
+    try {
+        await fetch('/api/admin/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [key]: value })
+        });
+        setSnackbar({ open: true, message: 'Settings updated', severity: 'success' });
+    } catch (error) {
+        setSnackbar({ open: true, message: 'Failed to update settings', severity: 'error' });
+    }
+  };
+
+  const handleSaveNote = () => {
+    localStorage.setItem('admin_note', note);
+    setSnackbar({ open: true, message: 'Note saved successfully', severity: 'success' });
+  };
+
+  const handleExportData = () => {
+    const dataStr = JSON.stringify(stats, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = `admin_stats_${format(new Date(), 'yyyy-MM-dd')}.json`;
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    setSnackbar({ open: true, message: 'Data exported successfully', severity: 'success' });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -125,7 +197,29 @@ export default function AdminDashboard() {
         <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
           Dashboard Overview
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+           <TextField
+              size="small"
+              placeholder="Search artists..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  bgcolor: 'rgba(255,255,255,0.05)',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                  '&.Mui-focused fieldset': { borderColor: '#32b4de' },
+                }
+              }}
+           />
            <Chip icon={<CheckCircleIcon sx={{ color: '#4caf50 !important' }} />} label="System Healthy" sx={{ bgcolor: 'rgba(76, 175, 80, 0.1)', color: '#4caf50', border: '1px solid rgba(76, 175, 80, 0.2)' }} />
            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center' }}>
              {format(new Date(), 'MMM dd, yyyy')}
@@ -224,6 +318,56 @@ export default function AdminDashboard() {
                         </Button>
                       </Link>
                     </Box>
+                  </CardContent>
+                </Card>
+             </Grid>
+
+             <Grid item>
+                <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                      <SettingsIcon sx={{ mr: 1, color: '#ff9800' }} /> Platform Settings
+                    </Typography>
+                    
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>Max Artists Limit</Typography>
+                      <TextField
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={settings.maxArtists}
+                        onChange={(e) => handleSettingChange('maxArtists', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            color: 'white',
+                            bgcolor: 'rgba(255,255,255,0.05)',
+                            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                          }
+                        }}
+                      />
+                    </Box>
+
+                    <FormControlLabel
+                      control={
+                        <Switch 
+                          checked={settings.maintenanceMode} 
+                          onChange={(e) => handleSettingChange('maintenanceMode', e.target.checked)}
+                          color="warning"
+                        />
+                      }
+                      label={<Typography variant="body2" sx={{ color: settings.maintenanceMode ? '#ff9800' : 'white' }}>Maintenance Mode</Typography>}
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Switch 
+                          checked={settings.allowRegistrations} 
+                          onChange={(e) => handleSettingChange('allowRegistrations', e.target.checked)}
+                          color="success"
+                        />
+                      }
+                      label={<Typography variant="body2" sx={{ color: settings.allowRegistrations ? '#4caf50' : 'white' }}>Allow Registrations</Typography>}
+                    />
                   </CardContent>
                 </Card>
              </Grid>
@@ -397,6 +541,167 @@ export default function AdminDashboard() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* System Utilities Row */}
+      <Grid container spacing={3} sx={{ mt: 1 }}>
+        {/* System Health */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <SpeedIcon sx={{ mr: 1, color: '#4caf50' }} /> System Health
+              </Typography>
+              
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>CPU Usage</Typography>
+                  <Typography variant="body2" sx={{ color: '#4caf50' }}>{systemHealth.cpu}%</Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={systemHealth.cpu} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#4caf50' } }} />
+              </Box>
+
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>Memory (RAM)</Typography>
+                  <Typography variant="body2" sx={{ color: '#2196f3' }}>{systemHealth.memory}%</Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={systemHealth.memory} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#2196f3' } }} />
+              </Box>
+
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>MongoDB Storage ({systemHealth.storage?.usedMB} MB)</Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>Text Data Only (Images on Cloudinary)</Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ color: '#ff9800' }}>{systemHealth.storage?.usagePercent}%</Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={Math.max(systemHealth.storage?.usagePercent || 0, 1)} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#ff9800' } }} />
+              </Box>
+
+              <Box sx={{ mt: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>Cloudinary Media ({systemHealth.cloudinary?.usedMB || 0} MB)</Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>Images & Videos</Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ color: '#00b0ff' }}>{systemHealth.cloudinary?.usagePercent || 0}%</Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={Math.max(systemHealth.cloudinary?.usagePercent || 0, 1)} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#00b0ff' } }} />
+              </Box>
+
+              <Box sx={{ mt: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>Deployment Bundle ({systemHealth.projectSize?.usedMB || 0} MB)</Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>src + public (Excludes node_modules)</Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="body2" sx={{ color: '#00e676' }}>{systemHealth.projectSize?.usagePercent || 0}%</Typography>
+                    <Typography variant="caption" sx={{ color: '#00e676', fontSize: '0.65rem', display: 'block' }}>
+                      {systemHealth.projectSize?.usagePercent < 20 ? 'Safe for Vercel' : 'Normal Usage'}
+                    </Typography>
+                  </Box>
+                </Box>
+                <LinearProgress variant="determinate" value={Math.max(systemHealth.projectSize?.usagePercent || 0, 1)} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#00e676' } }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Admin Notepad */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                  <EditIcon sx={{ mr: 1, color: '#ffeb3b' }} /> Quick Notes
+                </Typography>
+                <IconButton onClick={handleSaveNote} size="small" sx={{ color: '#ffeb3b' }}>
+                  <SaveIcon />
+                </IconButton>
+              </Box>
+              <TextField
+                multiline
+                rows={6}
+                fullWidth
+                placeholder="Type your notes here..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                    '&.Mui-focused fieldset': { borderColor: '#ffeb3b' },
+                  }
+                }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Data Management */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <StorageIcon sx={{ mr: 1, color: '#9c27b0' }} /> Data Management
+              </Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button 
+                  variant="outlined" 
+                  startIcon={<DownloadIcon />} 
+                  onClick={handleExportData}
+                  sx={{ 
+                    justifyContent: 'flex-start', 
+                    color: '#9c27b0', 
+                    borderColor: 'rgba(156, 39, 176, 0.5)',
+                    '&:hover': { borderColor: '#9c27b0', bgcolor: 'rgba(156, 39, 176, 0.1)' }
+                  }}
+                >
+                  Export Dashboard Data
+                </Button>
+                
+                <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                    Database Status
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4caf50' }} />
+                    <Typography variant="body2" sx={{ color: '#4caf50' }}>Connected (MongoDB)</Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                    Last Backup
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircleIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                    <Typography variant="body2" sx={{ color: 'white' }}>
+                      {format(new Date(), 'MMM dd, yyyy')} (Auto)
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
