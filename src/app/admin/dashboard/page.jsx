@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, CircularProgress, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, Chip, IconButton, LinearProgress, TextField, Snackbar, Alert, Switch, FormControlLabel, InputAdornment } from '@mui/material';
+import { Box, Grid, Paper, Typography, CircularProgress, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, Chip, IconButton, LinearProgress, TextField, Snackbar, Alert, Switch, FormControlLabel, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Checkbox } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import PeopleIcon from '@mui/icons-material/People';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import EmailIcon from '@mui/icons-material/Email';
@@ -20,12 +21,16 @@ import CloudIcon from '@mui/icons-material/Cloud';
 import SearchIcon from '@mui/icons-material/Search';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SecurityIcon from '@mui/icons-material/Security';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend, AreaChart, Area, LineChart, Line } from 'recharts';
 import { format } from 'date-fns';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [growthData, setGrowthData] = useState([]);
@@ -37,10 +42,33 @@ export default function AdminDashboard() {
   const [systemHealth, setSystemHealth] = useState({ cpu: 0, memory: 0, storage: { usagePercent: 0, usedMB: 0, totalMB: 512 } });
   const [settings, setSettings] = useState({ maxArtists: 4, maintenanceMode: false, allowRegistrations: true });
   const [searchQuery, setSearchQuery] = useState('');
+  const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
+  
+  // Todo State
+  const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState('');
+  
+  // Broadcast State
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastSubject, setBroadcastSubject] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
 
   useEffect(() => {
     const savedNote = localStorage.getItem('admin_note');
     if (savedNote) setNote(savedNote);
+
+    const fetchTodos = async () => {
+      try {
+        const res = await fetch('/api/admin/todos');
+        if (res.ok) {
+          const data = await res.json();
+          setTodos(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch todos", error);
+      }
+    };
 
     const fetchStats = async () => {
       try {
@@ -73,11 +101,94 @@ export default function AdminDashboard() {
 
     fetchStats();
     fetchSystemHealth();
+    fetchTodos();
     
     // Refresh system health every 30 seconds
     const interval = setInterval(fetchSystemHealth, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Todo Handlers
+  const handleAddTodo = async () => {
+    if (!newTodo.trim()) return;
+    try {
+      const res = await fetch('/api/admin/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newTodo })
+      });
+      if (res.ok) {
+        const todo = await res.json();
+        setTodos([todo, ...todos]);
+        setNewTodo('');
+      }
+    } catch (error) {
+      console.error("Failed to add todo", error);
+    }
+  };
+
+  const handleToggleTodo = async (id, completed) => {
+    try {
+      // Optimistic update
+      const updatedTodos = todos.map(t => t._id === id ? { ...t, completed: !completed } : t);
+      setTodos(updatedTodos);
+      
+      await fetch('/api/admin/todos', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, completed: !completed })
+      });
+    } catch (error) {
+      console.error("Failed to toggle todo", error);
+    }
+  };
+
+  const handleDeleteTodo = async (id) => {
+    try {
+      const updatedTodos = todos.filter(t => t._id !== id);
+      setTodos(updatedTodos);
+      
+      await fetch(`/api/admin/todos?id=${id}`, { method: 'DELETE' });
+    } catch (error) {
+      console.error("Failed to delete todo", error);
+    }
+  };
+
+  // Broadcast Handlers
+  const handleSendBroadcast = async () => {
+    if (!broadcastSubject || !broadcastMessage) {
+      setSnackbar({ open: true, message: 'Subject and message required', severity: 'error' });
+      return;
+    }
+    
+    setSendingBroadcast(true);
+    try {
+      const res = await fetch('/api/admin/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: broadcastSubject, message: broadcastMessage })
+      });
+      
+      if (res.ok) {
+        setSnackbar({ open: true, message: 'Broadcast sent successfully', severity: 'success' });
+        setBroadcastOpen(false);
+        setBroadcastSubject('');
+        setBroadcastMessage('');
+      } else {
+        setSnackbar({ open: true, message: 'Failed to send broadcast', severity: 'error' });
+      }
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Error sending broadcast', severity: 'error' });
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/admin/dashboard/artists?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   const processVisitorData = (stats) => {
     if (!stats) return;
@@ -132,6 +243,22 @@ export default function AdminDashboard() {
     setGrowthData(chartData);
   };
 
+  const handleMaintenanceToggle = (e) => {
+    const newValue = e.target.checked;
+    if (newValue) {
+      // Turning ON -> Show warning
+      setMaintenanceDialogOpen(true);
+    } else {
+      // Turning OFF -> Just do it
+      handleSettingChange('maintenanceMode', false);
+    }
+  };
+
+  const confirmMaintenanceMode = () => {
+    handleSettingChange('maintenanceMode', true);
+    setMaintenanceDialogOpen(false);
+  };
+
   const handleSettingChange = async (key, value) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
@@ -154,14 +281,34 @@ export default function AdminDashboard() {
   };
 
   const handleExportData = () => {
-    const dataStr = JSON.stringify(stats, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `admin_stats_${format(new Date(), 'yyyy-MM-dd')}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    setSnackbar({ open: true, message: 'Data exported successfully', severity: 'success' });
+    // Prepare CSV content
+    const headers = ['Metric', 'Value'];
+    const rows = [
+      ['Total Visitors', stats?.stats?.visitors || 0],
+      ['Total Artists', stats?.stats?.artists || 0],
+      ['Total Feedback', stats?.stats?.feedback || 0],
+      ['Total Messages', stats?.stats?.contacts || 0],
+      ['System CPU', `${systemHealth.cpu}%`],
+      ['System Memory', `${systemHealth.memory}%`],
+      ['Storage Usage', `${systemHealth.storage?.usagePercent}%`],
+      ['Export Date', format(new Date(), 'yyyy-MM-dd HH:mm:ss')]
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `admin_dashboard_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setSnackbar({ open: true, message: 'Dashboard data exported as CSV', severity: 'success' });
   };
 
   const handleCloseSnackbar = () => {
@@ -203,10 +350,14 @@ export default function AdminDashboard() {
               placeholder="Search artists..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
+                    <SearchIcon 
+                      sx={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} 
+                      onClick={handleSearch}
+                    />
                   </InputAdornment>
                 ),
               }}
@@ -317,6 +468,15 @@ export default function AdminDashboard() {
                           Check Messages
                         </Button>
                       </Link>
+                      <Button 
+                        fullWidth 
+                        variant="outlined" 
+                        startIcon={<CampaignIcon />} 
+                        onClick={() => setBroadcastOpen(true)}
+                        sx={{ justifyContent: 'flex-start', color: '#ff9800', borderColor: 'rgba(255, 152, 0, 0.5)' }}
+                      >
+                        Broadcast Email
+                      </Button>
                     </Box>
                   </CardContent>
                 </Card>
@@ -351,7 +511,7 @@ export default function AdminDashboard() {
                       control={
                         <Switch 
                           checked={settings.maintenanceMode} 
-                          onChange={(e) => handleSettingChange('maintenanceMode', e.target.checked)}
+                          onChange={handleMaintenanceToggle}
                           color="warning"
                         />
                       }
@@ -609,35 +769,75 @@ export default function AdminDashboard() {
           </Card>
         </Grid>
 
-        {/* Admin Notepad */}
+        {/* Admin Task Board */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-                  <EditIcon sx={{ mr: 1, color: '#ffeb3b' }} /> Quick Notes
-                </Typography>
-                <IconButton onClick={handleSaveNote} size="small" sx={{ color: '#ffeb3b' }}>
-                  <SaveIcon />
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <EditIcon sx={{ mr: 1, color: '#ffeb3b' }} /> Task Board
+              </Typography>
+              
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <TextField
+                  size="small"
+                  fullWidth
+                  placeholder="Add new task..."
+                  value={newTodo}
+                  onChange={(e) => setNewTodo(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddTodo()}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: 'white',
+                      bgcolor: 'rgba(255,255,255,0.05)',
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    }
+                  }}
+                />
+                <IconButton onClick={handleAddTodo} sx={{ bgcolor: 'rgba(255, 235, 59, 0.1)', color: '#ffeb3b', borderRadius: 1 }}>
+                  <AddIcon />
                 </IconButton>
               </Box>
-              <TextField
-                multiline
-                rows={6}
-                fullWidth
-                placeholder="Type your notes here..."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    color: 'white',
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                    '&.Mui-focused fieldset': { borderColor: '#ffeb3b' },
-                  }
-                }}
-              />
+
+              <List sx={{ flexGrow: 1, overflow: 'auto', maxHeight: '300px' }}>
+                {todos.map((todo) => (
+                  <ListItem 
+                    key={todo._id} 
+                    dense
+                    secondaryAction={
+                      <IconButton edge="end" size="small" onClick={() => handleDeleteTodo(todo._id)} sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#f44336' } }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    }
+                    sx={{ 
+                      bgcolor: 'rgba(255,255,255,0.02)', 
+                      mb: 1, 
+                      borderRadius: 1,
+                      borderLeft: `3px solid ${todo.completed ? '#4caf50' : '#ffeb3b'}`
+                    }}
+                  >
+                    <Checkbox
+                      checked={todo.completed}
+                      onChange={() => handleToggleTodo(todo._id, todo.completed)}
+                      size="small"
+                      sx={{ color: 'rgba(255,255,255,0.3)', '&.Mui-checked': { color: '#4caf50' } }}
+                    />
+                    <ListItemText 
+                      primary={todo.text} 
+                      sx={{ 
+                        '& .MuiTypography-root': { 
+                          color: todo.completed ? 'rgba(255,255,255,0.3)' : 'white',
+                          textDecoration: todo.completed ? 'line-through' : 'none'
+                        } 
+                      }} 
+                    />
+                  </ListItem>
+                ))}
+                {todos.length === 0 && (
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', mt: 4 }}>
+                    No tasks yet. Add one above!
+                  </Typography>
+                )}
+              </List>
             </CardContent>
           </Card>
         </Grid>
@@ -702,6 +902,141 @@ export default function AdminDashboard() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Maintenance Mode Confirmation Dialog */}
+      <Dialog
+        open={maintenanceDialogOpen}
+        onClose={() => setMaintenanceDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)',
+            minWidth: '400px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#ff9800', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SecurityIcon /> Enable Maintenance Mode?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.8)', mb: 2 }}>
+            Are you sure you want to enable Maintenance Mode?
+          </DialogContentText>
+          <Box sx={{ bgcolor: 'rgba(255, 152, 0, 0.1)', p: 2, borderRadius: 1, border: '1px solid rgba(255, 152, 0, 0.3)' }}>
+            <Typography variant="body2" sx={{ color: '#ff9800', mb: 1, fontWeight: 'bold' }}>
+              This will happen:
+            </Typography>
+            <List dense sx={{ p: 0 }}>
+              <ListItem sx={{ px: 0, py: 0.5 }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>• Public access to the website will be blocked.</Typography>
+              </ListItem>
+              <ListItem sx={{ px: 0, py: 0.5 }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>• Visitors will see the "Under Maintenance" page.</Typography>
+              </ListItem>
+              <ListItem sx={{ px: 0, py: 0.5 }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>• All registered artists will receive an email notification.</Typography>
+              </ListItem>
+              <ListItem sx={{ px: 0, py: 0.5 }}>
+                <Typography variant="body2" sx={{ color: '#4caf50' }}>• You (Admin) will still have full access.</Typography>
+              </ListItem>
+            </List>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setMaintenanceDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.6)' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmMaintenanceMode} 
+            variant="contained" 
+            color="warning"
+            autoFocus
+          >
+            Yes, Enable It
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Broadcast Email Dialog */}
+      <Dialog
+        open={broadcastOpen}
+        onClose={() => setBroadcastOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#ff9800', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CampaignIcon /> Broadcast to All Artists
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+            Send an email notification to all registered artists. Use this for important announcements.
+          </DialogContentText>
+          
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Email Subject"
+            fullWidth
+            variant="outlined"
+            value={broadcastSubject}
+            onChange={(e) => setBroadcastSubject(e.target.value)}
+            sx={{
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                color: 'white',
+                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                '&.Mui-focused fieldset': { borderColor: '#ff9800' },
+              },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#ff9800' }
+            }}
+          />
+          
+          <TextField
+            margin="dense"
+            label="Message Body"
+            fullWidth
+            multiline
+            rows={6}
+            variant="outlined"
+            value={broadcastMessage}
+            onChange={(e) => setBroadcastMessage(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                color: 'white',
+                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                '&.Mui-focused fieldset': { borderColor: '#ff9800' },
+              },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#ff9800' }
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setBroadcastOpen(false)} sx={{ color: 'rgba(255,255,255,0.6)' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendBroadcast} 
+            variant="contained" 
+            color="warning"
+            disabled={sendingBroadcast}
+            startIcon={sendingBroadcast ? <CircularProgress size={20} color="inherit" /> : <EmailIcon />}
+          >
+            {sendingBroadcast ? 'Sending...' : 'Send Broadcast'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

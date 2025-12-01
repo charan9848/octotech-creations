@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Alert, TextField, TablePagination, InputAdornment, TableSortLabel, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -49,6 +50,7 @@ function stableSort(array, comparator) {
 }
 
 export default function AdminArtists() {
+  const searchParams = useSearchParams();
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -62,9 +64,38 @@ export default function AdminArtists() {
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('username');
+  
+  // Role Management
+  const [roles, setRoles] = useState([
+    { value: 'artist', label: 'Artist' },
+    { value: 'admin', label: 'Admin' },
+    { value: 'vfx_artist', label: 'VFX Artist' },
+    { value: '3d_artist', label: '3D Artist' },
+    { value: 'animator', label: 'Animator' },
+    { value: 'illustrator', label: 'Illustrator' }
+  ]);
+  const [newRoleDialogOpen, setNewRoleDialogOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+
+  const handleAddRole = () => {
+    if (newRoleName.trim()) {
+      const value = newRoleName.toLowerCase().replace(/\s+/g, '_');
+      const label = newRoleName;
+      // Check if already exists
+      if (!roles.some(r => r.value === value)) {
+        setRoles([...roles, { value, label }]);
+        setEditForm({ ...editForm, role: value });
+        toast.success(`Role "${label}" added`);
+      } else {
+        toast.error("Role already exists");
+      }
+      setNewRoleDialogOpen(false);
+      setNewRoleName('');
+    }
+  };
 
   const fetchArtists = async () => {
     try {
@@ -136,24 +167,30 @@ export default function AdminArtists() {
   const handleEditSave = async () => {
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/artists?id=${selectedArtist._id}`, {
+      // Note: We are sending the ID in the body now, not query param, to match standard PUT practices
+      // But the API route currently expects ID in body for PUT based on my read
+      const res = await fetch(`/api/admin/artists`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          id: selectedArtist._id,
+          ...editForm
+        }),
       });
 
       if (res.ok) {
         toast.success("Artist updated successfully");
-        fetchArtists();
         setEditDialogOpen(false);
+        fetchArtists();
       } else {
-        toast.error("Failed to update artist");
+        const data = await res.json();
+        toast.error(data.error || "Failed to update artist");
       }
     } catch (error) {
-      console.error("Update error", error);
-      toast.error("Error updating artist");
+      console.error("Update error:", error);
+      toast.error("An error occurred");
     } finally {
       setActionLoading(false);
     }
@@ -424,10 +461,18 @@ export default function AdminArtists() {
                 '.MuiSvgIcon-root': { color: 'white' }
               }}
             >
-              <MenuItem value="artist">Artist</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
+              {roles.map((role) => (
+                <MenuItem key={role.value} value={role.value}>{role.label}</MenuItem>
+              ))}
             </Select>
           </FormControl>
+          <Button 
+            size="small" 
+            onClick={() => setNewRoleDialogOpen(true)} 
+            sx={{ mt: 1, color: '#32b4de', textTransform: 'none' }}
+          >
+            + Add New Role
+          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }} disabled={actionLoading}>
@@ -435,6 +480,54 @@ export default function AdminArtists() {
           </Button>
           <Button onClick={handleEditSave} sx={{ color: '#32b4de' }} disabled={actionLoading}>
             {actionLoading ? <CircularProgress size={24} color="inherit" /> : 'Save'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* New Role Dialog */}
+      <Dialog
+        open={newRoleDialogOpen}
+        onClose={() => setNewRoleDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)',
+            minWidth: '300px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#32b4de' }}>Add New Role</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Role Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newRoleName}
+            onChange={(e) => setNewRoleName(e.target.value)}
+            placeholder="e.g. Sound Designer"
+            sx={{ 
+              mt: 1,
+              '& .MuiOutlinedInput-root': {
+                color: 'white',
+                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                '&.Mui-focused fieldset': { borderColor: '#32b4de' },
+              },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#32b4de' }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNewRoleDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Cancel
+          </Button>
+          <Button onClick={handleAddRole} sx={{ color: '#32b4de' }}>
+            Add
           </Button>
         </DialogActions>
       </Dialog>

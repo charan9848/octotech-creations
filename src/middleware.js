@@ -6,18 +6,22 @@ export async function middleware(req) {
 
   // 1. Check for Maintenance Mode (Skip for admin login, admin dashboard, and api routes)
   if (!path.startsWith('/admin') && !path.startsWith('/api') && !path.startsWith('/maintenance') && !path.startsWith('/_next')) {
-    try {
-      // Fetch maintenance status from our internal API
-      const res = await fetch(`${req.nextUrl.origin}/api/check-maintenance`);
-      if (res.ok) {
-        const { maintenanceMode } = await res.json();
-        if (maintenanceMode) {
-           return NextResponse.redirect(new URL("/maintenance", req.url));
+    
+    // Developer Bypass: Skip check on localhost so you can keep working
+    if (process.env.NODE_ENV !== 'development') {
+      try {
+        // Fetch maintenance status from our internal API
+        const res = await fetch(`${req.nextUrl.origin}/api/check-maintenance`);
+        if (res.ok) {
+          const { maintenanceMode } = await res.json();
+          if (maintenanceMode) {
+             return NextResponse.redirect(new URL("/maintenance", req.url));
+          }
         }
+      } catch (e) {
+        // Fail open if check fails so site doesn't break
+        console.error("Maintenance check failed", e);
       }
-    } catch (e) {
-      // Fail open if check fails so site doesn't break
-      console.error("Maintenance check failed", e);
     }
   }
 
