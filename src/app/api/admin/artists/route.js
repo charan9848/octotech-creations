@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { ObjectId } from 'mongodb';
+import bcrypt from 'bcryptjs';
 
 export async function GET(request) {
   const session = await getServerSession(authOptions);
@@ -65,7 +66,7 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    const { id, username, email, role } = body;
+    const { id, username, email, role, password } = body;
 
     if (!id || !username || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -77,6 +78,12 @@ export async function PUT(request) {
     const updateData = { username, email };
     if (role) {
       updateData.role = role;
+    }
+    
+    // If password is provided, hash it and update
+    if (password && password.trim() !== '') {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
     }
 
     const result = await db.collection("artists").updateOne(

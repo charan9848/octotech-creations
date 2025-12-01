@@ -60,7 +60,8 @@ export default function AdminArtists() {
   const [editForm, setEditForm] = useState({
     username: '',
     email: '',
-    role: 'artist'
+    role: 'artist',
+    password: ''
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -159,7 +160,8 @@ export default function AdminArtists() {
     setEditForm({
       username: artist.username || '',
       email: artist.email || '',
-      role: artist.role || 'artist'
+      role: artist.role || 'artist',
+      password: '' // Reset password field
     });
     setEditDialogOpen(true);
   };
@@ -444,6 +446,16 @@ export default function AdminArtists() {
             variant="outlined"
             value={editForm.email}
             onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="New Password (leave blank to keep current)"
+            type="password"
+            fullWidth
+            variant="outlined"
+            value={editForm.password}
+            onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
             sx={{ mb: 2 }}
           />
           <FormControl fullWidth variant="outlined">
