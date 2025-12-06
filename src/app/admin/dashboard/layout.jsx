@@ -13,7 +13,9 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ArticleIcon from '@mui/icons-material/Article';
+import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 import Link from 'next/link';
+import NotificationCenter from "@/components/NotificationCenter/NotificationCenter";
 
 const drawerWidth = 240;
 
@@ -58,6 +60,7 @@ export default function AdminLayout({ children }) {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
+    { text: 'Services', icon: <MovieCreationIcon />, path: '/admin/dashboard/services' },
     { text: 'Site Content', icon: <ArticleIcon />, path: '/admin/dashboard/content' },
     { text: 'Artists', icon: <PeopleIcon />, path: '/admin/dashboard/artists' },
     { text: 'Feedback', icon: <FeedbackIcon />, path: '/admin/dashboard/feedback' },
@@ -137,7 +140,8 @@ export default function AdminLayout({ children }) {
           </IconButton>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
+            <NotificationCenter />
+            <Typography variant="body2" sx={{ mr: 2, ml: 2, display: { xs: 'none', sm: 'block' } }}>
               Admin
             </Typography>
             <IconButton

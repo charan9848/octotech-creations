@@ -68,11 +68,15 @@ const HeroBody1Scroll = () => {
   const singleScrollText = services.map(service => service.title).join(' • ');
 
   return (
-    <Box py={5} sx={{ backgroundColor: '#0B1113' }} id="services">
-        <Box >
+    <Box py={5} sx={{ backgroundColor: '#0B1113' }} id="services-ticker">
+      <Box sx={{ 
+        maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)'
+      }}>
       <ScrollVelocity
         texts={[singleScrollText]}
-        velocity={100}
+        velocity={50}
+        numCopies={4}
         className="custom-scroll-text"
       />
       </Box>

@@ -119,7 +119,15 @@ export default function AdminFeedback() {
     item.artistId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const sortedFeedback = stableSort(filteredFeedback, getComparator(order, orderBy));
+  // Custom sort to keep unread items at the top
+  const sortedFeedback = stableSort(filteredFeedback, (a, b) => {
+    // If one is unread and the other is read, unread comes first
+    if (a.read === false && b.read !== false) return -1;
+    if (a.read !== false && b.read === false) return 1;
+    
+    // Otherwise sort by the selected column
+    return getComparator(order, orderBy)(a, b);
+  });
 
   const paginatedFeedback = sortedFeedback.slice(
     page * rowsPerPage,
@@ -131,14 +139,29 @@ export default function AdminFeedback() {
     setDeleteDialogOpen(true);
   };
 
-  const handleEditClick = (item) => {
+  const handleEditClick = async (item) => {
     setSelectedFeedback(item);
     setEditForm({
-      clientName: item.clientName,
-      rating: item.rating,
+      clientName: item.clientName || '',
+      rating: item.rating || 0,
       review: item.review || ''
     });
     setEditDialogOpen(true);
+
+    // Mark as read if not already
+    if (item.read === false) {
+      try {
+        await fetch('/api/admin/feedback', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: item._id, read: true })
+        });
+        // Update local state
+        setFeedback(prev => prev.map(f => f._id === item._id ? { ...f, read: true } : f));
+      } catch (error) {
+        console.error("Failed to mark as read", error);
+      }
+    }
   };
 
   const handleEditSave = async () => {
@@ -376,15 +399,21 @@ export default function AdminFeedback() {
             {paginatedFeedback.map((item, index) => (
               <TableRow
                 key={item._id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}
+                sx={{ 
+                  '&:last-child td, &:last-child th': { border: 0 }, 
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                  bgcolor: item.read === false ? 'rgba(50, 180, 222, 0.1)' : 'transparent',
+                  transition: 'background-color 0.3s'
+                }}
               >
                 <TableCell sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                  {item.read === false && <span style={{ color: '#32b4de', marginRight: 8, fontWeight: 'bold' }}>●</span>}
                   {page * rowsPerPage + index + 1}
                 </TableCell>
-                <TableCell component="th" scope="row" sx={{ color: 'white' }}>
+                <TableCell component="th" scope="row" sx={{ color: 'white', fontWeight: item.read === false ? 'bold' : 'normal' }}>
                   {item.clientName}
                 </TableCell>
-                <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{item.artistId}</TableCell>
+                <TableCell sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: item.read === false ? 'bold' : 'normal' }}>{item.artistId}</TableCell>
                 <TableCell>
                   <Rating value={item.rating} readOnly size="small" />
                 </TableCell>

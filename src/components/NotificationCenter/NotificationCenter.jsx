@@ -28,55 +28,47 @@ export default function NotificationCenter() {
   const [unreadCount, setUnreadCount] = useState(0);
   const notify = useNotifications();
 
-  // Load notifications from localStorage on component mount
-  useEffect(() => {
-    const savedNotifications = localStorage.getItem('dashboard_notifications');
-    if (savedNotifications) {
-      const parsed = JSON.parse(savedNotifications);
-      setNotifications(parsed);
-      setUnreadCount(parsed.filter(n => !n.read).length);
+  // Fetch notifications from API
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        // Merge with local notifications if needed, or just use API
+        // For now, let's prioritize API notifications but keep local ones for immediate feedback
+        // Actually, let's just use API notifications for the list, and local for toasts
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.read).length);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
     }
+  };
+
+  // Initial fetch and polling
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval);
   }, []);
 
-  // Save notifications to localStorage whenever notifications change
-  useEffect(() => {
-    if (notifications.length > 0) {
-      localStorage.setItem('dashboard_notifications', JSON.stringify(notifications));
-    }
-  }, [notifications]);
-
-  // Add new notification
+  // Add new notification (Client-side only for immediate feedback)
   const addNotification = (type, message, action = null, item = null) => {
-    const newNotification = {
-      id: Date.now(),
-      type,
-      message,
-      action,
-      item,
-      timestamp: new Date(),
-      read: false
-    };
-
-    setNotifications(prev => [newNotification, ...prev.slice(0, 19)]); // Keep only 20 most recent
-    setUnreadCount(prev => prev + 1);
-
-    // Also show toast notification
+    // Show toast
     switch (type) {
-      case 'success':
-        notify.success(message);
-        break;
-      case 'error':
-        notify.error(message);
-        break;
-      case 'warning':
-        notify.warning(message);
-        break;
-      case 'info':
-        notify.info(message);
-        break;
-      default:
-        notify.info(message);
+      case 'success': notify.success(message); break;
+      case 'error': notify.error(message); break;
+      case 'warning': notify.warning(message); break;
+      case 'info': notify.info(message); break;
+      default: notify.info(message);
     }
+    // We don't add to the list here because we want the list to be "Server Notifications"
+    // But if we want to see "Artist Updated" in the list immediately, we should probably rely on the API fetch
+    // or optimistically add it.
+    // Given the requirement is about "Artist updates details -> Admin sees it", 
+    // the Admin is a different user, so client-side addNotification won't work for them anyway.
+    // So for the Admin, they rely on fetchNotifications.
+    // For the user performing the action, they see the toast.
   };
 
   // Expose addNotification globally
@@ -87,22 +79,41 @@ export default function NotificationCenter() {
     };
   }, []);
 
-  const handleClick = (event) => {
+  const handleClick = async (event) => {
     setAnchorEl(event.currentTarget);
-    // Mark all as read when opening
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
+    // Mark all as read in DB
+    if (unreadCount > 0) {
+      try {
+        await fetch('/api/notifications', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark_read' })
+        });
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setUnreadCount(0);
+      } catch (error) {
+        console.error("Failed to mark read", error);
+      }
+    }
   };
 
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const clearAllNotifications = () => {
-    setNotifications([]);
-    setUnreadCount(0);
-    localStorage.removeItem('dashboard_notifications');
-    notify.info('All notifications cleared');
+  const clearAllNotifications = async () => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clear_all' })
+      });
+      setNotifications([]);
+      setUnreadCount(0);
+      notify.info('All notifications cleared');
+    } catch (error) {
+      console.error("Failed to clear notifications", error);
+    }
   };
 
   const getIcon = (type) => {

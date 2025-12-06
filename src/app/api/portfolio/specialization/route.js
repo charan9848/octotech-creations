@@ -1,6 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { createNotification } from "@/lib/db-notifications";
 
 export async function GET(request) {
   try {
@@ -57,6 +58,15 @@ export async function POST(request) {
       },
       { upsert: true }
     );
+
+    // Notify Admin
+    await createNotification({
+      type: 'success',
+      message: `Artist ${session.user.name || session.user.username || 'Unknown'} updated their portfolio specialization.`,
+      recipient: 'admin',
+      relatedId: session.user.artistid,
+      link: `/portfolio/${session.user.artistid}`
+    });
 
     return Response.json({ 
       message: "Specialization saved successfully!",

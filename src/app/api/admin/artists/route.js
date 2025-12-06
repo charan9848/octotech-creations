@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
+import { createNotification } from '@/lib/db-notifications';
 
 export async function GET(request) {
   const session = await getServerSession(authOptions);
@@ -48,6 +49,12 @@ export async function DELETE(request) {
     const result = await db.collection("artists").deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 1) {
+      // Create notification
+      await createNotification({
+        type: 'warning',
+        message: `Artist deleted (ID: ${id})`,
+        recipient: 'admin'
+      });
       return NextResponse.json({ message: 'Artist deleted successfully' });
     } else {
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
@@ -66,7 +73,7 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    const { id, username, email, role, password } = body;
+    const { id, username, email, role, password, phone } = body;
 
     if (!id || !username || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -76,9 +83,8 @@ export async function PUT(request) {
     const db = client.db(process.env.MONGODB_DB);
 
     const updateData = { username, email };
-    if (role) {
-      updateData.role = role;
-    }
+    if (role) updateData.role = role;
+    if (phone) updateData.phone = phone;
     
     // If password is provided, hash it and update
     if (password && password.trim() !== '') {
@@ -92,6 +98,13 @@ export async function PUT(request) {
     );
 
     if (result.matchedCount === 1) {
+      // Create notification
+      await createNotification({
+        type: 'info',
+        message: `Artist ${username} updated`,
+        recipient: 'admin',
+        link: '/admin/dashboard/artists'
+      });
       return NextResponse.json({ message: 'Artist updated successfully' });
     } else {
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 });

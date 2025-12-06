@@ -113,7 +113,15 @@ export default function AdminContacts() {
     contact.message?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const sortedContacts = stableSort(filteredContacts, getComparator(order, orderBy));
+  // Custom sort to keep unread items at the top
+  const sortedContacts = stableSort(filteredContacts, (a, b) => {
+    // If one is unread and the other is read, unread comes first
+    if (a.read === false && b.read !== false) return -1;
+    if (a.read !== false && b.read === false) return 1;
+    
+    // Otherwise sort by the selected column
+    return getComparator(order, orderBy)(a, b);
+  });
 
   const paginatedContacts = sortedContacts.slice(
     page * rowsPerPage,
@@ -125,7 +133,7 @@ export default function AdminContacts() {
     setDeleteDialogOpen(true);
   };
 
-  const handleEditClick = (contact) => {
+  const handleEditClick = async (contact) => {
     setSelectedContact(contact);
     setEditForm({
       firstname: contact.firstname || '',
@@ -134,12 +142,27 @@ export default function AdminContacts() {
       message: contact.message || ''
     });
     setEditDialogOpen(true);
+
+    // Mark as read if not already
+    if (contact.read === false) {
+      try {
+        await fetch('/api/admin/contacts', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: contact._id, read: true })
+        });
+        // Update local state
+        setContacts(prev => prev.map(c => c._id === contact._id ? { ...c, read: true } : c));
+      } catch (error) {
+        console.error("Failed to mark as read", error);
+      }
+    }
   };
 
   const handleEditSave = async () => {
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/contact?id=${selectedContact._id}`, {
+      const res = await fetch(`/api/admin/contacts?id=${selectedContact._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +190,7 @@ export default function AdminContacts() {
 
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/contact?id=${selectedContact._id}`, {
+      const res = await fetch(`/api/admin/contacts?id=${selectedContact._id}`, {
         method: 'DELETE',
       });
 
@@ -305,15 +328,21 @@ export default function AdminContacts() {
             {paginatedContacts.map((contact, index) => (
               <TableRow
                 key={contact._id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}
+                sx={{ 
+                  '&:last-child td, &:last-child th': { border: 0 }, 
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                  bgcolor: contact.read === false ? 'rgba(50, 180, 222, 0.1)' : 'transparent',
+                  transition: 'background-color 0.3s'
+                }}
               >
                 <TableCell sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                  {contact.read === false && <span style={{ color: '#32b4de', marginRight: 8, fontWeight: 'bold' }}>●</span>}
                   {page * rowsPerPage + index + 1}
                 </TableCell>
-                <TableCell component="th" scope="row" sx={{ color: 'white' }}>
+                <TableCell component="th" scope="row" sx={{ color: 'white', fontWeight: contact.read === false ? 'bold' : 'normal' }}>
                   {contact.firstname} {contact.lastname}
                 </TableCell>
-                <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{contact.email}</TableCell>
+                <TableCell sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: contact.read === false ? 'bold' : 'normal' }}>{contact.email}</TableCell>
                 <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{formatDate(contact.createdAt)}</TableCell>
                 <TableCell sx={{ color: 'rgba(255,255,255,0.7)', maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {contact.message}

@@ -7,6 +7,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
+import MailIcon from '@mui/icons-material/Mail';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { toast } from 'react-hot-toast';
 import { downloadCSV } from '@/lib/exportUtils';
 
@@ -49,17 +52,36 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+const getWhatsAppLink = (phone, username, percentage) => {
+  if (!phone) return null;
+  
+  // Remove spaces, dashes, brackets, and ensure it has country code (defaulting to 91 if missing)
+  let cleanPhone = phone.replace(/\D/g, '');
+  if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone; // Default to India if no code
+
+  const text = `Hello ${username}, this is Octotech Creations. We noticed your portfolio is only ${percentage}% complete. Please login and complete it here: https://octotech-creations.vercel.app/artist-login`;
+  
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+};
+
 export default function AdminArtists() {
   const searchParams = useSearchParams();
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [remindLoading, setRemindLoading] = useState(false);
+  const [viewMissingLoading, setViewMissingLoading] = useState(false);
+  const [missingDialogOpen, setMissingDialogOpen] = useState(false);
+  const [missingArtists, setMissingArtists] = useState([]);
+  const [remindIndividualConfirmOpen, setRemindIndividualConfirmOpen] = useState(false);
+  const [remindAllConfirmOpen, setRemindAllConfirmOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [editForm, setEditForm] = useState({
     username: '',
     email: '',
+    phone: '',
     role: 'artist',
     password: ''
   });
@@ -89,7 +111,12 @@ export default function AdminArtists() {
       if (!roles.some(r => r.value === value)) {
         setRoles([...roles, { value, label }]);
         setEditForm({ ...editForm, role: value });
-        toast.success(`Role "${label}" added`);
+        // toast.success(`Role "${label}" added`);
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Role "${label}" added`);
+        } else {
+          toast.success(`Role "${label}" added`);
+        }
       } else {
         toast.error("Role already exists");
       }
@@ -160,6 +187,7 @@ export default function AdminArtists() {
     setEditForm({
       username: artist.username || '',
       email: artist.email || '',
+      phone: artist.phone || '',
       role: artist.role || 'artist',
       password: '' // Reset password field
     });
@@ -183,7 +211,12 @@ export default function AdminArtists() {
       });
 
       if (res.ok) {
-        toast.success("Artist updated successfully");
+        // toast.success("Artist updated successfully"); // Removed toast, using notification
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Artist ${editForm.username} updated successfully`);
+        } else {
+          toast.success("Artist updated successfully");
+        }
         setEditDialogOpen(false);
         fetchArtists();
       } else {
@@ -208,7 +241,12 @@ export default function AdminArtists() {
       });
 
       if (res.ok) {
-        toast.success("Artist deleted successfully");
+        // toast.success("Artist deleted successfully");
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Artist ${selectedArtist.username} deleted successfully`);
+        } else {
+          toast.success("Artist deleted successfully");
+        }
         fetchArtists();
       } else {
         toast.error("Failed to delete artist");
@@ -231,6 +269,108 @@ export default function AdminArtists() {
     );
   }
 
+  const executeRemindAll = async () => {
+    setRemindLoading(true);
+    try {
+      const res = await fetch('/api/admin/notify-missing-portfolio', {
+        method: 'POST',
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        // toast.success(data.message);
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', data.message);
+        } else {
+          toast.success(data.message);
+        }
+      } else {
+        toast.error(data.error || "Failed to send reminders");
+      }
+    } catch (error) {
+      console.error("Reminder error:", error);
+      toast.error("Error sending reminders");
+    } finally {
+      setRemindLoading(false);
+    }
+  };
+
+  const initiateRemindAll = async () => {
+    setRemindLoading(true);
+    try {
+      const res = await fetch('/api/admin/notify-missing-portfolio');
+      if (res.ok) {
+        const data = await res.json();
+        setMissingArtists(data);
+        if (data.length === 0) {
+          toast.success("No incomplete portfolios found!");
+        } else {
+          setRemindAllConfirmOpen(true);
+        }
+      } else {
+        toast.error("Failed to fetch missing portfolios");
+      }
+    } catch (error) {
+      console.error("Error fetching missing:", error);
+      toast.error("Error fetching missing portfolios");
+    } finally {
+      setRemindLoading(false);
+    }
+  };
+
+  const handleRemindIndividualClick = (artist) => {
+    setSelectedArtist(artist);
+    setRemindIndividualConfirmOpen(true);
+  };
+
+  const handleRemindIndividualConfirm = async () => {
+    if (!selectedArtist) return;
+    
+    const toastId = toast.loading("Sending reminder...");
+    try {
+      const res = await fetch('/api/admin/notify-missing-portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetId: selectedArtist._id })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message, { id: toastId });
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', data.message);
+        }
+      } else {
+        toast.error(data.error || "Failed to send reminder", { id: toastId });
+      }
+    } catch (error) {
+      console.error("Reminder error:", error);
+      toast.error("Error sending reminder", { id: toastId });
+    } finally {
+      setRemindIndividualConfirmOpen(false);
+      setSelectedArtist(null);
+    }
+  };
+
+  const handleViewMissing = async () => {
+    setViewMissingLoading(true);
+    try {
+      const res = await fetch('/api/admin/notify-missing-portfolio');
+      if (res.ok) {
+        const data = await res.json();
+        setMissingArtists(data);
+        setMissingDialogOpen(true);
+      } else {
+        toast.error("Failed to fetch missing portfolios");
+      }
+    } catch (error) {
+      console.error("Error fetching missing:", error);
+      toast.error("Error fetching missing portfolios");
+    } finally {
+      setViewMissingLoading(false);
+    }
+  };
+
   const handleExport = () => {
     const dataToExport = filteredArtists.map(({ _id, password, ...rest }) => rest);
     downloadCSV(dataToExport, 'artists_export.csv');
@@ -243,14 +383,34 @@ export default function AdminArtists() {
         <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
           Manage Artists
         </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<DownloadIcon />}
-          onClick={handleExport}
-          sx={{ bgcolor: '#32b4de', '&:hover': { bgcolor: '#2a9ac0' } }}
-        >
-          Export CSV
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            variant="contained" 
+            startIcon={viewMissingLoading ? <CircularProgress size={20} color="inherit" /> : <VisibilityIcon />}
+            onClick={handleViewMissing}
+            disabled={viewMissingLoading}
+            sx={{ bgcolor: '#9c27b0', '&:hover': { bgcolor: '#7b1fa2' } }}
+          >
+            View Incomplete
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={remindLoading ? <CircularProgress size={20} color="inherit" /> : <MailIcon />}
+            onClick={initiateRemindAll}
+            disabled={remindLoading}
+            sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
+          >
+            Remind Incomplete
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<DownloadIcon />}
+            onClick={handleExport}
+            sx={{ bgcolor: '#32b4de', '&:hover': { bgcolor: '#2a9ac0' } }}
+          >
+            Export CSV
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ mb: 3 }}>
@@ -450,6 +610,17 @@ export default function AdminArtists() {
           />
           <TextField
             margin="dense"
+            label="Phone Number"
+            type="tel"
+            fullWidth
+            variant="outlined"
+            value={editForm.phone}
+            onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+            placeholder="e.g. 9876543210"
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
             label="New Password (leave blank to keep current)"
             type="password"
             fullWidth
@@ -544,6 +715,84 @@ export default function AdminArtists() {
         </DialogActions>
       </Dialog>
 
+      {/* Missing Portfolio Dialog */}
+      <Dialog
+        open={missingDialogOpen}
+        onClose={() => setMissingDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          Incomplete Portfolios ({missingArtists.length})
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Username</TableCell>
+                  <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Email</TableCell>
+                  <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Artist ID</TableCell>
+                  <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Completion</TableCell>
+                  <TableCell sx={{ color: '#32b4de', fontWeight: 'bold', textAlign: 'right' }}>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {missingArtists.map((artist) => (
+                  <TableRow key={artist._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
+                    <TableCell sx={{ color: 'white' }}>{artist.username}</TableCell>
+                    <TableCell sx={{ color: 'white' }}>{artist.email}</TableCell>
+                    <TableCell sx={{ color: 'white' }}>{artist.artistid}</TableCell>
+                    <TableCell sx={{ color: artist.completionPercentage < 50 ? '#f44336' : '#ff9800' }}>
+                      {artist.completionPercentage}%
+                    </TableCell>
+                    <TableCell align="right">
+                      {artist.phone && (
+                        <IconButton 
+                          color="success" 
+                          onClick={() => handleRemindIndividualClick(artist)}
+                          title="Send WhatsApp Reminder"
+                        >
+                          <WhatsAppIcon />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {missingArtists.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center" sx={{ color: 'rgba(255,255,255,0.7)', py: 3 }}>
+                      All artists have completed their portfolios!
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', p: 2 }}>
+          <Button onClick={() => setMissingDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Close
+          </Button>
+          <Button 
+            onClick={() => setRemindAllConfirmOpen(true)} 
+            variant="contained" 
+            sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
+            startIcon={<MailIcon />}
+            disabled={missingArtists.length === 0}
+          >
+            Send Reminders to All
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -567,6 +816,76 @@ export default function AdminArtists() {
           </Button>
           <Button onClick={handleDeleteConfirm} sx={{ color: '#ef5350' }} autoFocus disabled={actionLoading}>
             {actionLoading ? <CircularProgress size={24} color="inherit" /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Remind Individual Confirmation Dialog */}
+      <Dialog
+        open={remindIndividualConfirmOpen}
+        onClose={() => setRemindIndividualConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#32b4de' }}>Confirm Reminder</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Send WhatsApp and Email reminder to <strong>{selectedArtist?.username}</strong>?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRemindIndividualConfirmOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleRemindIndividualConfirm} 
+            sx={{ color: '#32b4de' }} 
+            autoFocus
+          >
+            Send
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Remind All Confirmation Dialog */}
+      <Dialog
+        open={remindAllConfirmOpen}
+        onClose={() => setRemindAllConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#ff9800' }}>Confirm Bulk Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Are you sure you want to send reminders to <strong>{missingArtists.length}</strong> artists?
+            <br/><br/>
+            This will send WhatsApp messages and Emails to everyone in the list.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRemindAllConfirmOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              setRemindAllConfirmOpen(false);
+              setMissingDialogOpen(false);
+              executeRemindAll();
+            }} 
+            sx={{ color: '#ff9800' }} 
+            autoFocus
+          >
+            Yes, Send All
           </Button>
         </DialogActions>
       </Dialog>

@@ -2,6 +2,7 @@ import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import nodemailer from "nodemailer";
+import { createNotification } from "@/lib/db-notifications";
 
 // Email notification function
 async function sendProjectStatusEmail(artistData, project, statusChange) {
@@ -251,7 +252,18 @@ export async function POST(request) {
         }
       },
       { upsert: true }
-    );    return Response.json({ 
+    );
+
+    // Notify Admin
+    await createNotification({
+      type: 'success',
+      message: `Artist ${session.user.name || session.user.username || 'Unknown'} updated their portfolio projects.`,
+      recipient: 'admin',
+      relatedId: session.user.artistid,
+      link: `/portfolio/${session.user.artistid}`
+    });
+
+    return Response.json({ 
       message: "Projects saved successfully! Email notifications sent to clients.",
       success: true 
     });

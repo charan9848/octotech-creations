@@ -27,16 +27,28 @@ async function getHeroContent() {
   }
 }
 
+async function getServices() {
+  try {
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    const services = await db.collection("services").find({}).sort({ order: 1 }).toArray();
+    return JSON.parse(JSON.stringify(services));
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    return [];
+  }
+}
+
 const HomeComponent = async () => {
   const heroContent = await getHeroContent();
+  const services = await getServices();
 
   return (
   <Box>
     <section>
       <Hero content={heroContent} />
       <HeroBody1Scroll/>
-      <HeroBody1/>
-      {/* <VideoEditingSection/> */}
+      <HeroBody1 services={services}/>
       <HeroBody2 />
       <HeroBody3 />
       <OurTeam/>

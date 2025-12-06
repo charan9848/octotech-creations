@@ -2,12 +2,25 @@ import { Box, Typography, Avatar, Button } from "@mui/material";
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ArrowCircleDownSharpIcon from '@mui/icons-material/ArrowCircleDownSharp';
 import ExpandMoreSharpIcon from '@mui/icons-material/ExpandMoreSharp';
+import { useEffect, useRef } from "react";
 
 export function HeroSection({ name, bio, quotation, email, phone, logo }) {
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.muted = true;
+            videoRef.current.play().catch(error => {
+                console.log("Video autoplay failed:", error);
+            });
+        }
+    }, []);
+
     return (
-        <Box position="relative" sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px", padding: "10px" }}>
+        <Box position="relative" sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px", padding: "10px", overflow: "hidden", backgroundColor: "#000" }}>
             {/* Background Video */}
             <video
+                ref={videoRef}
                 className="video-background"
                 style={{
                     position: "absolute",
@@ -24,8 +37,6 @@ export function HeroSection({ name, bio, quotation, email, phone, logo }) {
                 autoPlay
                 loop
                 muted
-                disablePictureInPicture
-                controlsList="nodownload nofullscreen noremoteplayback"
                 playsInline
             >
                 <source src="https://res.cloudinary.com/djbilxr7i/video/upload/v1746872773/clouds_-_Trim_wyt1mv.mp4" type="video/mp4" />

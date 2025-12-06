@@ -147,6 +147,12 @@ const Hero = ({ content }) => {
               variant="outlined"
               sx={{ marginTop: "30px", width: "150px" }}
               endIcon={<ExploreIcon />}
+              onClick={() => {
+                const element = document.getElementById('services');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
             >
               Explore
             </Button>

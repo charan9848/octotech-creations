@@ -27,6 +27,7 @@ const ArtistRegister = () => {
         artistid: yup.string().required('Artist ID is required').min(4, 'User ID too short'),
         username: yup.string().required('Username is required').min(4, 'Username too short'),
         email: yup.string().email('Invalid email').required('Email is required'),
+        phone: yup.string().required('Phone number is required').matches(/^[0-9]{10}$/, 'Phone number must be 10 digits'),
         password: yup.string()
             .required('Password is required')
             .min(8, 'Password is too short - should be 8 chars minimum.')
@@ -107,6 +108,7 @@ const ArtistRegister = () => {
             artistid: '',
             username: '',
             email: '',
+            phone: '',
             password: '',
         },
         validationSchema: validationSchema,
@@ -247,6 +249,22 @@ const ArtistRegister = () => {
                             {!formik.errors.email && emailAvailable === true && (
                                 <span style={{ color: 'green' }}>Email is available</span>
                             )}
+                        </FormHelperText>
+
+                        <FormLabel>Phone Number *</FormLabel>
+                        <TextField
+                            name="phone"
+                            type="tel"
+                            placeholder="Enter your phone number"
+                            fullWidth
+                            size="small"
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.phone && Boolean(formik.errors.phone)}
+                            value={formik.values.phone}
+                        />
+                        <FormHelperText sx={{ minHeight: "10px" }} error>
+                            {formik.touched.phone && formik.errors.phone}
                         </FormHelperText>
 
                         <FormLabel>Password *</FormLabel>

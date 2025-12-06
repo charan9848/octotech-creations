@@ -2,11 +2,11 @@
 
 import { Box, Typography } from '@mui/material'
 import React from 'react'
-import MovieFilterIcon from '@mui/icons-material/MovieFilter';
+import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/app/variants';
 
-const VideoEditingSection = () => {
+const TitlesLogoAnimationSection = () => {
     return (
         <Box sx={{ backgroundColor: '#15191c', borderBottom: '1px solid rgba(255,255,255,0.1)' }} py={2} px={{xs: 2, md: 8}}>
             <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: "center" }}> 
@@ -17,10 +17,10 @@ const VideoEditingSection = () => {
                     whileInView="show"
                     viewport={{ once: true, amount: 0.7 }}>
                         <Box m={1} sx={{ display: 'flex', justifyContent: {xs: 'center', md: 'flex-start'} }}>
-                            <MovieFilterIcon sx={{ fontSize: 50, color: '#00B2FF' }} />
+                            <TitleOutlinedIcon sx={{ fontSize: 50, color: '#00B2FF' }} />
                         </Box>
                         <Box m={1} >
-                            <Typography variant="h4" color="white">Video Editing</Typography>
+                            <Typography variant="h4" color="white">TITLES/LOGO ANIMATION</Typography>
                         </Box>
                     </motion.div>
                     <motion.div
@@ -30,7 +30,7 @@ const VideoEditingSection = () => {
                         viewport={{ once: true, amount: 0.7 }}>
                         <Box m={1} mb={3}>
                             <Typography variant="h6" sx={{ lineHeight: 1.8, color: '#aeb4b4', fontSize: '16px' }}>
-                                -From YouTube edits to viral reels — we cut to convert. Every second is crafted to hold attention and drive action. See what high-performance editing looks like
+                                Bring your branding to life with animated logos, title sequences, and branded elements for professional presentation.
                             </Typography>
                         </Box>
                     </motion.div>
@@ -43,8 +43,8 @@ const VideoEditingSection = () => {
                         viewport={{ once: true, amount: 0.7 }}>
                         <Box 
                             component="img"
-                            src="https://placehold.co/600x400/1a1a1a/white?text=Video+Editing+Preview"
-                            alt="Video Editing Preview"
+                            src="https://placehold.co/600x400/1a1a1a/white?text=Titles+Preview"
+                            alt="Titles Preview"
                             sx={{
                                 width: "100%",
                                 maxWidth: "600px",
@@ -61,4 +61,4 @@ const VideoEditingSection = () => {
     )
 }
 
-export default VideoEditingSection
+export default TitlesLogoAnimationSection

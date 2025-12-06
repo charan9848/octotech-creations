@@ -1,316 +1,216 @@
 'use client';
-import React, { useState } from 'react';
-import { Box, Typography, Chip, Divider, Card, CardContent, Pagination } from '@mui/material';
+import React from 'react';
+import { Box, Typography, Chip, Divider, Grid, Paper, LinearProgress } from '@mui/material';
 import PsychologyIcon from '@mui/icons-material/Psychology';
-import StarIcon from '@mui/icons-material/Star';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import BuildIcon from '@mui/icons-material/Build';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import CountUp from '@/hooks/countUp';
 
 export function SpecializationSection({ specialization }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1; // Show one specialization per page
-
   if (!specialization) return null;
 
   const { primarySkills = [], tools = [], specializations = [] } = specialization;
 
-  // Return null if all arrays are empty
   if (primarySkills.length === 0 && tools.length === 0 && specializations.length === 0) {
     return null;
   }
 
-  // Calculate the maximum years of experience from specializations
-  const yearsOfExperience = specializations.length > 0
+  // Calculate max years for the "Years of Experience" highlight
+  const maxYears = specializations.length > 0
     ? Math.max(...specializations.map(spec => spec.yearsOfExperience || 0))
     : 0;
 
-  // Pagination for specializations
-  const totalPages = Math.ceil(specializations.length / itemsPerPage);
-  const currentIndex = (currentPage - 1) * itemsPerPage;
-  const currentSpecialization = specializations[currentIndex];
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
-
   return (
     <Box
-      p={{ xs: 2, sm: 3, md: 5 }}
+      component="section"
       sx={{
-        px: { xs: "20px", sm: "40px", md: "60px", lg: "90px" },
+        py: { xs: 6, md: 10 },
+        px: { xs: 2, sm: 4, md: 8, lg: 12 },
+        backgroundColor: 'transparent', // Assuming parent has the dark bg
       }}
     >
-      <Box sx={{ display: 'flex' }}>
-        <PsychologyIcon sx={{ fontSize: { xs: '24px', sm: '28px', md: '32px' }, color: 'white' }} />
-        <Typography
-          variant="h1"
-          color='white'
-          mx={2}
-          sx={{
-            fontSize: { xs: "20px", sm: "24px", md: "30px", lg: "36px", xl: "40px" },
-            fontWeight: 'bold'
-          }}
-        >
-          Specialization
-        </Typography>
+      {/* Section Header */}
+      <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <PsychologyIcon sx={{ fontSize: 40, color: '#00a1e0' }} />
+        <Box>
+          <Typography
+            variant="h2"
+            sx={{
+              fontSize: { xs: 28, md: 36 },
+              fontWeight: 700,
+              color: '#fff',
+              lineHeight: 1.2,
+            }}
+          >
+            Specialization
+          </Typography>
+          <Divider sx={{ width: 60, height: 4, bgcolor: '#00a1e0', mt: 1, borderRadius: 2 }} />
+        </Box>
       </Box>
-      <Divider sx={{
-        backgroundColor: '#2196f3',
-        height: '2px',
-        width: { xs: '60px', sm: '80px', md: '100px' },
-        marginTop: '10px',        marginBottom: { xs: 2, sm: 3, md: 4 }      }} />
-      <Box>
-        {/* Years of Experience */}
-        <Box sx={{ 
-          mb: 4, 
-          display: 'flex', 
-          flexDirection: { xs: 'column', lg: 'row' },
-          gap: { xs: 3, sm: 4 },
-          alignItems: { xs: 'stretch', lg: 'flex-start' }
-        }}>
-          <Box sx={{ flex: { xs: 'none', lg: 1 } }}>
+
+      <Grid container spacing={4}>
+        {/* Left Column: Experience & Specializations */}
+        <Grid item xs={12} lg={7}>
+          {/* Experience Highlight */}
+          <Box sx={{ mb: 5 }}>
             <Typography
-              variant='h3'
-              color='white'
+              variant="h3"
               sx={{
-                fontSize: { xs: "20px", sm: "24px", md: "28px", lg: "32px" },
-                fontWeight: 'bold',
+                fontSize: { xs: 24, md: 32 },
+                fontWeight: 700,
+                color: '#fff',
                 mb: 1
               }}
             >
-              Around <CountUp
-                from={0}
-                to={yearsOfExperience}
-                separator=","
-                direction="up"
-                duration={1}
-                className="count-up-text"
-              />+ Years of Experience
+              <Box component="span" sx={{ color: '#00a1e0' }}>
+                <CountUp from={0} to={maxYears} duration={2} />+ Years
+              </Box>{' '}
+              of Experience
             </Typography>
-            <Typography
-              variant='body1'
-              color='#8d8d8f'
-              sx={{ fontSize: { xs: "14px", sm: "16px" }, mb: { xs: 2, sm: 3 } }}
-            >
-              Professional creative expertise
+            <Typography variant="body1" sx={{ color: '#a0a0a0', fontSize: 16 }}>
+              Delivering professional creative solutions with expertise and precision.
             </Typography>
-            
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: { xs: 'center', lg: 'flex-start' },
-              mt: { xs: 2, sm: 3 }
-            }}>
-              <img 
-                src="https://res.cloudinary.com/djbilxr7i/image/upload/v1749488147/Untitled_design_1_gday0k.png" 
-                alt="Experience visualization"
-                style={{
-                  height: 'auto',
-                  width: '100%',
-                  maxWidth: '500px',
-                  display: 'block'
-                }}
-              />
-            </Box>
           </Box>
-          <Box sx={{
-            border: '1px solid #333',
-            width: { xs: '100%', lg: '50%' },
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            backgroundColor: '#0B1113',
-            borderRadius: '10px',
-            p: 2
-          }}>            {/* Current Specialization */}
-            {specializations.length > 0 && currentSpecialization && (
-              <Box sx={{
-                border: "1px solid #333",
-                borderRadius: '10px',
-                p: { xs: 1.5, sm: 2 },
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-                mb: 2
-              }}>
-                <Box>
-                  <Typography 
-                    variant='h1' 
-                    color='white'
-                    sx={{
-                      fontSize: { xs: "16px", sm: "20px", md: "24px" },
-                      fontWeight: 'bold',
-                      mb: 1
-                    }}
-                  >
-                    {currentSpecialization.skill}
-                  </Typography>
-                  <Typography 
-                    variant='body1' 
-                    color='#8d8d8f' 
-                    sx={{ fontSize: { xs: "12px", sm: "14px", md: "16px" }, mb: 1 }}
-                  >
-                    Exp: {currentSpecialization.yearsOfExperience} Years
-                  </Typography>                  <Chip
-                    label={currentSpecialization.level}
-                    size="small"
-                    sx={{
-                      backgroundColor: 'yellow',
-                      color: 'black',
-                      fontSize: { xs: "12px", sm: "14px" },
-                      height: { xs: '24px', sm: '28px' }
-                    }}
-                  />
+
+          {/* Specialization Cards */}
+          <Typography variant="h5" sx={{ color: '#fff', mb: 3, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <WorkspacePremiumIcon sx={{ color: '#00a1e0' }} /> Core Competencies
+          </Typography>
+          
+          <Grid container spacing={2}>
+            {specializations.map((spec, index) => (
+              <Grid item xs={12} sm={6} key={index}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    height: '100%',
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 3,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      borderColor: '#00a1e0',
+                      boxShadow: '0 4px 20px rgba(0, 161, 224, 0.15)'
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: '#fff', fontWeight: 600 }}>
+                      {spec.skill}
+                    </Typography>
+                    <Chip 
+                      label={spec.level} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: spec.level === 'Expert' ? 'rgba(0, 161, 224, 0.2)' : 'rgba(255, 255, 255, 0.1)', 
+                        color: spec.level === 'Expert' ? '#00a1e0' : '#fff',
+                        fontWeight: 600,
+                        border: '1px solid',
+                        borderColor: spec.level === 'Expert' ? '#00a1e0' : 'transparent'
+                      }} 
+                    />
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography variant="body2" sx={{ color: '#a0a0a0' }}>Experience:</Typography>
+                    <Typography variant="body2" sx={{ color: '#fff', fontWeight: 500 }}>{spec.yearsOfExperience} Years</Typography>
+                  </Box>
+                  
+                  {/* Visual Progress Bar for Experience (assuming max 10 years for scale) */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={Math.min((spec.yearsOfExperience / 10) * 100, 100)} 
+                      sx={{ 
+                        flexGrow: 1, 
+                        height: 6, 
+                        borderRadius: 3,
+                        bgcolor: 'rgba(255,255,255,0.1)',
+                        '& .MuiLinearProgress-bar': {
+                          bgcolor: '#00a1e0',
+                          borderRadius: 3,
+                        }
+                      }} 
+                    />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+
+        {/* Right Column: Skills & Tools */}
+        <Grid item xs={12} lg={5}>
+          <Box sx={{ 
+            bgcolor: 'rgba(11, 17, 19, 0.6)', 
+            p: 4, 
+            borderRadius: 4, 
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            height: '100%'
+          }}>
+            {/* Primary Skills */}
+            {primarySkills.length > 0 && (
+              <Box sx={{ mb: 5 }}>
+                <Typography variant="h5" sx={{ color: '#fff', mb: 3, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <VerifiedIcon sx={{ color: '#00a1e0' }} /> Primary Skills
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {primarySkills.map((skill, index) => (
+                    <Chip
+                      key={index}
+                      label={skill}
+                      sx={{
+                        bgcolor: 'rgba(255, 255, 255, 0.05)',
+                        color: '#e0e0e0',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontSize: 14,
+                        py: 0.5,
+                        '&:hover': {
+                          bgcolor: 'rgba(0, 161, 224, 0.1)',
+                          borderColor: '#00a1e0',
+                          color: '#fff'
+                        }
+                      }}
+                    />
+                  ))}
                 </Box>
               </Box>
             )}
 
-            {/* Pagination - Only show if more than 1 specialization */}
-            {specializations.length > 1 && (
-              <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: { xs: 1, sm: 1.5 },
-                mb: 2
-              }}>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  size="medium"
-                  sx={{
-                    '& .MuiPaginationItem-root': {
-                      color: '#8d8d8f',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      minWidth: { xs: '28px', sm: '32px' },
-                      height: { xs: '28px', sm: '32px' },
-                      '&:hover': {
-                        backgroundColor: '#2196f3',
-                        color: 'white',
-                      },
-                      '&.Mui-selected': {
-                        backgroundColor: '#2196f3',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: '#1976d2',
-                        }
-                      }
-                    }
-                  }}
-                />
-
-                {/* Specialization Counter */}
-                <Typography
-                  variant="body2"
-                  color="#8d8d8f"
-                  sx={{
-                    fontSize: { xs: "12px", sm: "14px" },
-                    textAlign: 'center'
-                  }}
-                >
-                  Specialization {currentPage} of {totalPages}
+            {/* Tools */}
+            {tools.length > 0 && (
+              <Box>
+                <Typography variant="h5" sx={{ color: '#fff', mb: 3, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <BuildIcon sx={{ color: '#00a1e0' }} /> Tools & Software
                 </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {tools.map((tool, index) => (
+                    <Chip
+                      key={index}
+                      label={tool}
+                      variant="outlined"
+                      sx={{
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        color: '#a0a0a0',
+                        fontSize: 13,
+                        '&:hover': {
+                          borderColor: '#fff',
+                          color: '#fff',
+                          bgcolor: 'rgba(255,255,255,0.05)'
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
               </Box>
-            )}            {/* Primary Skills and Tools */}
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: { xs: 'column', md: 'row' }, 
-              gap: { xs: 2, md: 2 } 
-            }}>
-              {primarySkills.length > 0 && (
-                <Box sx={{ 
-                  p: { xs: 1.5, sm: 2 }, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  flex: 1 
-                }}>
-                  <Typography 
-                    variant='h2' 
-                    color='white' 
-                    sx={{ 
-                      mb: 2,
-                      fontSize: { xs: "16px", sm: "18px", md: "20px" },
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Primary Skills
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    justifyContent: 'center', 
-                    gap: { xs: 0.5, sm: 1 } 
-                  }}>
-                    {primarySkills.map(skill => (
-                      <Chip
-                        key={skill}
-                        label={skill}
-                        size="small"
-                        sx={{
-                          backgroundColor: '#2196f3',
-                          color: 'white',
-                          fontSize: { xs: "10px", sm: "12px" },
-                          height: { xs: '24px', sm: '28px' },
-                          margin: '2px'
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              {tools.length > 0 && (
-                <Box sx={{ 
-                  p: { xs: 1.5, sm: 2 }, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  flex: 1 
-                }}>
-                  <Typography 
-                    variant='h2' 
-                    color='white' 
-                    sx={{ 
-                      mb: 2,
-                      fontSize: { xs: "16px", sm: "18px", md: "20px" },
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Tools
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    justifyContent: 'center', 
-                    gap: { xs: 0.5, sm: 1 } 
-                  }}>
-                    {tools.map(tool => (
-                      <Chip
-                        key={tool}
-                        label={tool}
-                        size="small"
-                        sx={{
-                          backgroundColor: '#2196f3',
-                          color: 'white',
-                          fontSize: { xs: "10px", sm: "12px" },
-                          height: { xs: '24px', sm: '28px' },
-                          margin: '2px'
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-            </Box>
+            )}
           </Box>
-        </Box>
-
-
-      </Box>
-
+        </Grid>
+      </Grid>
     </Box>
   );
 }

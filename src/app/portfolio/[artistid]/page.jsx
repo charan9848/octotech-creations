@@ -109,23 +109,23 @@ const portfolio = () => {
         <Box sx={{ backgroundColor: "#15191c", minHeight: "100vh" }}>
             {/* Hero Section */}
             <Box >
-                <Box>
+                <Box sx={{ mb: 0 }}>
                     <HeroSection {...heroData} />
                 </Box>
-                <Box >
+                <Box sx={{ mb: 0 }}>
                     <SpecializationSection specialization={portfolio?.specialization} />
                 </Box>                {portfolio?.experience && Array.isArray(portfolio.experience) && portfolio.experience.length > 0 && (
-                    <Box>
+                    <Box sx={{ mb: 0 }}>
                         <ExperienceSection experience={portfolio.experience} />
                     </Box>
                 )}                {portfolio?.artworks && Array.isArray(portfolio.artworks) && portfolio.artworks.length > 0 && (
-                    <Box sx={{ backgroundColor: "black", borderRadius: 2, mb: 5 }}>
+                    <Box sx={{ backgroundColor: "black", borderRadius: 0, mb: 0 }}>
                         <ArtworkSection artworks={portfolio?.artworks} />
                     </Box>
                 )}
 
                 {portfolio?.awards && Array.isArray(portfolio.awards) && portfolio.awards.length > 0 && (
-                    <Box>
+                    <Box sx={{ mb: 0 }}>
                         <AwardsSection awards={portfolio?.awards} />
                     </Box>
                 )}

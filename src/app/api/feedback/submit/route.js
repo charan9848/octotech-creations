@@ -1,5 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import nodemailer from "nodemailer";
+import { createNotification } from "@/lib/db-notifications";
 
 export async function POST(request) {
   try {
@@ -27,6 +28,7 @@ export async function POST(request) {
       review: review || "",
       clientName,
       clientEmail: clientEmail || "",
+      read: false,
       submittedAt: new Date()
     };
 
@@ -100,7 +102,18 @@ export async function POST(request) {
         }
       },
       { upsert: true }
-    );    // Send email notification to artist about new feedback
+    );
+
+    // Notify Admin
+    await createNotification({
+      type: 'success',
+      message: `New ${rating}-Star Feedback for artist ${artistId} from ${clientName}`,
+      recipient: 'admin',
+      relatedId: artistId,
+      link: `/admin/dashboard/feedback`
+    });
+
+    // Send email notification to artist about new feedback
     try {
       console.log('Attempting to send email notification...');
       const artistData = await db.collection("artists").findOne({ artistid: artistId });

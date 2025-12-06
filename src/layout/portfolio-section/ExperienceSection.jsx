@@ -1,258 +1,151 @@
 'use client';
-import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, Divider, CardHeader, Avatar, Tooltip, Pagination } from '@mui/material';
+import React from 'react';
+import { Box, Typography, Card, CardContent, useTheme, useMediaQuery } from '@mui/material';
+import { 
+  Timeline, 
+  TimelineItem, 
+  TimelineSeparator, 
+  TimelineConnector, 
+  TimelineContent, 
+  TimelineDot,
+  TimelineOppositeContent,
+  timelineOppositeContentClasses
+} from '@mui/lab';
 import BusinessIcon from '@mui/icons-material/Business';
-import WorkIcon from '@mui/icons-material/Work';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { FaBriefcase } from 'react-icons/fa';
+import WorkIcon from '@mui/icons-material/Work';
+import { motion } from 'framer-motion';
 
 export function ExperienceSection({ experience }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1; // Show one experience per page
-  
-  // Return null if experience is null, undefined, not an array, or empty
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   if (!experience || !Array.isArray(experience) || experience.length === 0) {
     return null;
   }
 
-  const totalPages = Math.ceil(experience.length / itemsPerPage);
-  const currentIndex = (currentPage - 1) * itemsPerPage;
-  const currentExperience = experience[currentIndex];
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
   return (
     <Box 
-      p={{ xs: 2, sm: 3, md: 5 }} 
       sx={{ 
-        px: { xs: "20px", sm: "40px", md: "60px", lg: "90px" }, 
-        backgroundColor: '#0B1113' 
+        pt: { xs: 8, md: 12 },
+        pb: { xs: 6, md: 10 },
+        px: { xs: 2, sm: 4, md: 8 },
+        background: 'linear-gradient(180deg, #000000 0%, #0a1929 100%)',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
-      <Box sx={{ display: 'flex' }}>
-        <BusinessIcon sx={{ fontSize: { xs: '24px', sm: '28px', md: '32px' }, color: 'white' }} />
-        <Typography 
-          variant="h1" 
-          color='white' 
-          mx={2} 
-          sx={{ 
-            fontSize: { xs: "20px", sm: "24px", md: "30px", lg: "36px", xl: "40px" },
-            fontWeight: 'bold'
-          }}
-        >
-          Experience
-        </Typography>
-      </Box>
-      <Divider sx={{ 
-        backgroundColor: '#2196f3', 
-        height: '2px', 
-        width: { xs: '60px', sm: '80px', md: '100px' }, 
-        marginTop: '10px',
-        marginBottom: { xs: 2, sm: 3, md: 4 }
+       {/* Background Elements */}
+       <Box sx={{
+        position: 'absolute',
+        top: '10%',
+        left: '-5%',
+        width: '300px',
+        height: '300px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(0, 161, 224, 0.15) 0%, rgba(0,0,0,0) 70%)',
+        filter: 'blur(40px)',
+        zIndex: 0
       }} />
 
-      <Box sx={{
-        display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' },
-        justifyContent: { xs: 'center', md: 'space-between' }, 
-        alignItems: { xs: 'center', md: 'flex-start' },
-        gap: { xs: 3, md: 4 }
-      }}>
-        {/* Experience Section */}
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: { xs: '100%', md: '50%' },
-          maxWidth: { xs: '100%', sm: '600px', md: 'none' },
-          position: 'relative'
-        }}>
-          {/* Experience Card */}
-          <Box sx={{ 
-            width: '100%', 
-            maxWidth: { xs: '100%', sm: '500px', md: '450px', lg: '500px' },
-            mb: { xs: 2, md: 3 }
-          }}>
-            <Card sx={{
-              backgroundColor: '#1a1e23', 
-              height: { xs: "auto", sm: "320px", md: "300px" }, 
-              width: "100%", 
-              border: '1px solid #333',
-              borderRadius: '12px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
-            }}>
-              <CardHeader
-                avatar={
-                  <Tooltip title={currentExperience.company}>                
-                      <Avatar sx={{
-                      width: { xs: 50, sm: 60 },
-                      height: { xs: 50, sm: 60 },
-                      backgroundColor: '#2196f3',
-                      fontSize: { xs: '20px', sm: '24px' },
-                      marginLeft: { xs: '5px', sm: '10px' },
-                    }}>
-                      <FaBriefcase />
-                    </Avatar>
-                  </Tooltip>
-                } 
-                title={
-                  <Typography 
-                    variant="h1" 
-                    fontSize={{ xs: "18px", sm: "22px", md: "25px" }} 
-                    color='white' 
-                    mx={1} 
-                    component="h3"
-                    sx={{ 
-                      fontWeight: 'bold',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {currentExperience.role}
-                  </Typography>
-                }
-                subheader={
-                  <Typography 
-                    variant="h2" 
-                    mx={1} 
-                    color="#8d8d8f"
-                    sx={{
-                      fontSize: { xs: "14px", sm: "16px" },
-                      fontWeight: 500
-                    }}
-                  >
-                    {currentExperience.company}
-                  </Typography>
-                }
-                sx={{
-                  pb: { xs: 1, sm: 2 }
-                }}
-              />
-              <CardContent sx={{ pt: 0 }}>
-                <Typography 
-                  variant="body1" 
-                  color="#707173" 
-                  mx={2} 
-                  gutterBottom
-                  sx={{
-                    fontSize: { xs: "13px", sm: "14px" },
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    mb: { xs: 1, sm: 2 }
-                  }}
-                >
-                  {currentExperience.duration} 
-                  <CalendarTodayIcon sx={{ fontSize: { xs: '14px', sm: '16px' } }} />
-                </Typography>
-
-                <Box sx={{
-                  maxHeight: { xs: 'auto', sm: '120px' },
-                  overflowY: { xs: 'visible', sm: 'auto' },
-                  pr: { xs: 0, sm: 1 },
-                  '&::-webkit-scrollbar': {
-                    width: '6px',
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    backgroundColor: '#1a1e23',
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    backgroundColor: '#2196f3',
-                    borderRadius: '3px',
-                  },
-                  '&::-webkit-scrollbar-thumb:hover': {
-                    backgroundColor: '#1976d2',
-                  },
-                }}>
-                  <Typography 
-                    variant="body1" 
-                    color="#8d8d8f" 
-                    mx={2} 
-                    sx={{ 
-                      textAlign: 'justify',
-                      fontSize: { xs: "13px", sm: "14px" },
-                      lineHeight: { xs: 1.4, sm: 1.5 }
-                    }}
-                  >
-                    {currentExperience.description}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-
-          {/* Pagination - Only show if more than 1 experience */}
-          {experience.length > 1 && (
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: { xs: 1, sm: 1.5 },
-              width: '100%'
-            }}>              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                size="medium"
-                sx={{
-                  '& .MuiPaginationItem-root': {
-                    color: '#8d8d8f',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    minWidth: { xs: '28px', sm: '32px' },
-                    height: { xs: '28px', sm: '32px' },
-                    '&:hover': {
-                      backgroundColor: '#2196f3',
-                      color: 'white',
-                    },
-                    '&.Mui-selected': {
-                      backgroundColor: '#2196f3',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: '#1976d2',
-                      }
-                    }
-                  }
-                }}
-              />
-              
-              {/* Experience Counter */}
-              <Typography 
-                variant="body2" 
-                color="#8d8d8f" 
-                sx={{ 
-                  mt: { xs: 0.5, sm: 1 },
-                  fontSize: { xs: "12px", sm: "14px" },
-                  textAlign: 'center'
-                }}
-              >
-                Experience {currentPage} of {totalPages}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-
-        {/* Image Section */}
-        <Box sx={{ 
-          width: { xs: "100%", md: "50%" },
-          display: { xs: "flex", md: 'flex' },
-          justifyContent: 'center',
-          alignItems: { xs: 'center', md: 'flex-start' },
-          mt: { xs: 2, md: 0 }
-        }}>
-          <Box
-            component="img"
-            src="https://res.cloudinary.com/djbilxr7i/image/upload/v1749118594/Untitled_design_h9bcbi.png"
-            alt="Artist Experience"
-            sx={{
-              width: { xs: "90%", sm: "80%", md: "100%" },
-              maxWidth: { xs: "400px", sm: "500px", md: "none" },
-              height: "auto",
-              borderRadius: "12px",
-              boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-              objectFit: 'cover'
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: { xs: '2rem', md: '3rem' },
+              fontWeight: 700,
+              background: 'linear-gradient(45deg, #fff 30%, #00a1e0 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 2
             }}
-          />
+          >
+            Professional Journey
+          </Typography>
+          <Box sx={{ 
+            width: '60px', 
+            height: '4px', 
+            bgcolor: '#00a1e0', 
+            mx: 'auto', 
+            borderRadius: '2px' 
+          }} />
         </Box>
+
+        <Timeline 
+          position={isMobile ? "right" : "alternate"}
+          sx={{
+            [`& .${timelineOppositeContentClasses.root}`]: {
+              flex: 0.2,
+            },
+            p: 0
+          }}
+        >
+          {experience.map((exp, index) => (
+            <TimelineItem key={index}>
+              {!isMobile && (
+                <TimelineOppositeContent sx={{ m: 'auto 0' }}>
+                  <Typography variant="h6" component="span" sx={{ color: '#00a1e0', fontWeight: 'bold', display: 'block' }}>
+                    {exp.duration}
+                  </Typography>
+                </TimelineOppositeContent>
+              )}
+              
+              <TimelineSeparator>
+                <TimelineConnector sx={{ bgcolor: 'rgba(0, 161, 224, 0.3)' }} />
+                <TimelineDot sx={{ bgcolor: '#00a1e0', boxShadow: '0 0 10px #00a1e0' }}>
+                  <WorkIcon sx={{ fontSize: '1.2rem' }} />
+                </TimelineDot>
+                <TimelineConnector sx={{ bgcolor: 'rgba(0, 161, 224, 0.3)' }} />
+              </TimelineSeparator>
+              
+              <TimelineContent sx={{ py: '12px', px: 2 }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card sx={{ 
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+                    transition: 'transform 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      border: '1px solid rgba(0, 161, 224, 0.5)',
+                      boxShadow: '0 10px 40px rgba(0, 161, 224, 0.1)'
+                    }
+                  }}>
+                    <CardContent>
+                      {isMobile && (
+                        <Typography variant="subtitle2" sx={{ color: '#00a1e0', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CalendarTodayIcon fontSize="small" />
+                          {exp.duration}
+                        </Typography>
+                      )}
+                      
+                      <Typography variant="h5" component="div" sx={{ color: '#fff', fontWeight: 'bold', mb: 1 }}>
+                        {exp.role}
+                      </Typography>
+                      
+                      <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <BusinessIcon fontSize="small" />
+                        {exp.company}
+                      </Typography>
+
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2, lineHeight: 1.6 }}>
+                        {exp.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </TimelineContent>
+            </TimelineItem>
+          ))}
+        </Timeline>
       </Box>
     </Box>
   );

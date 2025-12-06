@@ -4,17 +4,16 @@ import { Box, Typography, Card, CardContent, Pagination } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BusinessIcon from '@mui/icons-material/Business';
+import { motion } from 'framer-motion';
 
 export function AwardsSection({ awards }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // 2 rows of 4 items each
+  const itemsPerPage = 6; 
   
-  // Return null if awards is null, undefined, not an array, or empty
   if (!awards || !Array.isArray(awards) || awards.length === 0) {
     return null;
   }
 
-  // Calculate pagination
   const totalPages = Math.ceil(awards.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -23,156 +22,188 @@ export function AwardsSection({ awards }) {
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
+
   return (
-    <Box sx={{ py: 6, px: 4 }}>
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold', mb: 2 }}>
-          Awards & Recognition
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#ccc' }}>
-          Achievements and honors received throughout my career
-        </Typography>
-      </Box><Box 
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 3,
-          justifyContent: currentAwards.length <= 3 ? 'center' : 'flex-start'
-        }}
-      >
-        {currentAwards.map((award, index) => (
-          <Box 
-            key={index}
-            sx={{
-              flex: {
-                xs: '1 1 100%',    // 1 per row on mobile
-                sm: '1 1 calc(50% - 12px)',  // 2 per row on tablet
-                md: '1 1 calc(25% - 18px)'   // 4 per row on desktop
-              },
-              maxWidth: {
-                xs: '100%',
-                sm: 'calc(50% - 12px)',
-                md: 'calc(25% - 18px)'
-              }
+    <Box 
+      sx={{ 
+        pt: { xs: 6, md: 10 },
+        pb: { xs: 6, md: 10 },
+        px: { xs: 2, sm: 4, md: 8 },
+        background: 'linear-gradient(180deg, #0a1929 0%, #000000 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Background Elements */}
+      <Box sx={{
+        position: 'absolute',
+        bottom: '10%',
+        right: '-5%',
+        width: '400px',
+        height: '400px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, rgba(0,0,0,0) 70%)',
+        filter: 'blur(60px)',
+        zIndex: 0
+      }} />
+
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontSize: { xs: '2rem', md: '3rem' },
+              fontWeight: 700,
+              background: 'linear-gradient(45deg, #fff 30%, #FFD700 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 2
             }}
           >
-            <Card
-              sx={{
-                backgroundColor: '#1a1e23',
-                border: '1px solid #333',
-                borderRadius: 2,
-                height: '100%',
-                transition: 'all 0.3s ease',
-                position: 'relative',
-                overflow: 'hidden',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(255, 215, 0, 0.2)',
-                  borderColor: '#FFD700'
-                },
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: 'linear-gradient(90deg, #FFD700, #FFA500)',
-                }
-              }}
+            Honors & Awards
+          </Typography>
+          <Box sx={{ 
+            width: '60px', 
+            height: '4px', 
+            bgcolor: '#FFD700', 
+            mx: 'auto', 
+            borderRadius: '2px' 
+          }} />
+        </Box>
+
+        <Box 
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: 'repeat(2, 1fr)',
+              lg: 'repeat(3, 1fr)'
+            },
+            gap: 4
+          }}
+        >
+          {currentAwards.map((award, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
             >
-              <CardContent sx={{ p: 3, pt: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <EmojiEventsIcon sx={{ color: '#FFD700', fontSize: 32 }} />
-                  <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold' }}>
-                    {award.title}
-                  </Typography>
-                </Box>
+              <Card
+                sx={{
+                  height: '100%',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 215, 0, 0.1)',
+                  borderRadius: '16px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 40px rgba(255, 215, 0, 0.15)',
+                    border: '1px solid rgba(255, 215, 0, 0.4)',
+                    '& .award-icon': {
+                      transform: 'scale(1.1) rotate(10deg)',
+                      color: '#FFD700'
+                    }
+                  }
+                }}
+              >
+                <Box 
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '100px',
+                    height: '100px',
+                    background: 'linear-gradient(135deg, transparent 50%, rgba(255, 215, 0, 0.1) 50%)',
+                    borderBottomLeftRadius: '100px'
+                  }}
+                />
 
-                {award.organization && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <BusinessIcon sx={{ color: '#00a1e0', fontSize: 16 }} />
-                    <Typography variant="body2" sx={{ color: '#00a1e0' }}>
-                      {award.organization}
-                    </Typography>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
+                    <Box 
+                      className="award-icon"
+                      sx={{ 
+                        p: 1.5, 
+                        borderRadius: '12px', 
+                        bgcolor: 'rgba(255, 215, 0, 0.1)',
+                        color: 'rgba(255, 215, 0, 0.8)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <EmojiEventsIcon sx={{ fontSize: 32 }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="h5" sx={{ color: '#fff', fontWeight: 'bold', mb: 1, lineHeight: 1.3 }}>
+                        {award.title}
+                      </Typography>
+                      {award.organization && (
+                        <Typography variant="subtitle2" sx={{ color: '#FFD700', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <BusinessIcon sx={{ fontSize: 16 }} />
+                          {award.organization}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                )}
 
-                {award.year && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <CalendarTodayIcon sx={{ color: '#ccc', fontSize: 16 }} />
-                    <Typography variant="body2" sx={{ color: '#ccc' }}>
-                      {award.year}
-                    </Typography>
-                  </Box>
-                )}
-
-                {award.description && (
-                  <Typography variant="body2" sx={{ color: '#ccc', lineHeight: 1.6, mt: 2 }}>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3, lineHeight: 1.6 }}>
                     {award.description}
                   </Typography>
-                )}              </CardContent>
-            </Card>
-          </Box>
-        ))}
-      </Box>
-      
-      {/* Message for few items */}
-      {currentAwards.length <= 3 && awards.length <= 8 && (
-        <Box sx={{ textAlign: 'center', mt: 4, p: 3 }}>
-          <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
-            {awards.length === 1 ? '🏆 Outstanding Achievement' : 
-             awards.length === 2 ? '🏆 Distinguished Honors' : 
-             '🏆 Excellence Recognition'}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#ccc', maxWidth: 600, mx: 'auto' }}>
-            {awards.length === 1 ? 
-              'This prestigious award represents the highest level of achievement and recognition in the field.' :
-              awards.length === 2 ?
-              'These distinguished honors reflect exceptional dedication and outstanding contributions to the craft.' :
-              'These awards celebrate remarkable achievements and the pursuit of excellence in creative endeavors.'}
-          </Typography>
+
+                  {award.year && (
+                    <Box sx={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: 1, 
+                      px: 2, 
+                      py: 0.5, 
+                      borderRadius: '20px', 
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                      <CalendarTodayIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }} />
+                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>
+                        {award.year}
+                      </Typography>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </Box>
-      )}
-      
-      {/* Empty space filler for partial pages */}
-      {currentAwards.length < 8 && currentAwards.length > 3 && (
-        <Box sx={{ textAlign: 'center', mt: 4, p: 3 }}>
-          <Typography variant="body2" sx={{ color: '#666', fontStyle: 'italic' }}>
-            More achievements and recognition to come...
-          </Typography>
-        </Box>
-      )}
-      
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={handlePageChange}
-            color="primary"
-            size="large"
-            sx={{
-              '& .MuiPaginationItem-root': {
-                backgroundColor: '#1a1e23',
-                border: '1px solid #333',
-                color: '#fff',
-                '&:hover': {
-                  backgroundColor: '#FFD700',
-                  borderColor: '#FFD700',
-                  color: '#000'
-                },
-                '&.Mui-selected': {
-                  backgroundColor: '#FFD700',
-                  borderColor: '#FFD700',
-                  color: '#000'
+
+        {totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+            <Pagination 
+              count={totalPages} 
+              page={currentPage} 
+              onChange={handlePageChange}
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  color: 'rgba(255,255,255,0.6)',
+                  '&.Mui-selected': {
+                    backgroundColor: '#FFD700',
+                    color: '#000',
+                    fontWeight: 'bold',
+                    '&:hover': {
+                      backgroundColor: '#E6C200'
+                    }
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    color: '#FFD700'
+                  }
                 }
-              }
-            }}
-          />
-        </Box>
-      )}
+              }}
+            />
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

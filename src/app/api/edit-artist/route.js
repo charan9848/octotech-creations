@@ -1,5 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { createNotification } from "@/lib/db-notifications";
 
 export async function PUT(request) {
   try {
@@ -68,6 +69,15 @@ export async function PUT(request) {
     if (result.matchedCount === 0) {
       return Response.json({ error: "User not found." }, { status: 404 });
     }
+
+    // Notify Admin
+    await createNotification({
+      type: 'info',
+      message: `Artist ${existingArtist.username} updated their profile details.`,
+      recipient: 'admin',
+      relatedId: existingArtist.artistid,
+      link: `/admin/dashboard/artists?search=${existingArtist.artistid}`
+    });
 
     return Response.json({ message: "User updated successfully." });  } catch (err) {
     console.error("Update error:", err);

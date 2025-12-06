@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { MongoClient } from "mongodb";
+import { createNotification } from "@/lib/db-notifications";
 
 export async function POST(req) {
   try {
@@ -8,14 +9,24 @@ export async function POST(req) {
     // Save to MongoDB
     const client = await MongoClient.connect(process.env.MONGODB_URI);
     const db = client.db(process.env.MONGODB_DB);
-    await db.collection("contactus").insertOne({
+    const result = await db.collection("contactus").insertOne({
       firstname,
       lastname,
       email,
       message,
+      read: false,
       createdAt: new Date(),
     });
     await client.close();
+
+    // Notify Admin
+    await createNotification({
+      type: 'info',
+      message: `New Contact Form submission from ${firstname} ${lastname}`,
+      recipient: 'admin',
+      relatedId: result.insertedId,
+      link: '/admin/dashboard/contacts'
+    });
 
     // Configure your SMTP transporter
     const transporter = nodemailer.createTransport({
