@@ -37,13 +37,13 @@
     "mongodb": "^6.16.0",
     "motion": "^12.12.1",
     "multer": "^2.0.0",
-    "next": "15.3.2",
+    "next": "^16.0.7",
     "next-auth": "^4.24.11",
     "next-sitemap": "^4.2.3",
     "nodemailer": "^6.10.1",
-    "react": "^19.0.0",
+    "react": "^19.2.1",
     "react-cookie": "^8.0.1",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.2.1",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
@@ -54,6 +54,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "eslint": "^9",
-    "eslint-config-next": "15.3.2"
+    "eslint-config-next": "^16.0.7"
   }
 }
