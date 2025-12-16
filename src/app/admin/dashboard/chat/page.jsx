@@ -51,6 +51,8 @@ export default function AdminChatPage() {
   const [initialArtistLoaded, setInitialArtistLoaded] = useState(false);
   const messagesEndRef = useRef(null);
   const pollIntervalRef = useRef(null);
+  const prevMessageCountRef = useRef(0);
+  const isInitialLoadRef = useRef(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,7 +95,18 @@ export default function AdminChatPage() {
       const res = await fetch(`/api/messages?artistId=${artistId}`);
       const data = await res.json();
       if (data.messages) {
+        const newCount = data.messages.length;
+        const prevCount = prevMessageCountRef.current;
+        
         setMessages(data.messages);
+        
+        // Only scroll if there are new messages or it's initial load
+        if (isInitialLoadRef.current || newCount > prevCount) {
+          setTimeout(() => scrollToBottom(), 100);
+        }
+        
+        prevMessageCountRef.current = newCount;
+        
         // Mark messages as read
         await fetch('/api/messages', {
           method: 'PUT',
@@ -138,11 +151,11 @@ export default function AdminChatPage() {
   }, [searchParams, allArtists, initialArtistLoaded]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
     if (selectedArtist) {
+      // Reset for new conversation
+      isInitialLoadRef.current = true;
+      prevMessageCountRef.current = 0;
+      
       fetchMessages(selectedArtist.artistId);
       // Poll for new messages every 3 seconds
       pollIntervalRef.current = setInterval(() => {
