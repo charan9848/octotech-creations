@@ -72,13 +72,61 @@ export async function GET(request) {
     // Get global settings
     const settings = await db.collection("settings").findOne({ key: "global_settings" }) || { maxArtists: 4, maintenanceMode: false, allowRegistrations: true };
 
+    // --- Calculate Total Revenue & Collect Projects ---
+    // First, get a map of artistId -> username
+    const allArtists = await db.collection("artists").find({}, { projection: { artistid: 1, username: 1 } }).toArray();
+    const artistMap = {};
+    allArtists.forEach(a => { artistMap[a.artistid] = a.username; });
+
+    const allPortfolios = await db.collection("portfolios").find({}, { projection: { artistId: 1, projects: 1 } }).toArray();
+    let totalRevenue = 0;
+    let totalProjects = 0;
+    let completedProjects = 0;
+    let allProjectsList = [];
+
+    allPortfolios.forEach(portfolio => {
+      if (portfolio.projects && Array.isArray(portfolio.projects)) {
+        portfolio.projects.forEach((project, index) => {
+          // Sum up budget (ensure it's a number)
+          const amount = parseFloat(project.budget) || 0;
+          totalRevenue += amount;
+          totalProjects++;
+          if (project.status === 'Completed') {
+            completedProjects++;
+          }
+          
+          // Add to list
+          allProjectsList.push({
+            ...project, // Include all project fields (description, clientEmail, etc.)
+            artistId: portfolio.artistId,
+            projectIndex: index, // Store original index for editing/deleting
+            budget: amount,
+            artistName: artistMap[portfolio.artistId] || 'Unknown Artist',
+          });
+        });
+      }
+    });
+
+    // Sort projects by startDate (most recent first) and take top 10
+    const recentProjectsList = allProjectsList.sort((a, b) => {
+      const dateA = a.startDate ? new Date(a.startDate) : new Date(0);
+      const dateB = b.startDate ? new Date(b.startDate) : new Date(0);
+      return dateB - dateA;
+    }).slice(0, 10);
+    // ---------------------------------------------
+
     return NextResponse.json({
       stats: {
         artists: artistsCount,
         feedback: feedbackCount,
         contacts: contactCount,
-        visitors: totalVisitors
+        visitors: totalVisitors,
+        revenue: totalRevenue,
+        projects: totalProjects,
+        completedProjects: completedProjects
       },
+      recentProjectsList,
+      allArtists, // Send list of artists for "Add Project" dropdown
       ratingDistribution,
       recentArtists,
       recentMessages,

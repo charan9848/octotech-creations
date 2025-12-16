@@ -59,7 +59,7 @@ const projectsSchema = Yup.object().shape({
       endDate: Yup.date().required("End date is required"),
       status: Yup.string().required("Status is required"),
       category: Yup.string().required("Category is required"),
-      budget: Yup.number().min(0, "Budget must be positive").required("Budget is required")
+      budget: Yup.number().min(300, "Minimum budget is ₹300").required("Budget is required")
     })
   )
 });

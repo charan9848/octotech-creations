@@ -3,7 +3,7 @@ import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import * as yup from "yup";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -15,6 +15,21 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 const footer = () => {
     const [loading, setLoading] = useState(false);
+    const [version, setVersion] = useState('1.0');
+
+    useEffect(() => {
+        const fetchVersion = async () => {
+            try {
+                const res = await axios.get('/api/version');
+                if (res.data?.version) {
+                    setVersion(res.data.version);
+                }
+            } catch (error) {
+                console.error('Failed to fetch version');
+            }
+        };
+        fetchVersion();
+    }, []);
 
     const octotechInfo = [
         {
@@ -274,7 +289,7 @@ const footer = () => {
                 {/* Internal navigation links */}
 
                 <Typography variant="h6" color='rgba(77, 84, 87,1)' fontSize="12px" sx={{ mb: { xs: 2, md: 0 }, textAlign: 'center' }}>
-                    &copy; {new Date().getFullYear()} Octotech Creation. All rights reserved. | Developed by Gannoj Bhanu Charan
+                    &copy; {new Date().getFullYear()} Octotech Creation. All rights reserved. | v{version} | Developed by Gannoj Bhanu Charan
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Link href="/terms" style={{ textDecoration: 'none' }}>

@@ -175,28 +175,39 @@ export default function ServicesManagement() {
     return url && (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg') || url.includes('/video/upload/'));
   };
 
-  if (loading) return <Box display="flex" justifyContent="center" p={5}><CircularProgress /></Box>;
+  if (loading) return <Box display="flex" justifyContent="center" p={5}><CircularProgress sx={{ color: '#32b4de' }} /></Box>;
 
   return (
-    <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" color="white">Services Management</Typography>
+    <Box sx={{ p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>Services Management</Typography>
         <Button 
           variant="contained" 
           startIcon={<Add />} 
+          size="small"
           onClick={() => handleOpen()}
-          sx={{ bgcolor: '#e50914', '&:hover': { bgcolor: '#b20710' } }}
+          sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' }, fontSize: '0.8rem' }}
         >
           Add Service
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {services.map((service) => (
-          <Grid item xs={12} md={6} lg={4} key={service._id}>
-            <Card sx={{ bgcolor: '#1e2327', color: 'white', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Grid item xs={12} sm={6} lg={4} key={service._id}>
+            <Card sx={{ 
+              bgcolor: '#1a2027', 
+              color: 'white', 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: 2,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }
+            }}>
               {service.image && (
-                <Box position="relative" height={200} width="100%" bgcolor="#000">
+                <Box position="relative" height={160} width="100%" sx={{ bgcolor: '#000', borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
                   {isVideo(service.image) ? (
                     <video 
                       src={service.image} 
@@ -213,29 +224,33 @@ export default function ServicesManagement() {
                   )}
                 </Box>
               )}
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <IconComponent name={service.icon} />
-                  <Typography variant="h6">{service.title}</Typography>
+              <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                  <Box sx={{ color: '#32b4de' }}>
+                    <IconComponent name={service.icon} />
+                  </Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{service.title}</Typography>
                 </Box>
-                <Typography variant="body2" color="gray" sx={{
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.6)', 
+                  fontSize: '0.75rem',
                   display: '-webkit-box',
-                  WebkitLineClamp: 3,
+                  WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden'
                 }}>
                   {service.description}
                 </Typography>
-                <Typography variant="caption" display="block" mt={1} color="gray">
+                <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>
                   Order: {service.order}
                 </Typography>
               </CardContent>
-              <CardActions>
-                <IconButton onClick={() => handleOpen(service)} sx={{ color: '#4fc3f7' }}>
-                  <Edit />
+              <CardActions sx={{ px: 2, pb: 1.5, pt: 0, justifyContent: 'flex-end' }}>
+                <IconButton size="small" onClick={() => handleOpen(service)} sx={{ color: '#2196f3' }}>
+                  <Edit fontSize="small" />
                 </IconButton>
-                <IconButton onClick={() => handleDelete(service._id)} sx={{ color: '#f44336' }}>
-                  <Delete />
+                <IconButton size="small" onClick={() => handleDelete(service._id)} sx={{ color: '#f44336' }}>
+                  <Delete fontSize="small" />
                 </IconButton>
               </CardActions>
             </Card>
@@ -250,28 +265,32 @@ export default function ServicesManagement() {
         fullWidth
         PaperProps={{
           sx: {
-            bgcolor: '#1e2327',
-            color: 'white'
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)'
           }
         }}
       >
-        <DialogTitle>{isEditing ? 'Edit Service' : 'Add New Service'}</DialogTitle>
-        <DialogContent>
-          <Box display="flex" flexDirection="column" gap={3} mt={1}>
+        <DialogTitle sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 2 }}>
+          {isEditing ? 'Edit Service' : 'Add New Service'}
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Box display="flex" flexDirection="column" gap={2} mt={1}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={8}>
                 <TextField
                   label="Title"
                   fullWidth
+                  size="small"
                   value={currentService.title}
                   onChange={handleTitleChange}
                   sx={{
-                    '& .MuiInputLabel-root': { color: 'gray' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#4fc3f7' },
+                    '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#2196f3' },
                     '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
-                      '&:hover fieldset': { borderColor: 'white' },
-                      '&.Mui-focused fieldset': { borderColor: '#4fc3f7' },
+                      '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                      '&.Mui-focused fieldset': { borderColor: '#2196f3' },
                       color: 'white'
                     }
                   }}
@@ -282,15 +301,16 @@ export default function ServicesManagement() {
                   label="Order"
                   type="number"
                   fullWidth
+                  size="small"
                   value={currentService.order}
                   onChange={(e) => setCurrentService({ ...currentService, order: parseInt(e.target.value) })}
                   sx={{
-                    '& .MuiInputLabel-root': { color: 'gray' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#4fc3f7' },
+                    '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#2196f3' },
                     '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
-                      '&:hover fieldset': { borderColor: 'white' },
-                      '&.Mui-focused fieldset': { borderColor: '#4fc3f7' },
+                      '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                      '&.Mui-focused fieldset': { borderColor: '#2196f3' },
                       color: 'white'
                     }
                   }}
@@ -302,28 +322,29 @@ export default function ServicesManagement() {
               label="Description"
               fullWidth
               multiline
-              rows={4}
+              rows={3}
+              size="small"
               value={currentService.description}
               onChange={(e) => setCurrentService({ ...currentService, description: e.target.value })}
               sx={{
-                '& .MuiInputLabel-root': { color: 'gray' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#4fc3f7' },
+                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#2196f3' },
                 '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
-                  '&:hover fieldset': { borderColor: 'white' },
-                  '&.Mui-focused fieldset': { borderColor: '#4fc3f7' },
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#2196f3' },
                   color: 'white'
                 }
               }}
             />
             
-            <FormControl fullWidth sx={{
-                '& .MuiInputLabel-root': { color: 'gray' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#4fc3f7' },
+            <FormControl fullWidth size="small" sx={{
+                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#2196f3' },
                 '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
-                  '&:hover fieldset': { borderColor: 'white' },
-                  '&.Mui-focused fieldset': { borderColor: '#4fc3f7' },
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#2196f3' },
                   color: 'white'
                 },
                 '& .MuiSelect-icon': { color: 'white' }
@@ -336,11 +357,13 @@ export default function ServicesManagement() {
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      bgcolor: '#1e2327',
+                      bgcolor: '#1a2027',
                       color: 'white',
+                      maxHeight: 300,
                       '& .MuiMenuItem-root': {
-                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-                        '&.Mui-selected': { bgcolor: 'rgba(79, 195, 247, 0.2)', '&:hover': { bgcolor: 'rgba(79, 195, 247, 0.3)' } }
+                        fontSize: '0.85rem',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                        '&.Mui-selected': { bgcolor: 'rgba(33, 150, 243, 0.2)', '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.3)' } }
                       }
                     }
                   }
@@ -357,7 +380,7 @@ export default function ServicesManagement() {
               </Select>
             </FormControl>
 
-            <Box border="1px dashed rgba(255, 255, 255, 0.23)" p={3} borderRadius={2} textAlign="center">
+            <Box sx={{ border: '1px dashed rgba(255,255,255,0.3)', p: 2, borderRadius: 2, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <input
                 accept="image/*,video/*"
                 style={{ display: 'none' }}
@@ -369,17 +392,23 @@ export default function ServicesManagement() {
                 <Button 
                   variant="outlined" 
                   component="span" 
-                  startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+                  size="small"
+                  startIcon={uploading ? <CircularProgress size={16} sx={{ color: '#2196f3' }} /> : <CloudUpload />}
                   disabled={uploading}
                   fullWidth
-                  sx={{ height: 50 }}
+                  sx={{ 
+                    height: 40, 
+                    color: '#2196f3', 
+                    borderColor: 'rgba(33, 150, 243, 0.5)',
+                    '&:hover': { borderColor: '#2196f3', bgcolor: 'rgba(33, 150, 243, 0.1)' }
+                  }}
                 >
                   {uploading ? 'Uploading...' : 'Upload Image or Video'}
                 </Button>
               </label>
               {currentService.image && (
-                <Box mt={2}>
-                  <Box position="relative" height={200} width="100%" bgcolor="#000">
+                <Box mt={1.5}>
+                  <Box position="relative" height={150} width="100%" sx={{ bgcolor: '#000', borderRadius: 1, overflow: 'hidden' }}>
                     {isVideo(currentService.image) ? (
                       <video 
                         src={currentService.image} 
@@ -398,6 +427,7 @@ export default function ServicesManagement() {
                   <Button 
                     variant="outlined" 
                     color="error" 
+                    size="small"
                     startIcon={<Delete />}
                     onClick={() => setCurrentService({ ...currentService, image: '' })}
                     sx={{ mt: 1 }}
@@ -410,9 +440,9 @@ export default function ServicesManagement() {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', px: 3, py: 2 }}>
+          <Button onClick={handleClose} sx={{ color: 'rgba(255,255,255,0.7)' }}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' } }}>
             {isEditing ? 'Update' : 'Create'}
           </Button>
         </DialogActions>

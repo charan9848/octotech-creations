@@ -17,7 +17,8 @@ export async function GET(request) {
     
     // Default settings if not found
     const defaultSettings = {
-      maxArtists: 4
+      maxArtists: 4,
+      chatAutoDeleteDays: 0
     };
 
     return NextResponse.json(settings || defaultSettings);
@@ -35,8 +36,8 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    // Extract known settings, ignore others to prevent pollution if needed, or just spread
-    const { maxArtists, maintenanceMode, allowRegistrations } = body;
+    // Extract known settings
+    const { maxArtists, maintenanceMode, allowRegistrations, chatAutoDeleteDays } = body;
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -61,7 +62,7 @@ export async function PUT(request) {
             await transporter.sendMail({
               from: process.env.EMAIL_USER,
               bcc: artistEmails,
-              subject: "Important: OctoTech Creations Maintenance Update",
+              subject: "Important: Octotech Creations Maintenance Update",
               html: `
                 <div style="font-family: Arial, sans-serif; color: #333;">
                   <h2>System Maintenance Notice</h2>
@@ -69,7 +70,7 @@ export async function PUT(request) {
                   <p>This is to inform you that <strong>OctoTech Creations</strong> is currently undergoing scheduled maintenance.</p>
                   <p>During this time, the public website will be inaccessible. However, as a registered artist, you may still be able to access your dashboard if needed, but please expect potential interruptions.</p>
                   <p>We will notify you once the maintenance is complete.</p>
-                  <p>Best regards,<br/>The OctoTech Team</p>
+                  <p>Best regards,<br/>The Octotech Team</p>
                 </div>
               `,
             });
@@ -95,7 +96,7 @@ export async function PUT(request) {
             await transporter.sendMail({
               from: process.env.EMAIL_USER,
               bcc: artistEmails,
-              subject: "Update: OctoTech Creations is Back Online",
+              subject: "Update: Octotech Creations is Back Online",
               html: `
                 <div style="font-family: Arial, sans-serif; color: #333;">
                   <h2>System Maintenance Complete</h2>
@@ -103,7 +104,7 @@ export async function PUT(request) {
                   <p>We are pleased to inform you that the scheduled maintenance for <strong>OctoTech Creations</strong> has been successfully completed.</p>
                   <p>The website is now fully operational and accessible to the public. You can resume your normal activities on your dashboard.</p>
                   <p>Thank you for your patience.</p>
-                  <p>Best regards,<br/>The OctoTech Team</p>
+                  <p>Best regards,<br/>The Octotech Team</p>
                 </div>
               `,
             });
@@ -123,6 +124,16 @@ export async function PUT(request) {
     if (maxArtists !== undefined) updateData.maxArtists = parseInt(maxArtists);
     if (maintenanceMode !== undefined) updateData.maintenanceMode = maintenanceMode;
     if (allowRegistrations !== undefined) updateData.allowRegistrations = allowRegistrations;
+    if (chatAutoDeleteDays !== undefined) updateData.chatAutoDeleteDays = parseInt(chatAutoDeleteDays);
+
+    // If chat auto-delete is enabled, delete old messages now
+    if (chatAutoDeleteDays !== undefined && chatAutoDeleteDays > 0) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - chatAutoDeleteDays);
+      await db.collection("messages").deleteMany({
+        createdAt: { $lt: cutoffDate }
+      });
+    }
 
     await db.collection("settings").updateOne(
       { key: "global_settings" },

@@ -6,9 +6,9 @@ export async function GET(request) {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     
-    // Fetch all artists, projecting only necessary fields
+    // Fetch all artists, projecting necessary fields including artistid for chat
     const artists = await db.collection("artists")
-      .find({}, { projection: { username: 1, role: 1, _id: 0 } })
+      .find({}, { projection: { username: 1, role: 1, artistid: 1, profileImage: 1, _id: 0 } })
       .toArray();
 
     return NextResponse.json(artists);

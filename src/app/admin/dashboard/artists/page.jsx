@@ -10,6 +10,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import MailIcon from '@mui/icons-material/Mail';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import ChatIcon from '@mui/icons-material/Chat';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { downloadCSV } from '@/lib/exportUtils';
 
@@ -66,6 +68,7 @@ const getWhatsAppLink = (phone, username, percentage) => {
 
 export default function AdminArtists() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -531,6 +534,14 @@ export default function AdminArtists() {
                 </TableCell>
                 <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{formatDate(artist.createdAt)}</TableCell>
                 <TableCell>
+                  <IconButton 
+                    aria-label="chat" 
+                    onClick={() => router.push(`/admin/dashboard/chat?artistId=${artist.artistid}&artistName=${encodeURIComponent(artist.username)}`)}
+                    sx={{ color: '#4caf50', mr: 1, '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.1)' } }}
+                    title="Chat with artist"
+                  >
+                    <ChatIcon />
+                  </IconButton>
                   <IconButton 
                     aria-label="edit" 
                     onClick={() => handleEditClick(artist)}

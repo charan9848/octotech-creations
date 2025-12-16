@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Box,
   Card,
-  Typography, Avatar, IconButton, Button, Alert, CircularProgress,
+  Typography, Avatar, IconButton, Button, Alert, CircularProgress, Chip,
 } from "@mui/material";
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'; 
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
@@ -14,8 +14,10 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 const ArtistDashboard = () => {
   const { data: session, status } = useSession();
   const [artist, setArtist] = useState(null);
+  const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [appVersion, setAppVersion] = useState('');
 
   useEffect(() => {
     if (status === "loading") return;
@@ -26,14 +28,27 @@ const ArtistDashboard = () => {
       return;
     }
 
-    const fetchArtist = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/artists/${session.user.artistid}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch artist");
+        // Fetch Artist Profile
+        const artistRes = await fetch(`/api/artists/${session.user.artistid}`);
+        if (!artistRes.ok) throw new Error("Failed to fetch artist");
+        const artistData = await artistRes.json();
+        setArtist(artistData);
+
+        // Fetch Portfolio (for Earnings)
+        const portfolioRes = await fetch(`/api/portfolio/${session.user.artistid}`);
+        if (portfolioRes.ok) {
+          const portfolioData = await portfolioRes.json();
+          setPortfolio(portfolioData);
         }
-        const data = await response.json();
-        setArtist(data);
+
+        // Fetch Version
+        const versionRes = await fetch('/api/version');
+        if (versionRes.ok) {
+          const versionData = await versionRes.json();
+          if (versionData.version) setAppVersion(versionData.version);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -41,7 +56,7 @@ const ArtistDashboard = () => {
       }
     };
 
-    fetchArtist();
+    fetchData();
   }, [session, status]);
   const handleLogout = () => {
     signOut({ callbackUrl: "/artist-login" });
@@ -80,21 +95,49 @@ const ArtistDashboard = () => {
     );
   }
 
-  if (!artist) return <div>Artist not found.</div>;
+  if (!artist) return <Box sx={{ p: 4 }}><Typography>Artist not found.</Typography></Box>;
 
   return (
     <Box>
       <Box display={"flex"} alignItems="center" justifyContent="space-between" >
-        <Typography variant="h1" sx={{ fontSize: "30px" }} mb={2}>
-          Dashboard Overview
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h1" sx={{ fontSize: "30px" }} mb={2}>
+            Dashboard Overview
+          </Typography>
+          {appVersion && <Chip label={`v${appVersion}`} size="small" sx={{ bgcolor: '#32b4de', color: 'white', fontWeight: 'bold', mb: 2 }} />}
+        </Box>
         <Typography variant="h2" sx={{ fontSize: "20px", color: "#78838D" }} mb={2}>
           Welcome, {artist.username || "Artist"}!
         </Typography>
       </Box>
       <Typography variant="h2">
         Welcome to your artist dashboard! Here you can manage your portfolio, profile, and more.
-      </Typography>      <Box sx={{ mt: 4 }}>
+      </Typography>
+
+      {/* Earnings Card */}
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Card sx={{ 
+          bgcolor: '#1a2027', 
+          color: 'white', 
+          border: '1px solid rgba(76, 175, 80, 0.3)',
+          background: 'linear-gradient(135deg, #1a2027 0%, #1a2e1a 100%)',
+          maxWidth: 400
+        }}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ color: '#4caf50', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px', mb: 1 }}>
+              Total Earnings
+            </Typography>
+            <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+              ₹{(portfolio?.projects?.reduce((sum, p) => sum + (parseFloat(p.budget) || 0), 0) || 0).toLocaleString()}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              From {portfolio?.projects?.length || 0} Projects ({portfolio?.projects?.filter(p => p.status === 'Completed').length || 0} Completed)
+            </Typography>
+          </Box>
+        </Card>
+      </Box>
+
+      <Box sx={{ mt: 4 }}>
         <Typography variant="h3" sx={{ fontSize: "24px", mb: 3, color: "white" }}>
           Profile Information
         </Typography>

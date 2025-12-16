@@ -13,6 +13,7 @@ import ImageIcon from "@mui/icons-material/Image";
 import StarIcon from "@mui/icons-material/Star";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import ChatIcon from "@mui/icons-material/Chat";
 import Link from "next/link";
 import { usePathname } from "next/navigation"; // Add this import
 import { signOut } from "next-auth/react";
@@ -263,7 +264,28 @@ export default function DashboardLayout({ children }) {
                 primaryTypographyProps={{
                   sx: { color: pathname === "/artist-dashboard/profile" ? "#fff" : "#fff !important" }
                 }}              />
-            </ListItemButton>          </ListItem>          {/* Divider before bottom actions */}
+            </ListItemButton>          </ListItem>
+          
+          <ListItem disablePadding selected={pathname === "/artist-dashboard/chat"}>
+            <ListItemButton
+              component={Link}
+              href="/artist-dashboard/chat"
+              sx={{
+                backgroundColor: pathname === "/artist-dashboard/chat" ? "#00a1e0" : "inherit",
+                "&:hover": { backgroundColor: "#007bb5" }
+              }}
+            >
+              <ListItemIcon>
+                <ChatIcon sx={{ color: pathname === "/artist-dashboard/chat" ? "#fff" : "#00a1e0" }} />
+              </ListItemIcon>
+              <ListItemText
+                primary="Chat with Admin"
+                primaryTypographyProps={{
+                  sx: { color: pathname === "/artist-dashboard/chat" ? "#fff" : "#fff !important" }
+                }}
+              />
+            </ListItemButton>
+          </ListItem>          {/* Divider before bottom actions */}
           <Divider sx={{ my: 2, backgroundColor: "rgba(255, 255, 255, 0.2)" }} />
           
           {/* Logout Button */}

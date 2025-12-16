@@ -28,6 +28,28 @@ export async function POST(req) {
       link: '/admin/dashboard/contacts'
     });
 
+    // --- Send to n8n Webhook (Local Automation) ---
+    try {
+      // Note: This URL is for your local n8n. 
+      // If you deploy to Vercel, you'll need a public n8n URL (e.g. via Tunnel or Cloud)
+      await fetch('http://localhost:5678/webhook-test/contact-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          firstname, 
+          lastname, 
+          email, 
+          message,
+          source: 'Octotech Website',
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch (n8nError) {
+      console.warn("Failed to send to n8n (is it running?):", n8nError.message);
+      // We don't block the response if n8n fails
+    }
+    // ----------------------------------------------
+
     // Configure your SMTP transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",

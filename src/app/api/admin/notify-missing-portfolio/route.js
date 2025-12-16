@@ -111,6 +111,7 @@ export async function POST(request) {
       const results = { email: false, whatsapp: false, errors: [] };
 
       // Email
+      console.log(`[Debug] Preparing to send email to: ${artist.email}`);
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: artist.email,
@@ -134,7 +135,8 @@ export async function POST(request) {
       };
       
       try {
-        await transporter.sendMail(mailOptions);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`[Debug] Email sent successfully to ${artist.email}. MessageId: ${info.messageId}`);
         results.email = true;
       } catch (err) {
         console.error(`Email failed for ${artist.email}:`, err);

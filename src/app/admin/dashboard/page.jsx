@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, CircularProgress, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, Chip, IconButton, LinearProgress, TextField, Snackbar, Alert, Switch, FormControlLabel, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Checkbox } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Grid, Paper, Typography, CircularProgress, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, Chip, IconButton, LinearProgress, TextField, Snackbar, Alert, Switch, FormControlLabel, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import PeopleIcon from '@mui/icons-material/People';
 import FeedbackIcon from '@mui/icons-material/Feedback';
@@ -44,6 +44,25 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
   
+  // Project CRUD State
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
+  const [confirmSaveDialogOpen, setConfirmSaveDialogOpen] = useState(false);
+  const [currentProject, setCurrentProject] = useState(null);
+  const [isEditingProject, setIsEditingProject] = useState(false);
+  const [projectForm, setProjectForm] = useState({
+    title: '',
+    description: '',
+    clientName: '',
+    clientEmail: '',
+    startDate: '',
+    endDate: '',
+    status: 'Planning',
+    category: 'Other',
+    budget: 0,
+    artistId: ''
+  });
+
   // Todo State
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
@@ -53,6 +72,120 @@ export default function AdminDashboard() {
   const [broadcastSubject, setBroadcastSubject] = useState('');
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+
+  // Version State
+  const [appVersion, setAppVersion] = useState('1.0');
+
+  // Project Handlers
+  const handleOpenAddProject = () => {
+    setProjectForm({
+      title: '',
+      description: '',
+      clientName: '',
+      clientEmail: '',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+      status: 'Planning',
+      category: 'Other',
+      budget: 0,
+      artistId: stats?.allArtists?.[0]?.artistid || ''
+    });
+    setIsEditingProject(false);
+    setProjectDialogOpen(true);
+  };
+
+  const handleOpenEditProject = (project) => {
+    setProjectForm({
+      title: project.title,
+      description: project.description || '',
+      clientName: project.clientName,
+      clientEmail: project.clientEmail || '',
+      startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
+      endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+      status: project.status,
+      category: project.category || 'Other',
+      budget: project.budget,
+      artistId: project.artistId
+    });
+    setCurrentProject(project);
+    setIsEditingProject(true);
+    setProjectDialogOpen(true);
+  };
+
+  const handleOpenDeleteProject = (project) => {
+    setCurrentProject(project);
+    setDeleteProjectDialogOpen(true);
+  };
+
+  const handleConfirmSave = () => {
+    setConfirmSaveDialogOpen(true);
+  };
+
+  const handleSaveProject = async () => {
+    setConfirmSaveDialogOpen(false);
+    try {
+      const url = isEditingProject ? '/api/admin/projects' : '/api/admin/projects';
+      const method = isEditingProject ? 'PUT' : 'POST';
+      
+      const payload = isEditingProject ? {
+        artistId: currentProject.artistId,
+        projectIndex: currentProject.projectIndex,
+        project: {
+          ...projectForm,
+          budget: Number(projectForm.budget)
+        }
+      } : {
+        artistId: projectForm.artistId,
+        project: {
+          ...projectForm,
+          budget: Number(projectForm.budget)
+        }
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setSnackbar({ open: true, message: `Project ${isEditingProject ? 'updated' : 'added'} successfully`, severity: 'success' });
+        setProjectDialogOpen(false);
+        fetchStats(); // Refresh data
+      } else {
+        const data = await res.json();
+        setSnackbar({ open: true, message: data.error || 'Failed to save project', severity: 'error' });
+      }
+    } catch (error) {
+      console.error('Error saving project:', error);
+      setSnackbar({ open: true, message: 'An error occurred', severity: 'error' });
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    try {
+      const res = await fetch('/api/admin/projects', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artistId: currentProject.artistId,
+          projectIndex: currentProject.projectIndex
+        })
+      });
+
+      if (res.ok) {
+        setSnackbar({ open: true, message: 'Project deleted successfully', severity: 'success' });
+        setDeleteProjectDialogOpen(false);
+        fetchStats(); // Refresh data
+      } else {
+        const data = await res.json();
+        setSnackbar({ open: true, message: data.error || 'Failed to delete project', severity: 'error' });
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      setSnackbar({ open: true, message: 'An error occurred', severity: 'error' });
+    }
+  };
 
   useEffect(() => {
     const savedNote = localStorage.getItem('admin_note');
@@ -99,9 +232,22 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchVersion = async () => {
+      try {
+        const res = await fetch('/api/version');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.version) setAppVersion(data.version);
+        }
+      } catch (error) {
+        console.error("Failed to fetch version", error);
+      }
+    };
+
     fetchStats();
     fetchSystemHealth();
     fetchTodos();
+    fetchVersion();
     
     // Refresh system health every 30 seconds
     const interval = setInterval(fetchSystemHealth, 30000);
@@ -324,6 +470,7 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
+    { title: 'Total Revenue', value: `₹${(stats?.stats?.revenue || 0).toLocaleString()}`, icon: <TrendingUpIcon fontSize="large" />, color: '#4caf50', trend: `${stats?.stats?.projects || 0} Projects` },
     { title: 'Total Visitors', value: stats?.stats?.visitors || 0, icon: <VisibilityIcon fontSize="large" />, color: '#9c27b0', trend: 'Live' },
     { title: 'Total Artists', value: stats?.stats?.artists || 0, icon: <PeopleIcon fontSize="large" />, color: '#32b4de', trend: '+12%' },
     { title: 'Total Feedback', value: stats?.stats?.feedback || 0, icon: <FeedbackIcon fontSize="large" />, color: '#e91e63', trend: '+5%' },
@@ -341,9 +488,12 @@ export default function AdminDashboard() {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-          Dashboard Overview
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+            Dashboard Overview
+          </Typography>
+          <Chip label={`v${appVersion}`} size="small" sx={{ bgcolor: '#32b4de', color: 'white', fontWeight: 'bold' }} />
+        </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
            <TextField
               size="small"
@@ -379,9 +529,9 @@ export default function AdminDashboard() {
       </Box>
 
       {/* Top Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         {statCards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={12} sm={6} md={2.4} key={index}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -389,7 +539,7 @@ export default function AdminDashboard() {
             >
               <Paper
                 sx={{
-                  p: 3,
+                  p: 2.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -399,33 +549,35 @@ export default function AdminDashboard() {
                   border: '1px solid rgba(255,255,255,0.05)',
                   position: 'relative',
                   overflow: 'hidden',
-                  height: '140px'
+                  height: '120px',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }
                 }}
               >
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <Box sx={{ position: 'relative', zIndex: 1, flex: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 500 }}>
                     {card.title}
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', mt: 1 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 0.5, fontSize: '1.5rem' }}>
                     {card.value}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <TrendingUpIcon sx={{ color: '#4caf50', fontSize: '0.8rem', mr: 0.5 }} />
-                    <Typography variant="caption" sx={{ color: '#4caf50' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                    <TrendingUpIcon sx={{ color: '#4caf50', fontSize: '0.7rem', mr: 0.5 }} />
+                    <Typography variant="caption" sx={{ color: '#4caf50', fontSize: '0.65rem' }}>
                       {card.trend}
                     </Typography>
                   </Box>
                 </Box>
                 <Box sx={{ 
-                  bgcolor: `${card.color}20`, 
-                  p: 1.5, 
-                  borderRadius: '50%', 
+                  bgcolor: `${card.color}15`, 
+                  p: 1, 
+                  borderRadius: '12px', 
                   color: card.color,
                   display: 'flex',
                   position: 'relative',
                   zIndex: 1
                 }}>
-                  {card.icon}
+                  {React.cloneElement(card.icon, { sx: { fontSize: '1.8rem' } })}
                 </Box>
                 {/* Decorative background circle */}
                 <Box sx={{
@@ -444,33 +596,113 @@ export default function AdminDashboard() {
         ))}
       </Grid>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Quick Actions & System Health */}
+      {/* Recent Projects Row */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12}>
+          <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Recent Projects</Typography>
+                <Button 
+                  variant="contained" 
+                  startIcon={<AddIcon />} 
+                  size="small"
+                  onClick={handleOpenAddProject}
+                  sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' }, fontSize: '0.75rem', py: 0.5 }}
+                >
+                  Add Project
+                </Button>
+              </Box>
+              <TableContainer>
+                <Table size="small" sx={{ minWidth: 650 }} aria-label="projects table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>Project Name</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>Artist</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>Client</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>Status</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }} align="right">Budget</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }} align="right">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {stats?.recentProjectsList?.map((project, index) => (
+                      <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 }, borderColor: 'rgba(255,255,255,0.1)' }}>
+                        <TableCell component="th" scope="row" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }}>
+                          {project.title}
+                        </TableCell>
+                        <TableCell sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }}>{project.artistName}</TableCell>
+                        <TableCell sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.1)' }}>{project.clientName}</TableCell>
+                        <TableCell sx={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                          <Chip 
+                            label={project.status} 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: project.status === 'Completed' ? 'rgba(76, 175, 80, 0.2)' : 
+                                       project.status === 'In Progress' ? 'rgba(33, 150, 243, 0.2)' : 
+                                       'rgba(255, 255, 255, 0.1)',
+                              color: project.status === 'Completed' ? '#4caf50' : 
+                                     project.status === 'In Progress' ? '#2196f3' : 
+                                     'white'
+                            }} 
+                          />
+                        </TableCell>
+                        <TableCell align="right" sx={{ color: '#4caf50', fontWeight: 'bold', borderColor: 'rgba(255,255,255,0.1)' }}>
+                          ₹{project.budget?.toLocaleString()}
+                        </TableCell>
+                        <TableCell align="right" sx={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                          <IconButton size="small" onClick={() => handleOpenEditProject(project)} sx={{ color: '#2196f3' }}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleOpenDeleteProject(project)} sx={{ color: '#f44336' }}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {(!stats?.recentProjectsList || stats.recentProjectsList.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center" sx={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', borderColor: 'rgba(255,255,255,0.1)' }}>
+                          No projects found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {/* Quick Actions & Platform Settings */}
         <Grid item xs={12} md={3}>
-           <Grid container spacing={3} direction="column">
+           <Grid container spacing={2} direction="column">
              <Grid item>
                 <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Quick Actions</Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <CardContent sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold' }}>Quick Actions</Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                       <Link href="/admin/dashboard/content" style={{ textDecoration: 'none' }}>
-                        <Button fullWidth variant="outlined" startIcon={<EditIcon />} sx={{ justifyContent: 'flex-start', color: '#32b4de', borderColor: 'rgba(50, 180, 222, 0.5)' }}>
-                          Manage Site Content
+                        <Button fullWidth variant="outlined" size="small" startIcon={<EditIcon />} sx={{ justifyContent: 'flex-start', color: '#32b4de', borderColor: 'rgba(50, 180, 222, 0.5)' }}>
+                          Manage Content
                         </Button>
                       </Link>
                       <Link href="/admin/dashboard/artists" style={{ textDecoration: 'none' }}>
-                        <Button fullWidth variant="outlined" startIcon={<PeopleIcon />} sx={{ justifyContent: 'flex-start', color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
-                          View All Artists
+                        <Button fullWidth variant="outlined" size="small" startIcon={<PeopleIcon />} sx={{ justifyContent: 'flex-start', color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                          View Artists
                         </Button>
                       </Link>
                       <Link href="/admin/dashboard/contacts" style={{ textDecoration: 'none' }}>
-                        <Button fullWidth variant="outlined" startIcon={<EmailIcon />} sx={{ justifyContent: 'flex-start', color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
-                          Check Messages
+                        <Button fullWidth variant="outlined" size="small" startIcon={<EmailIcon />} sx={{ justifyContent: 'flex-start', color: 'white', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                          Messages
                         </Button>
                       </Link>
                       <Button 
                         fullWidth 
                         variant="outlined" 
+                        size="small"
                         startIcon={<CampaignIcon />} 
                         onClick={() => setBroadcastOpen(true)}
                         sx={{ justifyContent: 'flex-start', color: '#ff9800', borderColor: 'rgba(255, 152, 0, 0.5)' }}
@@ -484,13 +716,13 @@ export default function AdminDashboard() {
 
              <Grid item>
                 <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-                      <SettingsIcon sx={{ mr: 1, color: '#ff9800' }} /> Platform Settings
+                  <CardContent sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                      <SettingsIcon sx={{ mr: 1, color: '#ff9800', fontSize: '1.2rem' }} /> Settings
                     </Typography>
                     
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>Max Artists Limit</Typography>
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, fontSize: '0.75rem' }}>Max Artists</Typography>
                       <TextField
                         type="number"
                         size="small"
@@ -510,23 +742,25 @@ export default function AdminDashboard() {
                     <FormControlLabel
                       control={
                         <Switch 
+                          size="small"
                           checked={settings.maintenanceMode} 
                           onChange={handleMaintenanceToggle}
                           color="warning"
                         />
                       }
-                      label={<Typography variant="body2" sx={{ color: settings.maintenanceMode ? '#ff9800' : 'white' }}>Maintenance Mode</Typography>}
+                      label={<Typography variant="body2" sx={{ color: settings.maintenanceMode ? '#ff9800' : 'white', fontSize: '0.75rem' }}>Maintenance</Typography>}
                     />
 
                     <FormControlLabel
                       control={
                         <Switch 
+                          size="small"
                           checked={settings.allowRegistrations} 
                           onChange={(e) => handleSettingChange('allowRegistrations', e.target.checked)}
                           color="success"
                         />
                       }
-                      label={<Typography variant="body2" sx={{ color: settings.allowRegistrations ? '#4caf50' : 'white' }}>Allow Registrations</Typography>}
+                      label={<Typography variant="body2" sx={{ color: settings.allowRegistrations ? '#4caf50' : 'white', fontSize: '0.75rem' }}>Registrations</Typography>}
                     />
                   </CardContent>
                 </Card>
@@ -535,13 +769,13 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Visitor Traffic Chart */}
-        <Grid item xs={12} md={5}>
+        <Grid item xs={12} md={4.5}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Daily Visitors (Last 14 Days)
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold' }}>
+                Daily Visitors (14 Days)
               </Typography>
-              <Box sx={{ flexGrow: 1, minHeight: 250, width: '100%' }}>
+              <Box sx={{ flexGrow: 1, minHeight: 220, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={visitorData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -559,13 +793,13 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Artist Growth Chart */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4.5}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                 Artist Growth
               </Typography>
-              <Box sx={{ flexGrow: 1, minHeight: 250, width: '100%' }}>
+              <Box sx={{ flexGrow: 1, minHeight: 220, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={growthData}>
                     <defs>
@@ -589,18 +823,19 @@ export default function AdminDashboard() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
+      {/* Recent Artists, Messages & Feedback Row */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         {/* Recent Artists */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Recent Artists</Typography>
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Recent Artists</Typography>
                 <Link href="/admin/dashboard/artists">
-                  <IconButton size="small" sx={{ color: 'rgba(255,255,255,0.5)' }}><ArrowForwardIcon /></IconButton>
+                  <IconButton size="small" sx={{ color: 'rgba(255,255,255,0.5)' }}><ArrowForwardIcon fontSize="small" /></IconButton>
                 </Link>
               </Box>
-              <List>
+              <List dense>
                 {stats?.recentArtists?.map((artist, index) => (
                   <ListItem key={artist._id} divider={index !== stats.recentArtists.length - 1} sx={{ borderColor: 'rgba(255,255,255,0.05)', px: 0 }}>
                     <ListItemAvatar>
@@ -631,14 +866,14 @@ export default function AdminDashboard() {
         {/* Recent Messages */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Recent Messages</Typography>
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Recent Messages</Typography>
                 <Link href="/admin/dashboard/contacts">
-                  <IconButton size="small" sx={{ color: 'rgba(255,255,255,0.5)' }}><ArrowForwardIcon /></IconButton>
+                  <IconButton size="small" sx={{ color: 'rgba(255,255,255,0.5)' }}><ArrowForwardIcon fontSize="small" /></IconButton>
                 </Link>
               </Box>
-              <List>
+              <List dense>
                 {stats?.recentMessages?.map((msg, index) => (
                   <ListItem key={msg._id} divider={index !== stats.recentMessages.length - 1} sx={{ borderColor: 'rgba(255,255,255,0.05)', px: 0 }}>
                     <ListItemAvatar>
@@ -669,8 +904,8 @@ export default function AdminDashboard() {
         {/* Feedback Ratings Chart */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                 Feedback Distribution
               </Typography>
               <Box sx={{ height: 250, width: '100%' }}>
@@ -703,29 +938,29 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* System Utilities Row */}
-      <Grid container spacing={3} sx={{ mt: 1 }}>
+      <Grid container spacing={2}>
         {/* System Health */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-                <SpeedIcon sx={{ mr: 1, color: '#4caf50' }} /> System Health
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <SpeedIcon sx={{ mr: 1, color: '#4caf50', fontSize: '1.2rem' }} /> System Health
               </Typography>
               
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>CPU Usage</Typography>
-                  <Typography variant="body2" sx={{ color: '#4caf50' }}>{systemHealth.cpu}%</Typography>
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>CPU Usage</Typography>
+                  <Typography variant="body2" sx={{ color: '#4caf50', fontSize: '0.75rem' }}>{systemHealth.cpu}%</Typography>
                 </Box>
-                <LinearProgress variant="determinate" value={systemHealth.cpu} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#4caf50' } }} />
+                <LinearProgress variant="determinate" value={systemHealth.cpu} sx={{ height: 6, borderRadius: 1, bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#4caf50', borderRadius: 1 } }} />
               </Box>
 
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>Memory (RAM)</Typography>
-                  <Typography variant="body2" sx={{ color: '#2196f3' }}>{systemHealth.memory}%</Typography>
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Memory (RAM)</Typography>
+                  <Typography variant="body2" sx={{ color: '#2196f3', fontSize: '0.75rem' }}>{systemHealth.memory}%</Typography>
                 </Box>
-                <LinearProgress variant="determinate" value={systemHealth.memory} sx={{ bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#2196f3' } }} />
+                <LinearProgress variant="determinate" value={systemHealth.memory} sx={{ height: 6, borderRadius: 1, bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#2196f3', borderRadius: 1 } }} />
               </Box>
 
               <Box>
@@ -772,12 +1007,12 @@ export default function AdminDashboard() {
         {/* Admin Task Board */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-                <EditIcon sx={{ mr: 1, color: '#ffeb3b' }} /> Task Board
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <EditIcon sx={{ mr: 1, color: '#ffeb3b', fontSize: '1.2rem' }} /> Task Board
               </Typography>
               
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
                 <TextField
                   size="small"
                   fullWidth
@@ -845,14 +1080,15 @@ export default function AdminDashboard() {
         {/* Data Management */}
         <Grid item xs={12} md={4}>
           <Card sx={{ bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-                <StorageIcon sx={{ mr: 1, color: '#9c27b0' }} /> Data Management
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <StorageIcon sx={{ mr: 1, color: '#9c27b0', fontSize: '1.2rem' }} /> Data Management
               </Typography>
               
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Button 
-                  variant="outlined" 
+                  variant="outlined"
+                  size="small" 
                   startIcon={<DownloadIcon />} 
                   onClick={handleExportData}
                   sx={{ 
@@ -862,26 +1098,26 @@ export default function AdminDashboard() {
                     '&:hover': { borderColor: '#9c27b0', bgcolor: 'rgba(156, 39, 176, 0.1)' }
                   }}
                 >
-                  Export Dashboard Data
+                  Export Data
                 </Button>
                 
-                <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
-                  <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                <Box sx={{ p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, fontSize: '0.75rem' }}>
                     Database Status
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4caf50' }} />
-                    <Typography variant="body2" sx={{ color: '#4caf50' }}>Connected (MongoDB)</Typography>
+                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#4caf50' }} />
+                    <Typography variant="body2" sx={{ color: '#4caf50', fontSize: '0.75rem' }}>Connected (MongoDB)</Typography>
                   </Box>
                 </Box>
 
-                <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
-                  <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                <Box sx={{ p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, fontSize: '0.75rem' }}>
                     Last Backup
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckCircleIcon sx={{ fontSize: 16, color: '#4caf50' }} />
-                    <Typography variant="body2" sx={{ color: 'white' }}>
+                    <CheckCircleIcon sx={{ fontSize: 14, color: '#4caf50' }} />
+                    <Typography variant="body2" sx={{ color: 'white', fontSize: '0.75rem' }}>
                       {format(new Date(), 'MMM dd, yyyy')} (Auto)
                     </Typography>
                   </Box>
@@ -891,6 +1127,165 @@ export default function AdminDashboard() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Project Dialog */}
+      <Dialog 
+        open={projectDialogOpen} 
+        onClose={() => setProjectDialogOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{ sx: { bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.1)' } }}
+      >
+        <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          {isEditingProject ? 'Edit Project' : 'Add New Project'}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            {!isEditingProject && (
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Artist</InputLabel>
+                <Select
+                  value={projectForm.artistId}
+                  label="Artist"
+                  onChange={(e) => setProjectForm({ ...projectForm, artistId: e.target.value })}
+                  sx={{ color: 'white', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' }, '.MuiSvgIcon-root': { color: 'white' } }}
+                  MenuProps={{ PaperProps: { sx: { bgcolor: '#1a2027', color: 'white' } } }}
+                >
+                  {stats?.allArtists?.map((artist) => (
+                    <MenuItem key={artist.artistid} value={artist.artistid} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
+                      {artist.username}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            <TextField
+              label="Project Title"
+              fullWidth
+              value={projectForm.title}
+              onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+              sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+            />
+            <TextField
+              label="Client Name"
+              fullWidth
+              value={projectForm.clientName}
+              onChange={(e) => setProjectForm({ ...projectForm, clientName: e.target.value })}
+              sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+            />
+            <TextField
+              label="Client Email"
+              fullWidth
+              value={projectForm.clientEmail}
+              onChange={(e) => setProjectForm({ ...projectForm, clientEmail: e.target.value })}
+              sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+            />
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <TextField
+                  label="Start Date"
+                  type="date"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  value={projectForm.startDate}
+                  onChange={(e) => setProjectForm({ ...projectForm, startDate: e.target.value })}
+                  sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& input::-webkit-calendar-picker-indicator': { filter: 'invert(1)' } }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="End Date"
+                  type="date"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  value={projectForm.endDate}
+                  onChange={(e) => setProjectForm({ ...projectForm, endDate: e.target.value })}
+                  sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& input::-webkit-calendar-picker-indicator': { filter: 'invert(1)' } }}
+                />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Status</InputLabel>
+                  <Select
+                    value={projectForm.status}
+                    label="Status"
+                    onChange={(e) => setProjectForm({ ...projectForm, status: e.target.value })}
+                    sx={{ color: 'white', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' }, '.MuiSvgIcon-root': { color: 'white' } }}
+                    MenuProps={{ PaperProps: { sx: { bgcolor: '#1a2027', color: 'white' } } }}
+                  >
+                    {['Planning', 'In Progress', 'Completed', 'On Hold', 'Cancelled'].map((status) => (
+                      <MenuItem key={status} value={status} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>{status}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Budget"
+                  type="number"
+                  fullWidth
+                  value={projectForm.budget}
+                  onChange={(e) => setProjectForm({ ...projectForm, budget: e.target.value })}
+                  sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+                />
+              </Grid>
+            </Grid>
+            <TextField
+              label="Description"
+              fullWidth
+              multiline
+              rows={3}
+              value={projectForm.description}
+              onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+              sx={{ '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', px: 3, py: 2 }}>
+          <Button onClick={() => setProjectDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>Cancel</Button>
+          <Button onClick={handleConfirmSave} variant="contained" sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' } }}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Save Project Dialog */}
+      <Dialog 
+        open={confirmSaveDialogOpen} 
+        onClose={() => setConfirmSaveDialogOpen(false)}
+        PaperProps={{ sx: { bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.1)' } }}
+      >
+        <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          Confirm {isEditingProject ? 'Update' : 'Add'} Project
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Are you sure you want to {isEditingProject ? 'update' : 'add'} the project "{projectForm.title}"?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', px: 3, py: 2 }}>
+          <Button onClick={() => setConfirmSaveDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>Cancel</Button>
+          <Button onClick={handleSaveProject} variant="contained" sx={{ bgcolor: '#4caf50', '&:hover': { bgcolor: '#388e3c' } }}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Project Dialog */}
+      <Dialog 
+        open={deleteProjectDialogOpen} 
+        onClose={() => setDeleteProjectDialogOpen(false)}
+        PaperProps={{ sx: { bgcolor: '#1a2027', color: 'white', border: '1px solid rgba(255,255,255,0.1)' } }}
+      >
+        <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Delete Project</DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Are you sure you want to delete the project "{currentProject?.title}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', px: 3, py: 2 }}>
+          <Button onClick={() => setDeleteProjectDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>Cancel</Button>
+          <Button onClick={handleDeleteProject} color="error" variant="contained">Delete</Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar 
         open={snackbar.open} 

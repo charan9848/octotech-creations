@@ -1,4 +1,4 @@
-export async function sendWhatsAppMessage(to, templateName, components = [], languageCode = "en_US") {
+export async function sendWhatsAppMessage(to, templateName, components = [], languageCode = "en") {
   const token = process.env.WHATSAPP_API_TOKEN;
   const phoneId = process.env.WHATSAPP_PHONE_ID;
 
