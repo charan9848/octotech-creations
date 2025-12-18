@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 
 export const metadata = {
-  title: 'Privacy Policy | OctoTech Creations',
-  description: 'Privacy Policy for OctoTech Creations. Learn how we handle your data.',
+  title: 'Privacy Policy | Octotech Creations',
+  description: 'Privacy Policy for Octotech Creations. Learn how we handle your data.',
 };
 
 const PrivacyPolicy = () => {
@@ -18,7 +18,7 @@ const PrivacyPolicy = () => {
 
         <Typography variant="h5" color="white" mt={4} mb={2}>1. Introduction</Typography>
         <Typography paragraph>
-          Welcome to OctoTech Creations. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.
+          Welcome to Octotech Creations. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.
         </Typography>
 
         <Typography variant="h5" color="white" mt={4} mb={2}>2. Data We Collect</Typography>

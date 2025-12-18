@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 
 export const metadata = {
-  title: 'Terms & Conditions | OctoTech Creations',
-  description: 'Terms and Conditions for using OctoTech Creations website and services.',
+  title: 'Terms & Conditions | Octotech Creations',
+  description: 'Terms and Conditions for using Octotech Creations website and services.',
 };
 
 const Terms = () => {
@@ -18,7 +18,7 @@ const Terms = () => {
 
         <Typography variant="h5" color="white" mt={4} mb={2}>1. Agreement to Terms</Typography>
         <Typography paragraph>
-          These Terms of Use constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”) and OctoTech Creations ("we," "us" or "our"), concerning your access to and use of the OctoTech Creations website.
+          These Terms of Use constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you") and Octotech Creations ("we," "us" or "our"), concerning your access to and use of the Octotech Creations website.
         </Typography>
 
         <Typography variant="h5" color="white" mt={4} mb={2}>2. Intellectual Property Rights</Typography>

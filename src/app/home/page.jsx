@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Home | Octotech Creations",
-  description: "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
+  description: "At Octotech Creations, we turn that vision into visuals that sell, connect, and stay etched in the viewer's mind. We create visuals that drive results.",
 };
 
 import dynamic from 'next/dynamic';

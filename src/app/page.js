@@ -5,13 +5,13 @@ import { Box } from "@mui/material";
 
 export const metadata = {
   title: "Octotech Creations | VFX, Animation & Compositing Studio",
-  description: "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
+  description: "At Octotech Creations, we turn that vision into visuals that sell, connect, and stay etched in the viewer's mind. We create visuals that drive results.",
   alternates: {
     canonical: 'https://octotechcreations.com',
   },
   openGraph: {
     title: "Octotech Creations | VFX, Animation & Compositing Studio",
-    description: "At OctoTech, we turn that vision into visuals that sell, connect, and stay etched in the viewer’s mind. We create visuals that drive results.",
+    description: "At Octotech Creations, we turn that vision into visuals that sell, connect, and stay etched in the viewer's mind. We create visuals that drive results.",
     url: 'https://octotechcreations.com',
     siteName: 'Octotech Creations',
     type: 'website',

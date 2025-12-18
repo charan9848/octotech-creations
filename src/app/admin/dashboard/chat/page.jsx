@@ -11,6 +11,7 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemButton,
   ListItemAvatar,
   ListItemText,
   Avatar,
@@ -371,14 +372,16 @@ export default function AdminChatPage() {
                 displayList.map((conv) => (
                   <ListItem
                     key={conv.artistId}
-                    button
-                    onClick={() => setSelectedArtist(conv)}
-                    sx={{
-                      bgcolor: selectedArtist?.artistId === conv.artistId ? 'rgba(33, 150, 243, 0.15)' : 'transparent',
-                      borderLeft: selectedArtist?.artistId === conv.artistId ? '3px solid #2196f3' : '3px solid transparent',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }
-                    }}
+                    disablePadding
                   >
+                    <ListItemButton
+                      onClick={() => setSelectedArtist(conv)}
+                      sx={{
+                        bgcolor: selectedArtist?.artistId === conv.artistId ? 'rgba(33, 150, 243, 0.15)' : 'transparent',
+                        borderLeft: selectedArtist?.artistId === conv.artistId ? '3px solid #2196f3' : '3px solid transparent',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }
+                      }}
+                    >
                     <ListItemAvatar>
                       <Badge 
                         badgeContent={conv.unreadCount || 0} 
@@ -422,6 +425,7 @@ export default function AdminChatPage() {
                         {formatTime(conv.lastMessageTime)}
                       </Typography>
                     )}
+                    </ListItemButton>
                   </ListItem>
                 ))
               )}

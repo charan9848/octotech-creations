@@ -67,10 +67,10 @@ export async function PUT(request) {
                 <div style="font-family: Arial, sans-serif; color: #333;">
                   <h2>System Maintenance Notice</h2>
                   <p>Hello,</p>
-                  <p>This is to inform you that <strong>OctoTech Creations</strong> is currently undergoing scheduled maintenance.</p>
+                  <p>This is to inform you that <strong>Octotech Creations</strong> is currently undergoing scheduled maintenance.</p>
                   <p>During this time, the public website will be inaccessible. However, as a registered artist, you may still be able to access your dashboard if needed, but please expect potential interruptions.</p>
                   <p>We will notify you once the maintenance is complete.</p>
-                  <p>Best regards,<br/>The Octotech Team</p>
+                  <p>Best regards,<br/>Octotech Creations Team</p>
                 </div>
               `,
             });
@@ -101,10 +101,10 @@ export async function PUT(request) {
                 <div style="font-family: Arial, sans-serif; color: #333;">
                   <h2>System Maintenance Complete</h2>
                   <p>Hello,</p>
-                  <p>We are pleased to inform you that the scheduled maintenance for <strong>OctoTech Creations</strong> has been successfully completed.</p>
+                  <p>We are pleased to inform you that the scheduled maintenance for <strong>Octotech Creations</strong> has been successfully completed.</p>
                   <p>The website is now fully operational and accessible to the public. You can resume your normal activities on your dashboard.</p>
                   <p>Thank you for your patience.</p>
-                  <p>Best regards,<br/>The Octotech Team</p>
+                  <p>Best regards,<br/>Octotech Creations Team</p>
                 </div>
               `,
             });

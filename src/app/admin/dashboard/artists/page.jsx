@@ -61,7 +61,7 @@ const getWhatsAppLink = (phone, username, percentage) => {
   let cleanPhone = phone.replace(/\D/g, '');
   if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone; // Default to India if no code
 
-  const text = `Hello ${username}, this is Octotech Creations. We noticed your portfolio is only ${percentage}% complete. Please login and complete it here: https://octotech-creations.vercel.app/artist-login`;
+  const text = `Hello ${username}, this is Octotech Creations. We noticed your portfolio is only ${percentage}% complete. Please login and complete it here: https://www.octotechcreations.com/artist-login`;
   
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 };

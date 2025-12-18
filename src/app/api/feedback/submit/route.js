@@ -182,7 +182,7 @@ export async function POST(request) {
                   <p style="color: #1976d2; margin-bottom: 16px;">
                     Your updated rating is now <strong>${updatedRatings.currentRating.toFixed(1)}/5.0</strong> based on <strong>${updatedRatings.totalReviews}</strong> review${updatedRatings.totalReviews > 1 ? 's' : ''}!
                   </p>
-                  <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/artist-dashboard/portfolio/ratings" 
+                  <a href="${process.env.NEXTAUTH_URL || 'https://www.octotechcreations.com'}/artist-dashboard/portfolio/ratings" 
                      style="display: inline-block; background: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                     View Your Ratings Dashboard
                   </a>

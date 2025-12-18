@@ -94,7 +94,7 @@ async function sendProjectStatusEmail(artistData, project, statusChange) {
               <p style="color: #2e7d32; margin-bottom: 16px;">
                 We'd love to hear about your experience! Your feedback helps us improve our services.
               </p>
-              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/feedback/${artistData.artistid}?project=${encodeURIComponent(project.title)}" 
+              <a href="${process.env.NEXTAUTH_URL || 'https://www.octotechcreations.com'}/feedback/${artistData.artistid}?project=${encodeURIComponent(project.title)}" 
                  style="display: inline-block; background: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                 Leave Feedback & Review
               </a>
