@@ -44,6 +44,27 @@ async function getUsedMediaUrls() {
       }
     });
 
+    // Get service images/videos from services collection
+    const services = await db.collection("services").find({}).toArray();
+    services.forEach(service => {
+      if (service.image && service.image.includes('cloudinary')) {
+        usedUrls.add(service.image);
+      }
+    });
+
+    // Get team member images from team collection (if exists)
+    try {
+      const team = await db.collection("team").find({}).toArray();
+      team.forEach(member => {
+        if (member.image && member.image.includes('cloudinary')) {
+          usedUrls.add(member.image);
+        }
+      });
+    } catch (e) {
+      // Team collection might not exist
+    }
+
+    console.log(`Found ${usedUrls.size} used media URLs in database`);
     return usedUrls;
   } catch (error) {
     console.error("Error scanning database:", error);
@@ -167,10 +188,36 @@ function findDuplicatesByHash(resources) {
 }
 
 // Find unused resources (not referenced in database)
+// Excludes Cloudinary sample files
 function findUnusedResources(resources, usedUrls) {
+  // Extract public_ids from used URLs for better matching
+  const usedPublicIds = new Set();
+  usedUrls.forEach(url => {
+    // Extract public_id from URL (everything after /upload/vXXXX/ or /upload/)
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
+    if (match) {
+      usedPublicIds.add(match[1]);
+    }
+  });
+  
+  console.log('Used public_ids:', Array.from(usedPublicIds));
+  
   const unused = resources.filter(resource => {
-    const resourceUrl = resource.secure_url;
-    return !usedUrls.has(resourceUrl);
+    const publicId = resource.public_id;
+    
+    // Skip Cloudinary sample files - these are demo files and shouldn't be deleted
+    if (publicId.startsWith('samples/') || publicId.startsWith('cld-sample') || publicId === 'sample') {
+      return false;
+    }
+    
+    // Check if this public_id is in our used set
+    if (usedPublicIds.has(publicId)) {
+      console.log('KEEPING (in use):', publicId);
+      return false;
+    }
+    
+    console.log('MARKING UNUSED:', publicId);
+    return true;
   });
 
   return unused;
@@ -281,34 +328,68 @@ export async function POST(request) {
       const duplicatesToDelete = duplicates.flatMap(dup => dup.remove);
       
       if (duplicatesToDelete.length > 0) {
-        const batchSize = 100;
+        // Group by resource_type for proper deletion
+        const imageResources = duplicatesToDelete.filter(r => r.resource_type === 'image');
+        const videoResources = duplicatesToDelete.filter(r => r.resource_type === 'video');
+        const rawResources = duplicatesToDelete.filter(r => r.resource_type === 'raw');
         
-        for (let i = 0; i < duplicatesToDelete.length; i += batchSize) {
-          const batch = duplicatesToDelete.slice(i, i + batchSize);
-          const publicIds = batch.map(resource => resource.public_id);
-
-          try {
-            const result = await cloudinary.api.delete_resources(publicIds, {
-              resource_type: 'auto'
-            });
-
-            Object.entries(result.deleted).forEach(([publicId, status]) => {
-              if (status === 'deleted') {
-                results.duplicates.success++;
-                totalDeleted++;
-              } else {
-                results.duplicates.failed++;
-              }
-            });
-
-            // Rate limiting
-            if (i + batchSize < duplicatesToDelete.length) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
+        // Delete images
+        if (imageResources.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < imageResources.length; i += batchSize) {
+            const batch = imageResources.slice(i, i + batchSize);
+            const publicIds = batch.map(resource => resource.public_id);
+            try {
+              const result = await cloudinary.api.delete_resources(publicIds, { resource_type: 'image' });
+              Object.entries(result.deleted || {}).forEach(([publicId, status]) => {
+                if (status === 'deleted') { results.duplicates.success++; totalDeleted++; }
+                else { results.duplicates.failed++; }
+              });
+            } catch (error) {
+              console.error('Error deleting image duplicates:', error.message);
+              results.duplicates.failed += batch.length;
             }
-
-          } catch (error) {
-            console.error(`Error deleting duplicate batch:`, error);
-            results.duplicates.failed += batch.length;
+            if (i + batchSize < imageResources.length) await new Promise(r => setTimeout(r, 500));
+          }
+        }
+        
+        // Delete videos
+        if (videoResources.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < videoResources.length; i += batchSize) {
+            const batch = videoResources.slice(i, i + batchSize);
+            const publicIds = batch.map(resource => resource.public_id);
+            try {
+              const result = await cloudinary.api.delete_resources(publicIds, { resource_type: 'video' });
+              Object.entries(result.deleted || {}).forEach(([publicId, status]) => {
+                if (status === 'deleted') { results.duplicates.success++; totalDeleted++; }
+                else { results.duplicates.failed++; }
+              });
+            } catch (error) {
+              console.error('Error deleting video duplicates:', error.message);
+              results.duplicates.failed += batch.length;
+            }
+            if (i + batchSize < videoResources.length) await new Promise(r => setTimeout(r, 500));
+          }
+        }
+        
+        // Delete raw files
+        if (rawResources.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < rawResources.length; i += batchSize) {
+            const batch = rawResources.slice(i, i + batchSize);
+            const publicIds = batch.map(resource => resource.public_id);
+            try {
+              const result = await cloudinary.api.delete_resources(publicIds, { resource_type: 'raw' });
+              Object.entries(result.deleted || {}).forEach(([publicId, status]) => {
+                if (status === 'deleted') { results.duplicates.success++; totalDeleted++; }
+                else { results.duplicates.failed++; }
+              });
+            } catch (error) {
+              console.error('Error deleting raw duplicates:', error.message);
+              results.duplicates.failed += batch.length;
+            }
+            if (i + batchSize < rawResources.length) await new Promise(r => setTimeout(r, 500));
           }
         }
       }
@@ -319,34 +400,68 @@ export async function POST(request) {
       const unused = findUnusedResources(allResources, usedUrls);
       
       if (unused.length > 0) {
-        const batchSize = 100;
+        // Group by resource_type for proper deletion
+        const imageResources = unused.filter(r => r.resource_type === 'image');
+        const videoResources = unused.filter(r => r.resource_type === 'video');
+        const rawResources = unused.filter(r => r.resource_type === 'raw');
         
-        for (let i = 0; i < unused.length; i += batchSize) {
-          const batch = unused.slice(i, i + batchSize);
-          const publicIds = batch.map(resource => resource.public_id);
-
-          try {
-            const result = await cloudinary.api.delete_resources(publicIds, {
-              resource_type: 'auto'
-            });
-
-            Object.entries(result.deleted).forEach(([publicId, status]) => {
-              if (status === 'deleted') {
-                results.unused.success++;
-                totalDeleted++;
-              } else {
-                results.unused.failed++;
-              }
-            });
-
-            // Rate limiting
-            if (i + batchSize < unused.length) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
+        // Delete images
+        if (imageResources.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < imageResources.length; i += batchSize) {
+            const batch = imageResources.slice(i, i + batchSize);
+            const publicIds = batch.map(resource => resource.public_id);
+            try {
+              const result = await cloudinary.api.delete_resources(publicIds, { resource_type: 'image' });
+              Object.entries(result.deleted || {}).forEach(([publicId, status]) => {
+                if (status === 'deleted') { results.unused.success++; totalDeleted++; }
+                else { results.unused.failed++; }
+              });
+            } catch (error) {
+              console.error('Error deleting unused images:', error.message);
+              results.unused.failed += batch.length;
             }
-
-          } catch (error) {
-            console.error(`Error deleting unused batch:`, error);
-            results.unused.failed += batch.length;
+            if (i + batchSize < imageResources.length) await new Promise(r => setTimeout(r, 500));
+          }
+        }
+        
+        // Delete videos
+        if (videoResources.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < videoResources.length; i += batchSize) {
+            const batch = videoResources.slice(i, i + batchSize);
+            const publicIds = batch.map(resource => resource.public_id);
+            try {
+              const result = await cloudinary.api.delete_resources(publicIds, { resource_type: 'video' });
+              Object.entries(result.deleted || {}).forEach(([publicId, status]) => {
+                if (status === 'deleted') { results.unused.success++; totalDeleted++; }
+                else { results.unused.failed++; }
+              });
+            } catch (error) {
+              console.error('Error deleting unused videos:', error.message);
+              results.unused.failed += batch.length;
+            }
+            if (i + batchSize < videoResources.length) await new Promise(r => setTimeout(r, 500));
+          }
+        }
+        
+        // Delete raw files
+        if (rawResources.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < rawResources.length; i += batchSize) {
+            const batch = rawResources.slice(i, i + batchSize);
+            const publicIds = batch.map(resource => resource.public_id);
+            try {
+              const result = await cloudinary.api.delete_resources(publicIds, { resource_type: 'raw' });
+              Object.entries(result.deleted || {}).forEach(([publicId, status]) => {
+                if (status === 'deleted') { results.unused.success++; totalDeleted++; }
+                else { results.unused.failed++; }
+              });
+            } catch (error) {
+              console.error('Error deleting unused raw files:', error.message);
+              results.unused.failed += batch.length;
+            }
+            if (i + batchSize < rawResources.length) await new Promise(r => setTimeout(r, 500));
           }
         }
       }

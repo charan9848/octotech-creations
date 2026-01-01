@@ -5,7 +5,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
   IconButton, Grid, CircularProgress, MenuItem, Select, InputLabel, FormControl
 } from '@mui/material';
-import { Edit, Delete, Add, CloudUpload } from '@mui/icons-material';
+import { Edit, Delete, Add, CloudUpload, CleaningServices, Refresh } from '@mui/icons-material';
 import {
   Movie, Brush, Animation, ThreeDRotation, Home,
   ColorLens, VideoCameraBack, AutoFixHigh, Web, DesignServices,
@@ -56,6 +56,8 @@ export default function ServicesManagement() {
     order: 0
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [cleanupStats, setCleanupStats] = useState(null);
+  const [cleaning, setCleaning] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -166,6 +168,84 @@ export default function ServicesManagement() {
     }
   };
 
+  // Delete media from Cloudinary when removing from form
+  const handleRemoveMedia = async () => {
+    if (currentService.image && isEditing) {
+      try {
+        await axios.delete(`/api/upload?url=${encodeURIComponent(currentService.image)}`);
+        toast.success('Media removed from cloud');
+      } catch (error) {
+        console.error('Failed to delete from Cloudinary:', error);
+      }
+    }
+    setCurrentService({ ...currentService, image: '' });
+  };
+
+  // Analyze Cloudinary for duplicates/unused files - DISABLED FOR SAFETY
+  const handleAnalyzeCloudinary = async () => {
+    toast.error('Cloudinary cleanup is disabled for safety. Please manage files directly in Cloudinary console.');
+    return;
+    
+    // Original code disabled below
+    /*
+    setCleaning(true);
+    try {
+      const res = await axios.get('/api/cloudinary-cleanup');
+      console.log('Cloudinary scan result:', res.data);
+      setCleanupStats(res.data);
+      const duplicateCount = res.data.summary?.duplicateFiles || res.data.duplicates?.length || 0;
+      const unusedCount = res.data.summary?.unusedFiles || res.data.unused?.length || 0;
+      if (duplicateCount === 0 && unusedCount === 0) {
+        toast.success('Cloudinary is clean! No duplicates or unused files.');
+      } else {
+        toast.info(`Found ${duplicateCount} duplicates and ${unusedCount} unused files`);
+      }
+    } catch (error) {
+      console.error('Cloudinary analyze error:', error);
+      toast.error('Failed to analyze Cloudinary');
+    } finally {
+      setCleaning(false);
+    }
+    */
+  };
+
+  // Remove duplicates from Cloudinary
+  const handleCleanupDuplicates = async () => {
+    if (!confirm('Are you sure you want to remove duplicate files from Cloudinary?')) return;
+    setCleaning(true);
+    try {
+      const res = await axios.post('/api/cloudinary-cleanup', { deleteDuplicates: true, deleteUnused: false });
+      toast.success(`Cleaned up ${res.data.results.duplicates.success} duplicate files`);
+      setCleanupStats(null);
+    } catch (error) {
+      toast.error('Cleanup failed');
+    } finally {
+      setCleaning(false);
+    }
+  };
+
+  // Remove unused files from Cloudinary
+  const handleCleanupUnused = async () => {
+    const unusedCount = cleanupStats.summary?.unusedFiles || 0;
+    const unusedList = cleanupStats.unused?.slice(0, 10).map(f => f.public_id).join('\n  - ') || '';
+    
+    const confirmMessage = `⚠️ WARNING: This will PERMANENTLY DELETE ${unusedCount} files from Cloudinary!\n\nFiles to be deleted include:\n  - ${unusedList}${unusedCount > 10 ? `\n  ... and ${unusedCount - 10} more` : ''}\n\nThis action CANNOT be undone. Are you absolutely sure?`;
+    
+    if (!confirm(confirmMessage)) return;
+    if (!confirm('FINAL CONFIRMATION: Type OK to proceed with deletion')) return;
+    
+    setCleaning(true);
+    try {
+      const res = await axios.post('/api/cloudinary-cleanup', { deleteDuplicates: false, deleteUnused: true });
+      toast.success(`Cleaned up ${res.data.results.unused.success} unused files`);
+      setCleanupStats(null);
+    } catch (error) {
+      toast.error('Cleanup failed');
+    } finally {
+      setCleaning(false);
+    }
+  };
+
   const IconComponent = ({ name }) => {
     const Icon = ICON_MAP[name] || Help;
     return <Icon />;
@@ -179,18 +259,75 @@ export default function ServicesManagement() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>Services Management</Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<Add />} 
-          size="small"
-          onClick={() => handleOpen()}
-          sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' }, fontSize: '0.8rem' }}
-        >
-          Add Service
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button 
+            variant="outlined" 
+            startIcon={cleaning ? <CircularProgress size={16} /> : <CleaningServices />} 
+            size="small"
+            onClick={handleAnalyzeCloudinary}
+            disabled={cleaning}
+            sx={{ color: '#ff9800', borderColor: '#ff9800', '&:hover': { borderColor: '#f57c00', bgcolor: 'rgba(255,152,0,0.1)' }, fontSize: '0.8rem' }}
+          >
+            Scan Cloudinary
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<Add />} 
+            size="small"
+            onClick={() => handleOpen()}
+            sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' }, fontSize: '0.8rem' }}
+          >
+            Add Service
+          </Button>
+        </Box>
       </Box>
+
+      {/* Cloudinary Cleanup Results */}
+      {cleanupStats && (
+        <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.3)', borderRadius: 2 }}>
+          <Typography variant="subtitle2" sx={{ color: '#ff9800', fontWeight: 'bold', mb: 1 }}>
+            🧹 Cloudinary Scan Results
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
+            Duplicates: {cleanupStats.summary?.duplicateFiles || 0} | Unused: {cleanupStats.summary?.unusedFiles || 0} | Total Resources: {cleanupStats.summary?.totalResources || 0}
+            {cleanupStats.summary?.potentialSavings?.total > 0 && ` | Potential savings: ${cleanupStats.summary.potentialSavings.total} MB`}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+            {(cleanupStats.summary?.duplicateFiles || 0) > 0 && (
+              <Button 
+                variant="contained" 
+                size="small" 
+                onClick={handleCleanupDuplicates}
+                disabled={cleaning}
+                sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' }, fontSize: '0.75rem' }}
+              >
+                Remove Duplicates ({cleanupStats.summary?.duplicateFiles || 0})
+              </Button>
+            )}
+            {(cleanupStats.summary?.unusedFiles || 0) > 0 && (
+              <Button 
+                variant="contained" 
+                size="small" 
+                onClick={handleCleanupUnused}
+                disabled={cleaning}
+                sx={{ bgcolor: '#f44336', '&:hover': { bgcolor: '#d32f2f' }, fontSize: '0.75rem' }}
+              >
+                Remove Unused ({cleanupStats.summary?.unusedFiles || 0})
+              </Button>
+            )}
+            <Button 
+              variant="outlined" 
+              size="small" 
+              onClick={() => setCleanupStats(null)}
+              sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}
+            >
+              Dismiss
+            </Button>
+          </Box>
+        </Box>
+      )}
 
       <Grid container spacing={2}>
         {services.map((service) => (
@@ -429,7 +566,7 @@ export default function ServicesManagement() {
                     color="error" 
                     size="small"
                     startIcon={<Delete />}
-                    onClick={() => setCurrentService({ ...currentService, image: '' })}
+                    onClick={handleRemoveMedia}
                     sx={{ mt: 1 }}
                     fullWidth
                   >

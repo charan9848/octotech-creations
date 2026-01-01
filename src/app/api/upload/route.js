@@ -17,32 +17,54 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
+    // Check file type
+    const isVideo = file.type.startsWith('video/');
+    const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024; // 100MB for video, 10MB for images
+
+    if (file.size > maxSize) {
+      return NextResponse.json({ 
+        error: `File too large. Maximum size: ${isVideo ? '100MB' : '10MB'}` 
+      }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary with appropriate settings
+    const uploadOptions = {
+      resource_type: isVideo ? 'video' : 'auto',
+      folder: 'artist-profiles',
+    };
+
+    // For videos, add transformation options
+    if (isVideo) {
+      uploadOptions.eager = [
+        { format: 'mp4', video_codec: 'h264' }
+      ];
+      uploadOptions.eager_async = true;
+    }
+
     const response = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          resource_type: 'auto',
-          folder: 'artist-profiles', // Optional: organize uploads in folders
-        },
+      const uploadStream = cloudinary.uploader.upload_stream(
+        uploadOptions,
         (error, result) => {
           if (error) reject(error);
           else resolve(result);
         }
-      ).end(buffer);
+      );
+      uploadStream.end(buffer);
     });
 
     return NextResponse.json({
       message: 'Upload successful',
       url: response.secure_url,
       public_id: response.public_id,
+      resource_type: response.resource_type,
     });
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Upload failed' },
+      { error: 'Upload failed', details: error.message },
       { status: 500 }
     );
   }
@@ -59,26 +81,59 @@ export async function DELETE(request) {
     }
 
     let targetPublicId = publicId;
+    let resourceType = 'image'; // Default to image
     
     // If URL is provided but no public_id, extract public_id from URL
     if (!publicId && url) {
+      // Determine resource type from URL
+      if (url.includes('/video/upload/') || url.match(/\.(mp4|webm|ogg|mov|avi)$/i)) {
+        resourceType = 'video';
+      }
+      
       const urlParts = url.split('/');
       const lastPart = urlParts[urlParts.length - 1];
       // Remove file extension to get public_id
       targetPublicId = lastPart.split('.')[0];
       
       // For nested folders, include folder path
-      const folderIndex = urlParts.findIndex(part => part === 'artist-profiles');
-      if (folderIndex !== -1 && folderIndex < urlParts.length - 1) {
-        const folderPath = urlParts.slice(folderIndex, -1).join('/');
-        targetPublicId = `${folderPath}/${targetPublicId}`;
+      const uploadIndex = urlParts.findIndex(part => part === 'upload');
+      if (uploadIndex !== -1) {
+        // Get everything after 'upload' and version (vXXXXXX)
+        let pathParts = urlParts.slice(uploadIndex + 1);
+        // Remove version if present
+        if (pathParts[0] && pathParts[0].startsWith('v') && !isNaN(Number(pathParts[0].substring(1)))) {
+          pathParts.shift();
+        }
+        // Remove the filename from path
+        pathParts.pop();
+        if (pathParts.length > 0) {
+          targetPublicId = `${pathParts.join('/')}/${targetPublicId}`;
+        }
       }
     }
 
-    // Delete from Cloudinary
-    const response = await cloudinary.uploader.destroy(targetPublicId, {
-      resource_type: 'auto'
+    console.log(`Deleting from Cloudinary: ${targetPublicId} (${resourceType})`);
+
+    // Try to delete with detected resource type first
+    let response = await cloudinary.uploader.destroy(targetPublicId, {
+      resource_type: resourceType
     });
+
+    // If not found as image, try as video
+    if (response.result === 'not found' && resourceType === 'image') {
+      console.log('Not found as image, trying as video...');
+      response = await cloudinary.uploader.destroy(targetPublicId, {
+        resource_type: 'video'
+      });
+    }
+
+    // If still not found as video, try as raw
+    if (response.result === 'not found') {
+      console.log('Not found as video, trying as raw...');
+      response = await cloudinary.uploader.destroy(targetPublicId, {
+        resource_type: 'raw'
+      });
+    }
 
     if (response.result === 'ok' || response.result === 'not found') {
       return NextResponse.json({
