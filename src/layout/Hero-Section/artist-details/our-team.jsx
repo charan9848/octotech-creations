@@ -1,46 +1,91 @@
 "use client";
 
-import { Box, Button, Typography, Grid, Container } from '@mui/material';
-import React from 'react'
+import { Box, Button, Typography, Grid, Container, Avatar } from '@mui/material';
+import React, { useState, useEffect } from 'react'
 import InstagramIcon from '@mui/icons-material/Instagram';
 import { motion } from 'framer-motion';
 import { fadeIn } from "@/app/variants";
 import Link from 'next/link';
 
 const OurTeam = () => {
+    const [sectionContent, setSectionContent] = useState({
+        title: 'OUR TEAM',
+        subtitle: 'Meet the creative minds behind our projects. A blend of artists, animators, and VFX specialists dedicated to bringing your vision to life.',
+        backgroundVideoUrl: '',
+        hiddenArtists: []
+    });
 
+    const [teams, setTeams] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const teams = [
-        {
-            id: 1,
-            name: 'Raghu Roman',
-            role: 'VFX Artist',
-            image: 'https://res.cloudinary.com/djbilxr7i/image/upload/v1749808666/Raghu_npl96k.jpg',
-            description: "With over 5 years of experience crafting visual effects exclusively for Tollywood films, Raghu Roman is not just a VFX artist — he's a cinematic sculptor. From invisible compositing to high-impact sequences, his work blends seamlessly into the director's vision, enhancing emotion, scale, and story. Raghu brings a deep understanding of film grammar, color tone, and shot psychology. His work isn't just about adding effects — it's about elevating narrative to the screen with clarity, precision, and cinematic depth.",
-            instagram: "https://www.instagram.com/raghu__roman",
-            portfolio: '/portfolio/Raghuroman123'
-
-        },
-        {
-            id: 2,
-            name: 'Akash Narayandas',
-            role: 'Video Editor',
-            image: 'https://res.cloudinary.com/djbilxr7i/image/upload/v1749808666/Akash_apamic.jpg',
-            description: "With over 5 years of experience in video editing and motion graphics, Akash has helped brands, influencers, and creators transform basic footage into scroll-stopping, emotionally powerful content. His editing style is known for impact and clarity — every cut, transition, and motion graphic is designed to hold attention and drive growth. Want to see the craft up close? Dive deeper into his work on his dedicated channel: 📺 'Akash Edit Maestro' – where creativity meets mastery",
-            instagram: 'https://www.instagram.com/akash_edit_maestro/',
-            portfolio: '/portfolio/narayandasakash'
+    // Get initials from name
+    const getInitials = (name) => {
+        if (!name) return '?';
+        const words = name.trim().split(' ');
+        if (words.length === 1) {
+            return words[0].charAt(0).toUpperCase();
         }
-        ,
-        {
-            id: 3,
-            name: 'Tillu',
-            role: '3D Artist',
-            image: 'https://res.cloudinary.com/djbilxr7i/image/upload/v1748783457/artist-profiles/rg0efb1mrukfhcvyavpq.png',
-            description: "Tillu is a 3D artist with a passion for creating stunning visual experiences. With expertise in modeling, texturing, and rendering, Tillu brings imagination to life through 3D art. Whether it's character design, environment creation, or product visualization, Tillu's work showcases a unique blend of creativity and technical skill.  Tillu's portfolio features a diverse range of projects, from realistic character models to intricate architectural visualizations. With a keen eye for detail and a commitment to quality, Tillu delivers exceptional 3D art that captivates audiences and enhances storytelling.",
-            instagram: 'https://www.instagram.com/tilluanimator',
-            portfolio: '/portfolio/tillu'
+        return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+    };
+
+    // Generate a consistent color based on name
+    const stringToColor = (string) => {
+        if (!string) return '#00ACC1';
+        let hash = 0;
+        for (let i = 0; i < string.length; i++) {
+            hash = string.charCodeAt(i) + ((hash << 5) - hash);
         }
-    ]
+        const colors = ['#00ACC1', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#009688', '#4CAF50', '#FF9800', '#FF5722'];
+        return colors[Math.abs(hash) % colors.length];
+    };
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                // Fetch section content (title, subtitle, background video, hidden artists)
+                let hiddenArtists = [];
+                const contentRes = await fetch('/api/admin/site-content');
+                if (contentRes.ok) {
+                    const data = await contentRes.json();
+                    if (data.ourTeam) {
+                        setSectionContent(prev => ({ ...prev, ...data.ourTeam }));
+                        hiddenArtists = data.ourTeam.hiddenArtists || [];
+                    }
+                }
+
+                // Fetch artists from the team API
+                const teamRes = await fetch('/api/team');
+                if (teamRes.ok) {
+                    const artists = await teamRes.json();
+                    if (artists && artists.length > 0) {
+                        // Filter out hidden artists and transform data
+                        const visibleArtists = artists.filter(artist => !hiddenArtists.includes(artist.artistid));
+                        const teamData = visibleArtists.map((artist, index) => ({
+                            id: index + 1,
+                            artistid: artist.artistid,
+                            name: artist.username,
+                            role: artist.role || 'Artist',
+                            image: artist.profileImage || artist.image || '',
+                            description: artist.bio || '',
+                            instagram: artist.instagram || '',
+                            portfolio: `/portfolio/${artist.artistid}`
+                        }));
+                        setTeams(teamData);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch our team content", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchContent();
+    }, []);
+
+    // Don't render if no team members
+    if (!loading && teams.length === 0) {
+        return null;
+    }
 
     return (
         <Box position="relative" sx={{
@@ -50,6 +95,7 @@ const OurTeam = () => {
             py: 6
         }} id="ourteam">
             {/* Background Video */}
+            {sectionContent.backgroundVideoUrl && (
             <Box sx={{
                 position: "absolute",
                 top: 0,
@@ -60,6 +106,7 @@ const OurTeam = () => {
                 opacity: 0.3
             }}>
                 <video
+                    key={sectionContent.backgroundVideoUrl}
                     style={{
                         width: "100%",
                         height: "100%",
@@ -70,7 +117,7 @@ const OurTeam = () => {
                     muted
                     playsInline
                 >
-                    <source src="https://res.cloudinary.com/djbilxr7i/video/upload/v1763534144/background_video_gqq5pm.mp4" type="video/mp4" />
+                    <source src={sectionContent.backgroundVideoUrl} type="video/mp4" />
                 </video>
                 <Box sx={{
                     position: 'absolute',
@@ -81,6 +128,7 @@ const OurTeam = () => {
                     background: 'linear-gradient(to bottom, #0B1113 0%, transparent 20%, transparent 80%, #0B1113 100%)'
                 }} />
             </Box>
+            )}
 
             <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                 <Box textAlign="center" mb={5}>
@@ -90,7 +138,7 @@ const OurTeam = () => {
                         whileInView="show"
                         viewport={{ once: true, amount: 0.4 }}>
                         <Typography variant="h3" className="text-shine" sx={{ fontWeight: 'bold', mb: 1, fontFamily: 'Eurostile, sans-serif' }}>
-                            OUR TEAM
+                            {sectionContent.title}
                         </Typography>
                     </motion.div>
                     <motion.div
@@ -99,26 +147,30 @@ const OurTeam = () => {
                         whileInView="show"
                         viewport={{ once: true, amount: 0.5 }}>
                         <Typography variant="body1" sx={{ color: '#aeb4b4', maxWidth: '700px', mx: 'auto', lineHeight: 1.6 }}>
-                            Meet the creative minds behind our projects. A blend of artists, animators, and VFX specialists dedicated to bringing your vision to life.
+                            {sectionContent.subtitle}
                         </Typography>
                     </motion.div>
                 </Box>
 
                 <Box sx={{
                     display: 'flex',
-                    overflowX: 'auto',
+                    flexWrap: { xs: 'nowrap', md: 'wrap' },
+                    overflowX: { xs: 'auto', md: 'visible' },
                     gap: 3,
                     py: 2,
-                    px: { xs: 2, md: 4 },
-                    scrollSnapType: 'x mandatory',
+                    px: { xs: 2, md: 0 },
+                    scrollSnapType: { xs: 'x mandatory', md: 'none' },
                     scrollbarWidth: 'none',
                     '&::-webkit-scrollbar': { display: 'none' },
-                    justifyContent: { xs: 'flex-start', md: 'center' }
+                    justifyContent: 'center'
                 }}>
                     {teams.map((team, index) => (
                         <Box key={team.id} sx={{
+                            width: { xs: '300px', sm: '340px', md: '360px' },
                             minWidth: { xs: '300px', sm: '340px', md: '360px' },
-                            scrollSnapAlign: 'center'
+                            maxWidth: { xs: '300px', sm: '340px', md: '360px' },
+                            flexShrink: 0,
+                            scrollSnapAlign: { xs: 'center', md: 'none' }
                         }}>
                             <motion.div
                                 variants={fadeIn('up', 0.2 + (index * 0.1))}
@@ -145,19 +197,22 @@ const OurTeam = () => {
                                     }
                                 }}>
                                     <Box sx={{ position: 'relative', mb: 2 }}>
-                                        <Box
-                                            component="img"
+                                        <Avatar
                                             src={team.image}
                                             alt={team.name}
                                             sx={{
                                                 width: 100,
                                                 height: 100,
-                                                borderRadius: '50%',
-                                                objectFit: 'cover',
-                                                border: '3px solid rgba(0, 172, 193, 0.2)',
-                                                padding: '3px'
+                                                fontSize: '2.5rem',
+                                                fontWeight: 'bold',
+                                                bgcolor: stringToColor(team.name),
+                                                border: '3px solid rgba(0, 172, 193, 0.3)',
+                                                boxShadow: '0 0 0 3px rgba(0, 172, 193, 0.1)'
                                             }}
-                                        />
+                                        >
+                                            {getInitials(team.name)}
+                                        </Avatar>
+                                        {team.instagram && (
                                         <Box
                                             component="a"
                                             href={team.instagram}
@@ -180,6 +235,7 @@ const OurTeam = () => {
                                         >
                                             <InstagramIcon sx={{ fontSize: 18 }} />
                                         </Box>
+                                        )}
                                     </Box>
 
                                     <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold', mb: 0.5, fontFamily: 'Eurostile, sans-serif' }}>

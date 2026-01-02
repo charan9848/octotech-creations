@@ -16,7 +16,8 @@ import {
   CardContent,
   Avatar,
   IconButton,
-  Paper
+  Paper,
+  LinearProgress
 } from "@mui/material";
 import { CloudUpload, PhotoCamera } from "@mui/icons-material";
 import * as yup from "yup";
@@ -30,6 +31,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
@@ -38,7 +40,9 @@ const Profile = () => {
   const validationSchema = yup.object({
     username: yup.string().required('Username is required'),
     email: yup.string().email('Invalid email').required('Email is required'),
-    image: yup.string().url('Invalid URL').required('Image URL is required')
+    image: yup.string().url('Invalid URL').required('Image URL is required'),
+    bio: yup.string().max(500, 'Bio must be 500 characters or less'),
+    instagram: yup.string().url('Invalid Instagram URL').nullable()
   });
   // Fetch artist by ID from session
   useEffect(() => {
@@ -61,6 +65,8 @@ const Profile = () => {
   }, [session, status]);  // Handle image upload to Cloudinary
   const handleImageUpload = async (file) => {
     setUploading(true);
+    setUploadProgress(0);
+    
     try {
       // Delete old image if it exists and is from our upload service
       const currentImage = formik.values.image;
@@ -81,6 +87,10 @@ const Profile = () => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percent);
+        }
       });
 
       if (response.data.url) {
@@ -110,6 +120,7 @@ const Profile = () => {
       }
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -142,14 +153,21 @@ const Profile = () => {
     initialValues: {
       username: artist?.username || "",
       email: artist?.email || "",
-      image: artist?.image || ""
+      image: artist?.image || "",
+      bio: artist?.bio || "",
+      instagram: artist?.instagram || ""
     },
     validationSchema: validationSchema,    onSubmit: async (values) => {
       setSaving(true);
       setMessage("");
       setError("");
       try {
-        const response = await axios.put(`/api/artists/${session.user.artistid}`, values);
+        // Also set profileImage to match image for Our Team section
+        const submitValues = {
+          ...values,
+          profileImage: values.image
+        };
+        const response = await axios.put(`/api/artists/${session.user.artistid}`, submitValues);
         setMessage("Profile updated successfully!");
         notify.actionComplete('update', 'success');
         // Add to dashboard notifications
@@ -380,9 +398,32 @@ const Profile = () => {
                     },
                   }}
                 >
-                  {uploading ? 'Uploading...' : 'Upload'}
+                  {uploading ? `${uploadProgress}%` : 'Upload'}
                 </Button>
               </Box>
+              {uploading && (
+                <Box sx={{ mt: 1, mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={uploadProgress} 
+                      sx={{ 
+                        flex: 1, 
+                        height: 6, 
+                        borderRadius: 3,
+                        bgcolor: 'rgba(255,255,255,0.1)',
+                        '& .MuiLinearProgress-bar': {
+                          bgcolor: '#1976d2',
+                          borderRadius: 3
+                        }
+                      }} 
+                    />
+                    <Typography variant="caption" color="#1976d2" sx={{ minWidth: 40 }}>
+                      {uploadProgress}%
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -392,6 +433,78 @@ const Profile = () => {
               />
               <FormHelperText sx={{ minHeight: "20px", color: '#f44336' }}>
                 {formik.touched.image && formik.errors.image}
+              </FormHelperText>
+
+              <FormLabel sx={{ color: 'white' }}>Bio (For Our Team Section)</FormLabel>
+              <TextField
+                name="bio"
+                type="text"
+                placeholder="Write a short bio about yourself..."
+                fullWidth
+                size="small"
+                multiline
+                rows={4}
+                value={formik.values.bio}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.bio && Boolean(formik.errors.bio)}
+                sx={{
+                  mb: 1,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#15191c',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: '#333',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#555',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#1976d2',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: '#78838D',
+                  },
+                }}
+              />
+              <FormHelperText sx={{ minHeight: "20px", color: formik.touched.bio && formik.errors.bio ? '#f44336' : '#78838D' }}>
+                {formik.touched.bio && formik.errors.bio ? formik.errors.bio : `${(formik.values.bio || '').length}/500 characters`}
+              </FormHelperText>
+
+              <FormLabel sx={{ color: 'white' }}>Instagram URL</FormLabel>
+              <TextField
+                name="instagram"
+                type="url"
+                placeholder="https://www.instagram.com/yourusername"
+                fullWidth
+                size="small"
+                value={formik.values.instagram}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.instagram && Boolean(formik.errors.instagram)}
+                sx={{
+                  mb: 1,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#15191c',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: '#333',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#555',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#1976d2',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: '#78838D',
+                  },
+                }}
+              />
+              <FormHelperText sx={{ minHeight: "20px", color: '#f44336' }}>
+                {formik.touched.instagram && formik.errors.instagram}
               </FormHelperText>
 
               <Button
@@ -436,40 +549,66 @@ const Profile = () => {
             </Typography>
             
             <Box sx={{ position: 'relative', display: 'inline-block', mb: 2 }}>
-              <Avatar
-                src={formik.values.image || artist.image}
-                alt="Profile"
-                sx={{
-                  width: 120,
-                  height: 120,
-                  border: '3px solid #1976d2'
-                }}
-              />
-              <IconButton
-                onClick={triggerFileInput}
-                disabled={uploading}
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  width: 36,
-                  height: 36,
-                  '&:hover': {
-                    backgroundColor: '#1565c0',
-                  },
-                  '&:disabled': {
-                    backgroundColor: '#666',
-                  },
-                }}
-              >
-                {uploading ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <PhotoCamera sx={{ fontSize: 18 }} />
-                )}
-              </IconButton>
+              {uploading ? (
+                <Box sx={{ position: 'relative', width: 120, height: 120 }}>
+                  <CircularProgress 
+                    variant="determinate" 
+                    value={uploadProgress} 
+                    size={120}
+                    thickness={3}
+                    sx={{ color: '#1976d2' }} 
+                  />
+                  <Box
+                    sx={{
+                      top: 0,
+                      left: 0,
+                      bottom: 0,
+                      right: 0,
+                      position: 'absolute',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Typography variant="h5" component="div" color="#1976d2" fontWeight="bold">
+                      {uploadProgress}%
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : (
+                <>
+                  <Avatar
+                    src={formik.values.image || artist.image}
+                    alt="Profile"
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      border: '3px solid #1976d2'
+                    }}
+                  />
+                  <IconButton
+                    onClick={triggerFileInput}
+                    disabled={uploading}
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      width: 36,
+                      height: 36,
+                      '&:hover': {
+                        backgroundColor: '#1565c0',
+                      },
+                      '&:disabled': {
+                        backgroundColor: '#666',
+                      },
+                    }}
+                  >
+                    <PhotoCamera sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </>
+              )}
             </Box>
             
             <Typography variant="h6" color="white" mb={1}>
@@ -479,6 +618,49 @@ const Profile = () => {
             <Typography variant="body2" color="#78838D" mb={1}>
               {formik.values.email || artist.email}
             </Typography>
+
+            {formik.values.bio && (
+              <Typography variant="body2" color="#aeb4b4" mb={2} sx={{ 
+                maxHeight: 80, 
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical'
+              }}>
+                {formik.values.bio}
+              </Typography>
+            )}
+
+            {formik.values.instagram && (
+              <Box 
+                component="a" 
+                href={formik.values.instagram} 
+                target="_blank"
+                sx={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: 1, 
+                  color: '#E1306C',
+                  textDecoration: 'none',
+                  mb: 2,
+                  '&:hover': { opacity: 0.8 }
+                }}
+              >
+                <Box sx={{ 
+                  width: 24, 
+                  height: 24, 
+                  borderRadius: '50%', 
+                  bgcolor: '#E1306C', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}>
+                  <Typography sx={{ color: 'white', fontSize: 12 }}>IG</Typography>
+                </Box>
+                <Typography variant="caption">Instagram</Typography>
+              </Box>
+            )}
             
             <Typography variant="caption" color="#78838D">
               Artist ID: {session.user.artistid}

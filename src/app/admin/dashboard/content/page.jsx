@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Paper, TextField, Button, CircularProgress, Divider, Grid } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
+import GroupIcon from '@mui/icons-material/Group';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function ManageContent() {
   const [content, setContent] = useState({
@@ -165,6 +168,37 @@ export default function ManageContent() {
               disabled={actionLoading}
             />
           </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Link href="/admin/dashboard/content/our-team" style={{ textDecoration: 'none' }}>
+            <Paper sx={{ 
+              p: 3, 
+              bgcolor: '#1a2027', 
+              border: '1px solid rgba(255,255,255,0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              '&:hover': {
+                borderColor: '#32b4de',
+                bgcolor: 'rgba(50, 180, 222, 0.05)'
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <GroupIcon sx={{ color: '#32b4de', fontSize: 40 }} />
+                  <Box>
+                    <Typography variant="h6" sx={{ color: 'white' }}>
+                      Our Team Section
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#aeb4b4' }}>
+                      Manage background video, title & subtitle
+                    </Typography>
+                  </Box>
+                </Box>
+                <ArrowForwardIcon sx={{ color: '#32b4de' }} />
+              </Box>
+            </Paper>
+          </Link>
         </Grid>
       </Grid>
     </Box>

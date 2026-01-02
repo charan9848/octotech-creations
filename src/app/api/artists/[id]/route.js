@@ -66,6 +66,9 @@ export async function PUT(request, context) {
           username: updateData.username,
           email: updateData.email,
           image: updateData.image || existingArtist.image,
+          profileImage: updateData.profileImage || updateData.image || existingArtist.profileImage || existingArtist.image,
+          bio: updateData.bio !== undefined ? updateData.bio : (existingArtist.bio || ''),
+          instagram: updateData.instagram !== undefined ? updateData.instagram : (existingArtist.instagram || ''),
           updatedAt: new Date()
         }
       }

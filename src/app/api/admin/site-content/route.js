@@ -25,14 +25,14 @@ export async function GET(request) {
 }
 
 export async function PUT(request) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const data = await request.json();
-    const { section, ...contentData } = data;
+    const { section, _id, ...contentData } = data; // Exclude _id from update
 
     if (!section) {
       return NextResponse.json({ error: 'Section is required' }, { status: 400 });
@@ -50,6 +50,6 @@ export async function PUT(request) {
     return NextResponse.json({ message: 'Content updated successfully' });
   } catch (error) {
     console.error("Update content error:", error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

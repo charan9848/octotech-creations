@@ -12,12 +12,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata = {
   title: "Octotech Creations | VFX, Animation & Compositing Studio",
   description: "At Octotech Creations, we turn that vision into visuals that sell, connect, and stay etched in the viewer's mind. We create visuals that drive results.",
   keywords: "VFX, Animation, 3D, Motion Graphics, Octotech, Video Editing, Compositing, Visual Effects, Studio",
   authors: [{ name: "Octotech Creations" }],
-  viewport: "width=device-width, initial-scale=1",
   openGraph: {
     title: "Octotech Creations | VFX, Animation & Compositing Studio",
     description: "At Octotech Creations, we turn that vision into visuals that sell, connect, and stay etched in the viewer's mind. We create visuals that drive results.",
@@ -56,7 +60,7 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png" />
         <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png" />
         <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png" />
-          {/* Web App Manifest */}
+        {/* Web App Manifest */}
         <link rel="manifest" href="/site.webmanifest" />
         
         {/* Windows Tiles */}
@@ -64,7 +68,8 @@ export default function RootLayout({ children }) {
         <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
         <meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
         <meta name="msapplication-square150x150logo" content="/mstile-150x150.png" />
-        <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />        <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
+        <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />
+        <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
         <meta name="theme-color" content="#00ACC1" />
         {/* Add your Google site verification meta tag below */}
         <meta name="google-site-verification" content="u8wjNF9K9V2zHuWohf1n3iK4AapXkxqOR4sL0FzUgkA" />

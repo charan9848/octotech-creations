@@ -36,17 +36,19 @@ export default function Navbar() {
   const loggedOutMenuContent = [
     { id: 1, name: "home", icon: <HomeOutlinedIcon />, path: "/" },
     { id: 2, name: "services", icon: <BuildOutlinedIcon />, path: "/#services" },
-    { id: 3, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
-    { id: 4, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
+    { id: 3, name: "blog", icon: <InfoOutlinedIcon />, path: "/blog" },
+    { id: 4, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
+    { id: 5, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
   ];
 
   const loggedInMenuContent = [
     { id: 1, name: "home", icon: <HomeOutlinedIcon />, path: "/" },
     { id: 2, name: "services", icon: <BuildOutlinedIcon />, path: "/#services" },
     { id: 3, name: "portfolio", icon: <FolderOutlinedIcon />, path: session?.user?.artistid ? `/portfolio/${session.user.artistid}` : "/portfolio" },
-    { id: 4, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
-    { id: 5, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
-    { id: 6, name: "dashboard", icon: <FolderOutlinedIcon />, path: "/artist-dashboard" },
+    { id: 4, name: "blog", icon: <InfoOutlinedIcon />, path: "/blog" },
+    { id: 5, name: "contact", icon: <PhoneOutlinedIcon />, path: "/contact" },
+    { id: 6, name: "about", icon: <InfoOutlinedIcon />, path: "/about" },
+    { id: 7, name: "dashboard", icon: <FolderOutlinedIcon />, path: "/artist-dashboard" },
   ];
 
   const adminMenuContent = [

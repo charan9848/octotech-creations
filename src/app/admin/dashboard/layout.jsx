@@ -16,6 +16,9 @@ import ArticleIcon from '@mui/icons-material/Article';
 import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 import ChatIcon from '@mui/icons-material/Chat';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
+import BookIcon from '@mui/icons-material/Book';
+import CommentIcon from '@mui/icons-material/Comment';
+import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import Link from 'next/link';
 import NotificationCenter from "@/components/NotificationCenter/NotificationCenter";
 
@@ -64,6 +67,9 @@ export default function AdminLayout({ children }) {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Services', icon: <MovieCreationIcon />, path: '/admin/dashboard/services' },
     { text: 'Site Content', icon: <ArticleIcon />, path: '/admin/dashboard/content' },
+    { text: 'Blog', icon: <BookIcon />, path: '/admin/dashboard/blog' },
+    { text: 'Comments', icon: <CommentIcon />, path: '/admin/dashboard/comments' },
+    { text: 'Subscribers', icon: <SubscriptionsIcon />, path: '/admin/dashboard/subscribers' },
     { text: 'Artists', icon: <PeopleIcon />, path: '/admin/dashboard/artists' },
     { text: 'Meetings', icon: <VideoCallIcon />, path: '/admin/dashboard/meetings' },
     { text: 'Chat', icon: <ChatIcon />, path: '/admin/dashboard/chat' },
