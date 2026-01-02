@@ -79,6 +79,10 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
+    // Check global settings for auto-approval
+    const settings = await db.collection("settings").findOne({ key: "global_settings" });
+    const autoApprove = settings?.autoApproveComments || false;
+
     // Create comment
     const newComment = {
       postSlug: slug,
@@ -86,7 +90,7 @@ export async function POST(request, { params }) {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       comment: comment.trim(),
-      status: 'pending', // pending, approved, rejected
+      status: autoApprove ? 'approved' : 'pending', // pending, approved, rejected
       createdAt: new Date()
     };
 

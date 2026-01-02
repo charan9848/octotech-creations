@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, Paper, TextField, Button, CircularProgress, Alert, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
+import { Box, Typography, Paper, TextField, Button, CircularProgress, Alert, FormControl, InputLabel, Select, MenuItem, Divider, Switch, FormControlLabel } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
@@ -16,7 +16,8 @@ export default function AdminSettings() {
   const [deployNotes, setDeployNotes] = useState('');
   const [settings, setSettings] = useState({
     maxArtists: 4,
-    chatAutoDeleteDays: 0 // 0 = disabled, otherwise number of days
+    chatAutoDeleteDays: 0, // 0 = disabled, otherwise number of days
+    autoApproveComments: false
   });
 
   useEffect(() => {
@@ -30,7 +31,8 @@ export default function AdminSettings() {
         const data = await res.json();
         setSettings({ 
           maxArtists: data.maxArtists || 4,
-          chatAutoDeleteDays: data.chatAutoDeleteDays || 0
+          chatAutoDeleteDays: data.chatAutoDeleteDays || 0,
+          autoApproveComments: data.autoApproveComments || false
         });
       }
     } catch (error) {
@@ -172,6 +174,39 @@ export default function AdminSettings() {
         >
           {cleaningMessages ? 'Deleting...' : 'Delete All Chat Messages Now'}
         </Button>
+
+        <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.1)' }} />
+
+        <Typography variant="h6" sx={{ mb: 3, color: '#32b4de' }}>
+          Blog Settings
+        </Typography>
+
+        <Box sx={{ mb: 3 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.autoApproveComments}
+                onChange={(e) => setSettings({ ...settings, autoApproveComments: e.target.checked })}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': {
+                    color: '#32b4de',
+                  },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                    backgroundColor: '#32b4de',
+                  },
+                }}
+              />
+            }
+            label={
+              <Box>
+                <Typography sx={{ color: 'white' }}>Auto-approve Comments</Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                  If enabled, new comments will be automatically approved and visible.
+                </Typography>
+              </Box>
+            }
+          />
+        </Box>
 
         <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.1)' }} />
 

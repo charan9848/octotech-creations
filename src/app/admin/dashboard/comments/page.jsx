@@ -70,7 +70,7 @@ export default function CommentsPage() {
       const res = await fetch('/api/blog/comments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'approved' })
+        body: JSON.stringify({ commentId: id, status: 'approved' })
       });
       if (res.ok) {
         toast.success('Comment approved');
@@ -86,7 +86,7 @@ export default function CommentsPage() {
       const res = await fetch('/api/blog/comments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'rejected' })
+        body: JSON.stringify({ commentId: id, status: 'rejected' })
       });
       if (res.ok) {
         toast.success('Comment rejected');

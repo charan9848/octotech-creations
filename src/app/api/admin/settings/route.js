@@ -18,7 +18,8 @@ export async function GET(request) {
     // Default settings if not found
     const defaultSettings = {
       maxArtists: 4,
-      chatAutoDeleteDays: 0
+      chatAutoDeleteDays: 0,
+      autoApproveComments: false
     };
 
     return NextResponse.json(settings || defaultSettings);
@@ -37,7 +38,7 @@ export async function PUT(request) {
   try {
     const body = await request.json();
     // Extract known settings
-    const { maxArtists, maintenanceMode, allowRegistrations, chatAutoDeleteDays } = body;
+    const { maxArtists, maintenanceMode, allowRegistrations, chatAutoDeleteDays, autoApproveComments } = body;
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -125,6 +126,7 @@ export async function PUT(request) {
     if (maintenanceMode !== undefined) updateData.maintenanceMode = maintenanceMode;
     if (allowRegistrations !== undefined) updateData.allowRegistrations = allowRegistrations;
     if (chatAutoDeleteDays !== undefined) updateData.chatAutoDeleteDays = parseInt(chatAutoDeleteDays);
+    if (autoApproveComments !== undefined) updateData.autoApproveComments = autoApproveComments;
 
     // If chat auto-delete is enabled, delete old messages now
     if (chatAutoDeleteDays !== undefined && chatAutoDeleteDays > 0) {
