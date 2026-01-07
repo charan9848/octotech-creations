@@ -138,3 +138,7 @@ out/
 test-files/
 experimental/
 sandbox/
+
+# Desktop App Build Artifacts
+Octotech-win32-x64/
+installer/

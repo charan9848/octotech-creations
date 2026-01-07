@@ -6,6 +6,8 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import { createNotification } from '@/lib/db-notifications';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'admin') {
@@ -15,16 +17,50 @@ export async function GET(request) {
   try {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
-    const artists = await db.collection("artists").find({}, { projection: { password: 0 } }).toArray();
+    
+    // Join artists with portfolios to get the latest image
+    const artists = await db.collection("artists").aggregate([
+      {
+        $lookup: {
+          from: "portfolios",
+          localField: "artistid", // linking field in artists
+          foreignField: "artistId", // linking field in portfolios
+          as: "portfolio"
+        }
+      },
+      {
+        $project: {
+          // _id is included by default
+          username: 1,
+          email: 1,
+          artistid: 1,
+          role: 1,
+          phone: 1,
+          createdAt: 1,
+          lastLogin: 1,
+          image: 1,
+          profileImage: 1,
+          // Extract portfolio image directly in project stage
+          portfolioImage: { $arrayElemAt: ["$portfolio.basicDetails.portfolioImage", 0] }
+        }
+      }
+    ]).toArray();
     
     // Add createdAt from _id if missing
     const artistsWithDate = artists.map(artist => ({
       ...artist,
-      createdAt: artist.createdAt || artist._id.getTimestamp()
+      createdAt: artist.createdAt || (artist._id && artist._id.getTimestamp())
     }));
 
-    return NextResponse.json(artistsWithDate);
+    return NextResponse.json(artistsWithDate, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error) {
+    console.error("Admin artists fetch error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

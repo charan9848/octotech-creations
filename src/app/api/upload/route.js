@@ -2,14 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
-cloudinary.config({
+const cloudinaryConfig = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+};
+
+if (!cloudinaryConfig.cloud_name || !cloudinaryConfig.api_key || !cloudinaryConfig.api_secret) {
+  console.error('Cloudinary environment variables are missing');
+}
+
+cloudinary.config(cloudinaryConfig);
 
 export async function POST(request) {
   try {
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return NextResponse.json({ error: 'Server configuration error: Cloudinary credentials missing' }, { status: 500 });
+    }
+
     const data = await request.formData();
     const file = data.get('file');
 

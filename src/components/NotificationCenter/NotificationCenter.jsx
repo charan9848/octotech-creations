@@ -13,9 +13,10 @@ import {
   Button,
   Divider
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
 import ErrorIcon from "@mui/icons-material/Error";
 import InfoIcon from "@mui/icons-material/Info";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -27,6 +28,19 @@ export default function NotificationCenter() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const notify = useNotifications();
+  
+  // Track previously known notification IDs to detect new ones
+  const knownNotificationIds = useRef(new Set());
+  const isFirstLoad = useRef(true);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && "Notification" in window) {
+      if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
 
   // Fetch notifications from API
   const fetchNotifications = async () => {
@@ -34,9 +48,33 @@ export default function NotificationCenter() {
       const res = await fetch('/api/notifications');
       if (res.ok) {
         const data = await res.json();
-        // Merge with local notifications if needed, or just use API
-        // For now, let's prioritize API notifications but keep local ones for immediate feedback
-        // Actually, let's just use API notifications for the list, and local for toasts
+        
+        // Check for new unread notifications since last fetch
+        if (!isFirstLoad.current) {
+          data.forEach(n => {
+            // If it's unread AND we haven't seen this ID before
+            if (!n.read && !knownNotificationIds.current.has(n._id || n.id)) {
+              // Trigger desktop notification
+              if (typeof window !== 'undefined' && "Notification" in window && Notification.permission === "granted") {
+                try {
+                  new Notification(n.title || "New Notification", {
+                    body: n.message,
+                    icon: '/android-chrome-192x192.png', // Assuming this exists in public/
+                    silent: false
+                  });
+                } catch (e) {
+                  console.error("Desktop notification failed", e);
+                }
+              }
+            }
+          });
+        }
+
+        // Update known IDs
+        const currentIds = new Set(data.map(n => n._id || n.id));
+        knownNotificationIds.current = currentIds;
+        isFirstLoad.current = false;
+
         setNotifications(data);
         setUnreadCount(data.filter(n => !n.read).length);
       }

@@ -10,10 +10,17 @@ export async function GET(request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Determine target artist ID (allow admin override)
+    const { searchParams } = new URL(request.url);
+    let targetArtistId = session.user.artistid;
+    if (session.user.role === 'admin' && searchParams.get('artistId')) {
+      targetArtistId = searchParams.get('artistId');
+    }
+
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     const portfolio = await db.collection("portfolios").findOne({ 
-      artistId: session.user.artistid 
+      artistId: targetArtistId 
     });
 
     if (!portfolio) {
@@ -43,11 +50,19 @@ export async function POST(request) {
     }
 
     const data = await request.json();
+    
+    // Determine target artist ID (allow admin override)
+    const { searchParams } = new URL(request.url);
+    let targetArtistId = session.user.artistid;
+    if (session.user.role === 'admin' && searchParams.get('artistId')) {
+      targetArtistId = searchParams.get('artistId');
+    }
+
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     
     const portfolioData = {
-      artistId: session.user.artistid,
+      artistId: targetArtistId,
       basicDetails: data,
       updatedAt: new Date()
     };

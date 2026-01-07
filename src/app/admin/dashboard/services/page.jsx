@@ -135,7 +135,9 @@ export default function ServicesManagement() {
       setCurrentService({ ...currentService, image: res.data.url });
       toast.success('File uploaded successfully');
     } catch (error) {
-      toast.error('File upload failed');
+      console.error('Upload failed:', error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.details || error.message || 'File upload failed';
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -255,6 +257,12 @@ export default function ServicesManagement() {
     return url && (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg') || url.includes('/video/upload/'));
   };
 
+  const getVideoThumbnail = (url) => {
+    if (!url) return '';
+    // Replace video extension with .jpg for Cloudinary/generic URLs
+    return url.replace(/\.(mp4|webm|ogg|mov)$/i, '.jpg');
+  };
+
   if (loading) return <Box display="flex" justifyContent="center" p={5}><CircularProgress sx={{ color: '#32b4de' }} /></Box>;
 
   return (
@@ -348,8 +356,10 @@ export default function ServicesManagement() {
                   {isVideo(service.image) ? (
                     <video 
                       src={service.image} 
+                      poster={getVideoThumbnail(service.image)}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                       controls 
+                      preload="metadata"
                     />
                   ) : (
                     <Image 
@@ -549,8 +559,10 @@ export default function ServicesManagement() {
                     {isVideo(currentService.image) ? (
                       <video 
                         src={currentService.image} 
+                        poster={getVideoThumbnail(currentService.image)}
                         style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
                         controls 
+                        preload="metadata"
                       />
                     ) : (
                       <Image 

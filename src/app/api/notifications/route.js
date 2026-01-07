@@ -76,3 +76,47 @@ export async function PUT(request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function POST(request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Only allow admin to send manual notifications for now
+  if (session.user.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { recipient, title, message, type } = body;
+
+    if (!recipient || !message) {
+      return NextResponse.json({ error: 'Recipient and message are required' }, { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+
+    const newNotification = {
+      recipient, // artist ID or 'admin'
+      title: title || 'New Message',
+      message,
+      type: type || 'info', // success, error, warning, info
+      read: false,
+      timestamp: new Date().toISOString()
+    };
+
+    const result = await db.collection("notifications").insertOne(newNotification);
+
+    return NextResponse.json({ 
+      success: true, 
+      id: result.insertedId,
+      message: 'Notification sent successfully' 
+    });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

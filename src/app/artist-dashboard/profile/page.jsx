@@ -168,6 +168,12 @@ const Profile = () => {
           profileImage: values.image
         };
         const response = await axios.put(`/api/artists/${session.user.artistid}`, submitValues);
+        
+        // Also try to sync bio to portfolio if portfolio exists, but only if they differ?
+        // Actually, let's keep them separate as per user design: 
+        // 1. Profile Bio -> Specific for Team section (Short)
+        // 2. Portfolio Bio -> Specific for Portfolio Page (Long)
+
         setMessage("Profile updated successfully!");
         notify.actionComplete('update', 'success');
         // Add to dashboard notifications
@@ -469,7 +475,12 @@ const Profile = () => {
                 }}
               />
               <FormHelperText sx={{ minHeight: "20px", color: formik.touched.bio && formik.errors.bio ? '#f44336' : '#78838D' }}>
-                {formik.touched.bio && formik.errors.bio ? formik.errors.bio : `${(formik.values.bio || '').length}/500 characters`}
+                {formik.touched.bio && formik.errors.bio ? formik.errors.bio : (
+                  <>
+                    {(formik.values.bio || '').length}/500 characters. <br />
+                    This bio is used for the "Our Team" card. If empty, your Portfolio Bio will be used.
+                  </>
+                )}
               </FormHelperText>
 
               <FormLabel sx={{ color: 'white' }}>Instagram URL</FormLabel>

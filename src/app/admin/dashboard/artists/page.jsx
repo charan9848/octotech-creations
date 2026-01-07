@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Alert, TextField, TablePagination, InputAdornment, TableSortLabel, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Alert, TextField, TablePagination, InputAdornment, TableSortLabel, Select, MenuItem, FormControl, InputLabel, Avatar } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
@@ -11,6 +11,10 @@ import MailIcon from '@mui/icons-material/Mail';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ChatIcon from '@mui/icons-material/Chat';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import HistoryIcon from '@mui/icons-material/History';
+import SecurityIcon from '@mui/icons-material/Security';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { downloadCSV } from '@/lib/exportUtils';
@@ -80,7 +84,24 @@ export default function AdminArtists() {
   const [remindAllConfirmOpen, setRemindAllConfirmOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [portfolioDialogOpen, setPortfolioDialogOpen] = useState(false);
+  const [logsDialogOpen, setLogsDialogOpen] = useState(false);
+  const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [notificationForm, setNotificationForm] = useState({
+    title: '',
+    message: '',
+    type: 'info'
+  });
+  const [portfolioData, setPortfolioData] = useState({
+    bio: '',
+    quotation: '',
+    contactEmail: '',
+    phone: '',
+    location: '',
+    portfolioImage: ''
+  });
   const [editForm, setEditForm] = useState({
     username: '',
     email: '',
@@ -229,6 +250,123 @@ export default function AdminArtists() {
     } catch (error) {
       console.error("Update error:", error);
       toast.error("An error occurred");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleNotificationClick = (artist) => {
+    setSelectedArtist(artist);
+    setNotificationForm({ title: '', message: '', type: 'info' });
+    setNotificationDialogOpen(true);
+  };
+
+  const handleSendNotification = async () => {
+    if (!notificationForm.message) {
+      toast.error("Message is required");
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipient: selectedArtist.artistid, // Ensure this matches User ID logic
+          ...notificationForm
+        }),
+      });
+
+      if (res.ok) {
+        if (window.addDashboardNotification) {
+          window.addDashboardNotification('success', `Notification sent to ${selectedArtist.username}`);
+        } else {
+          toast.success("Notification sent successfully");
+        }
+        setNotificationDialogOpen(false);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to send notification");
+      }
+    } catch (error) {
+      console.error("Notification error:", error);
+      toast.error("Error sending notification");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePortfolioClick = async (artist) => {
+    setSelectedArtist(artist);
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/portfolio/basic-details?artistId=${artist.artistid}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPortfolioData(data.basicDetails || {
+          bio: '',
+          quotation: '',
+          contactEmail: '',
+          phone: '',
+          location: '',
+          portfolioImage: ''
+        });
+        setPortfolioDialogOpen(true);
+      } else {
+        toast.error("Failed to load portfolio data");
+      }
+    } catch (error) {
+      console.error("Portfolio fetch error:", error);
+      toast.error("Error loading portfolio");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePortfolioSave = async () => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/portfolio/basic-details?artistId=${selectedArtist.artistid}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(portfolioData),
+      });
+
+      if (res.ok) {
+        toast.success("Portfolio updated successfully");
+        setPortfolioDialogOpen(false);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update portfolio");
+      }
+    } catch (error) {
+      console.error("Portfolio update error:", error);
+      toast.error("Error updating portfolio");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleLogsClick = async (artist) => {
+    setSelectedArtist(artist);
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/admin/logs?artistId=${artist.artistid}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data);
+        setLogsDialogOpen(true);
+      } else {
+        toast.error("Failed to load logs");
+      }
+    } catch (error) {
+      console.error("Logs fetch error:", error);
+      toast.error("Error loading logs");
     } finally {
       setActionLoading(false);
     }
@@ -451,6 +589,7 @@ export default function AdminArtists() {
           <TableHead>
             <TableRow sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
               <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>S.No</TableCell>
+              <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Profile</TableCell>
               <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>
                 <TableSortLabel
                   active={orderBy === 'artistid'}
@@ -512,6 +651,21 @@ export default function AdminArtists() {
                   Joined Date
                 </TableSortLabel>
               </TableCell>
+              <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>
+                <TableSortLabel
+                  active={orderBy === 'lastLogin'}
+                  direction={orderBy === 'lastLogin' ? order : 'asc'}
+                  onClick={(event) => handleRequestSort(event, 'lastLogin')}
+                  sx={{
+                    '&.MuiTableSortLabel-root': { color: '#32b4de' },
+                    '&.MuiTableSortLabel-root:hover': { color: '#32b4de' },
+                    '&.Mui-active': { color: '#32b4de' },
+                    '& .MuiTableSortLabel-icon': { color: '#32b4de !important' },
+                  }}
+                >
+                  Last Login
+                </TableSortLabel>
+              </TableCell>
               <TableCell sx={{ color: '#32b4de', fontWeight: 'bold' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -524,6 +678,13 @@ export default function AdminArtists() {
                 <TableCell sx={{ color: 'rgba(255,255,255,0.5)' }}>
                   {page * rowsPerPage + index + 1}
                 </TableCell>
+                <TableCell>
+                  <Avatar 
+                    src={artist.portfolioImage || artist.image || artist.profileImage} 
+                    alt={artist.username}
+                    sx={{ width: 40, height: 40, border: '1px solid rgba(255,255,255,0.2)' }}
+                  />
+                </TableCell>
                 <TableCell component="th" scope="row" sx={{ color: 'white' }}>
                   {artist.artistid}
                 </TableCell>
@@ -533,6 +694,9 @@ export default function AdminArtists() {
                   {artist.role || 'artist'}
                 </TableCell>
                 <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{formatDate(artist.createdAt)}</TableCell>
+                <TableCell sx={{ color: artist.lastLogin ? '#81c784' : 'rgba(255,255,255,0.3)' }}>
+                  {artist.lastLogin ? formatDate(artist.lastLogin) : 'Never'}
+                </TableCell>
                 <TableCell>
                   <IconButton 
                     aria-label="chat" 
@@ -541,6 +705,30 @@ export default function AdminArtists() {
                     title="Chat with artist"
                   >
                     <ChatIcon />
+                  </IconButton>
+                  <IconButton 
+                    aria-label="portfolio" 
+                    onClick={() => handlePortfolioClick(artist)}
+                    sx={{ color: '#ff9800', mr: 1, '&:hover': { bgcolor: 'rgba(255, 152, 0, 0.1)' } }}
+                    title="Edit Portfolio"
+                  >
+                    <AccountBoxIcon />
+                  </IconButton>
+                  <IconButton 
+                    aria-label="history" 
+                    onClick={() => handleLogsClick(artist)}
+                    sx={{ color: '#90caf9', mr: 1, '&:hover': { bgcolor: 'rgba(144, 202, 249, 0.1)' } }}
+                    title="Login History"
+                  >
+                    <HistoryIcon />
+                  </IconButton>
+                  <IconButton 
+                    aria-label="notify" 
+                    onClick={() => handleNotificationClick(artist)}
+                    sx={{ color: '#ffeb3b', mr: 1, '&:hover': { bgcolor: 'rgba(255, 235, 59, 0.1)' } }}
+                    title="Send Notification"
+                  >
+                    <NotificationsActiveIcon />
                   </IconButton>
                   <IconButton 
                     aria-label="edit" 
@@ -678,6 +866,81 @@ export default function AdminArtists() {
         </DialogActions>
       </Dialog>
 
+      {/* Notification Dialog */}
+      <Dialog
+        open={notificationDialogOpen}
+        onClose={() => setNotificationDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)',
+            minWidth: '400px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#ffeb3b' }}>Send Notification</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
+            Send a message to {selectedArtist?.username}. This will appear in their dashboard notification center and as a desktop popup.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Title"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={notificationForm.title}
+            onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
+            placeholder="e.g. Action Required"
+            sx={{ mb: 2, mt: 1 }}
+          />
+          <TextField
+            margin="dense"
+            label="Message"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={notificationForm.message}
+            onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
+            placeholder="Enter your message here..."
+            sx={{ mb: 2 }}
+          />
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="type-select-label" sx={{ color: 'rgba(255,255,255,0.7)' }}>Type</InputLabel>
+            <Select
+              labelId="type-select-label"
+              value={notificationForm.type}
+              onChange={(e) => setNotificationForm({ ...notificationForm, type: e.target.value })}
+              label="Type"
+              sx={{
+                color: 'white',
+                '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#32b4de' },
+                '.MuiSvgIcon-root': { color: 'white' }
+              }}
+            >
+              <MenuItem value="info">Info</MenuItem>
+              <MenuItem value="success">Success</MenuItem>
+              <MenuItem value="warning">Warning</MenuItem>
+              <MenuItem value="error">Error</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNotificationDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }} disabled={actionLoading}>
+            Cancel
+          </Button>
+          <Button onClick={handleSendNotification} sx={{ color: '#ffeb3b' }} disabled={actionLoading}>
+            {actionLoading ? <CircularProgress size={24} color="inherit" /> : 'Send'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* New Role Dialog */}
       <Dialog
         open={newRoleDialogOpen}
@@ -722,6 +985,179 @@ export default function AdminArtists() {
           </Button>
           <Button onClick={handleAddRole} sx={{ color: '#32b4de' }}>
             Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Portfolio Edit Dialog */}
+      <Dialog
+        open={portfolioDialogOpen}
+        onClose={() => setPortfolioDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#ff9800', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          Edit Portfolio: {selectedArtist?.username}
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <TextField
+            margin="dense"
+            label="Bio (About the artist)"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={portfolioData.bio}
+            onChange={(e) => setPortfolioData({ ...portfolioData, bio: e.target.value })}
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Quotation (Tagline)"
+            fullWidth
+            variant="outlined"
+            value={portfolioData.quotation}
+            onChange={(e) => setPortfolioData({ ...portfolioData, quotation: e.target.value })}
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Contact Email"
+            fullWidth
+            variant="outlined"
+            value={portfolioData.contactEmail}
+            onChange={(e) => setPortfolioData({ ...portfolioData, contactEmail: e.target.value })}
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Contact Phone"
+            fullWidth
+            variant="outlined"
+            value={portfolioData.phone}
+            onChange={(e) => setPortfolioData({ ...portfolioData, phone: e.target.value })}
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Location"
+            fullWidth
+            variant="outlined"
+            value={portfolioData.location}
+            onChange={(e) => setPortfolioData({ ...portfolioData, location: e.target.value })}
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Portfolio Image URL"
+            fullWidth
+            variant="outlined"
+            value={portfolioData.portfolioImage}
+            onChange={(e) => setPortfolioData({ ...portfolioData, portfolioImage: e.target.value })}
+            helperText="Direct image URL (Upload feature coming soon for Admin)"
+            sx={{ 
+              mb: 2,
+              '& .MuiOutlinedInput-root': { color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } },
+              '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+              '& .MuiFormHelperText-root': { color: 'rgba(255,255,255,0.5)' }
+            }}
+          />
+          {portfolioData.portfolioImage && (
+            <Box mt={1} mb={2} display="flex" justifyContent="center">
+              <img src={portfolioData.portfolioImage} alt="Preview" style={{ maxHeight: 200, maxWidth: '100%', borderRadius: 8 }} />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', p: 2 }}>
+          <Button onClick={() => setPortfolioDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Cancel
+          </Button>
+          <Button onClick={handlePortfolioSave} variant="contained" sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }} disabled={actionLoading}>
+            {actionLoading ? <CircularProgress size={24} color="inherit" /> : 'Save Portfolio'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Login History Dialog */}
+      <Dialog
+        open={logsDialogOpen}
+        onClose={() => setLogsDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a2027',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#90caf9', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          Login History & Security Logs: {selectedArtist?.username}
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none', maxHeight: 400 }}>
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ bgcolor: '#13171a', color: '#90caf9', fontWeight: 'bold' }}>Time</TableCell>
+                  <TableCell sx={{ bgcolor: '#13171a', color: '#90caf9', fontWeight: 'bold' }}>IP Address</TableCell>
+                  <TableCell sx={{ bgcolor: '#13171a', color: '#90caf9', fontWeight: 'bold' }}>Device / User Agent</TableCell>
+                  <TableCell sx={{ bgcolor: '#13171a', color: '#90caf9', fontWeight: 'bold' }}>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {logs.map((log, index) => (
+                  <TableRow key={index} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
+                    <TableCell sx={{ color: 'white' }}>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                    <TableCell sx={{ color: '#81c784', fontFamily: 'monospace' }}>{log.ip || 'Unknown'}</TableCell>
+                    <TableCell sx={{ color: 'rgba(255,255,255,0.7)', maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={log.userAgent}>
+                      {log.userAgent}
+                    </TableCell>
+                    <TableCell sx={{ color: '#90caf9' }}>{log.action}</TableCell>
+                  </TableRow>
+                ))}
+                {logs.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center" sx={{ color: 'rgba(255,255,255,0.5)', py: 3 }}>
+                      No login history found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', p: 2 }}>
+          <Button onClick={() => setLogsDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Close
           </Button>
         </DialogActions>
       </Dialog>
