@@ -16,6 +16,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import SecurityIcon from '@mui/icons-material/Security';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { downloadCSV } from '@/lib/exportUtils';
 
@@ -73,6 +74,7 @@ const getWhatsAppLink = (phone, username, percentage) => {
 export default function AdminArtists() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -540,8 +542,28 @@ export default function AdminArtists() {
             onClick={initiateRemindAll}
             disabled={remindLoading}
             sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
+            title="Send reminder to all incomplete portfolios"
           >
             Remind Incomplete
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<HistoryIcon />}
+            onClick={() => {
+              if (session?.user?.artistid) {
+                handleLogsClick({ 
+                  artistid: session.user.artistid, 
+                  username: session.user.name || 'Admin', 
+                  _id: session.user.id 
+                });
+              } else {
+                toast.error("Session details not found");
+              }
+            }}
+            sx={{ bgcolor: '#607d8b', '&:hover': { bgcolor: '#546e7a' } }}
+            title="View my own login history"
+          >
+            My Logs
           </Button>
           <Button 
             variant="contained" 

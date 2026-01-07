@@ -50,18 +50,37 @@ export default function NotificationCenter() {
         const data = await res.json();
         
         // Check for new unread notifications since last fetch
+        const isChatOpen = typeof window !== 'undefined' && window.location.pathname.includes('/chat');
+
         if (!isFirstLoad.current) {
           data.forEach(n => {
             // If it's unread AND we haven't seen this ID before
             if (!n.read && !knownNotificationIds.current.has(n._id || n.id)) {
+              // If it's a message notification and we are currently IN the chat section, skip desktop notify
+              // Logic: If user is staring at chat screen, they see the message.
+              if (n.isMessage && isChatOpen) {
+                return; 
+              }
+
               // Trigger desktop notification
               if (typeof window !== 'undefined' && "Notification" in window && Notification.permission === "granted") {
                 try {
-                  new Notification(n.title || "New Notification", {
+                  const notification = new Notification(n.title || "New Notification", {
                     body: n.message,
                     icon: '/android-chrome-192x192.png', // Assuming this exists in public/
                     silent: false
                   });
+
+                  // If it has a link (like chat), focus window on click
+                  if (n.link) {
+                    notification.onclick = function() {
+                      window.focus();
+                      if (window.location.pathname !== n.link) {
+                        window.location.href = n.link;
+                      }
+                      this.close();
+                    };
+                  }
                 } catch (e) {
                   console.error("Desktop notification failed", e);
                 }

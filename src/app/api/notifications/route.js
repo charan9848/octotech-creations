@@ -19,13 +19,56 @@ export async function GET(request) {
       ? { recipient: 'admin' }
       : { recipient: session.user.id };
 
-    const notifications = await db.collection("notifications")
+    const notificationsPromise = db.collection("notifications")
       .find(query)
       .sort({ timestamp: -1 })
       .limit(50)
       .toArray();
 
-    return NextResponse.json(notifications);
+    // Also fetch unread chat messages to include as "notifications"
+    let messagesQuery = {};
+    if (session.user.role === 'admin') {
+      // Admin sees messages FROM artists that are unread
+      messagesQuery = { senderType: 'artist', read: false };
+    } else {
+      // Artist sees messages FROM admin matching their ID that are unread
+      messagesQuery = { 
+        artistId: session.user.artistid, 
+        senderType: 'admin', 
+        read: false 
+      };
+    }
+    
+    // We only need a few latest unread messages to notify about
+    const messagesPromise = db.collection("messages")
+      .find(messagesQuery)
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .toArray();
+
+    const [notifications, unreadMessages] = await Promise.all([notificationsPromise, messagesPromise]);
+
+    // Format messages as notifications
+    const messageNotifications = unreadMessages.map(msg => ({
+      _id: msg._id,
+      recipient: session.user.role === 'admin' ? 'admin' : session.user.id,
+      title: `New Message from ${msg.senderName || 'Support'}`,
+      message: msg.message,
+      type: 'info', // Use info style
+      read: false,
+      timestamp: msg.createdAt,
+      isMessage: true, // Flag to identify origin
+      link: session.user.role === 'admin' 
+        ? `/admin/dashboard/chat?artistId=${msg.artistId}` 
+        : `/artist-dashboard/chat`
+    }));
+
+    // Combine and sort
+    const combined = [...messageNotifications, ...notifications].sort((a, b) => 
+      new Date(b.timestamp) - new Date(a.timestamp)
+    );
+
+    return NextResponse.json(combined);
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
