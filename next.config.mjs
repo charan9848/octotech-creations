@@ -14,10 +14,6 @@ const nextConfig = {
     // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
-    domains: [
-      'res.cloudinary.com',
-      'cloudinary.com',
-    ],
     remotePatterns: [
       {
         protocol: 'https',

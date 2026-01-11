@@ -11,7 +11,8 @@
     "setup-db": "node src/scripts/setup-database-indexes.js",
     "cleanup-duplicates": "node src/scripts/cleanup-duplicates.js",
     "cleanup-cloudinary": "node src/scripts/cleanup-cloudinary-duplicates.js",
-    "safe-cleanup": "node src/scripts/safe-cloudinary-cleanup.js"
+    "safe-cleanup": "node src/scripts/safe-cloudinary-cleanup.js",
+    "optimize-hero": "node scripts/optimize-hero.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -50,6 +51,7 @@
     "react-redux": "^9.2.0",
     "recharts": "^3.6.0",
     "shadcn-ui": "^0.9.5",
+    "sharp": "^0.34.5",
     "twilio": "^5.10.7",
     "yup": "^1.6.1"
   },

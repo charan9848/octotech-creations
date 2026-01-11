@@ -3,13 +3,37 @@ import { motion } from 'framer-motion';
 import { fadeIn } from '@/app/variants';
 import { Box, Typography, Button } from "@mui/material";
 import ExploreIcon from '@mui/icons-material/Explore';
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import Image from 'next/image';
 
 const Hero = ({ content }) => {
   const title = content?.title || "Production-quality VFX and 3D for movies";
   const subtitle = content?.subtitle || "Welcome to Octotech Creations, where imagination meets reality.";
-  const videoUrl = content?.videoUrl || "https://a-us.storyblok.com/f/1002378/x/1f6178b540/actionvfxfrontpage15.mp4";
-  const posterUrl = content?.posterUrl || "https://a-us.storyblok.com/f/1002378/1920x700/9dcc42a9b1/front_page_static_banner.jpg";
+  const videoUrl = content?.videoUrl || "https://res.cloudinary.com/djbilxr7i/video/upload/q_auto,f_auto/v1768124432/hero-video-compressed_xiscj2.mp4";
+  // Prefer a local optimized poster (place optimized file at public/images/hero-1920x700.jpg)
+  const posterUrl = content?.posterUrl || "/images/hero-1920x700.jpg";
+
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoRef.current?.play();
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (videoRef.current) {
+      observer.observe(videoRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <Box
@@ -34,6 +58,7 @@ const Hero = ({ content }) => {
         }}
       >
         <video
+          ref={videoRef}
           className="video-background"
           style={{
             width: "100%",
@@ -41,8 +66,7 @@ const Hero = ({ content }) => {
             objectFit: "cover",
             objectPosition: "center",
           }}
-          preload="auto"
-          autoPlay
+          preload="none"
           loop
           muted
           disablePictureInPicture
@@ -63,17 +87,15 @@ const Hero = ({ content }) => {
           zIndex: 0,
         }}
       >
-        <Box
-          component="img"
-          src={posterUrl}
-          alt="Hero background"
-          sx={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center",
-          }}
-        />
+        <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+          <Image
+            src={posterUrl}
+            alt="Hero background"
+            fill
+            style={{ objectFit: 'cover', objectPosition: 'center' }}
+            priority
+          />
+        </Box>
       </Box>
 
       {/* Shading Overlay */}
